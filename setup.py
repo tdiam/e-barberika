@@ -22,6 +22,7 @@ setup(
     extras_require={
         'dev': [
             'pylint',
+            'git-pylint-commit-hook',
         ],
     },
 )
