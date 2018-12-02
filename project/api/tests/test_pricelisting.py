@@ -8,9 +8,9 @@ class PriceListingTestCase(TestCase):
 
     def setUp(self):
         self.listing = PriceListing(
-            store_name='ΕΡΓΑΤΙΑ',
-            product_name='Κανονικο',
-            user_name='Παναγιωτης',
+            store_name='Store',
+            product_name='Product',
+            user_name='Name',
 
             price=10.0,
             date_inserted=datetime.datetime.now(),
