@@ -9,4 +9,4 @@ class PriceListing(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
     date_inserted = models.DateField()
-    date_invalidated = models.DateField()
+    date_invalidated = models.DateField(null=True)
