@@ -22,7 +22,7 @@
     # θα ζητησει πρωτα τον κωδικο του superuser (του υπολογιστη), και μετα τον κωδικο του root χρηστη της MySQL που ορισες πριν.
     # αυτο ανοιγει τον client της mysql, σε αυτον:
 
-    GRANT ALL PRIVILEGES ON asoures.* TO asoures_user@localhost IDENTIFIED BY 'PASSWORD';
+    GRANT ALL PRIVILEGES ON asoures*.* TO asoures_user@localhost IDENTIFIED BY 'PASSWORD';
     CREATE DATABASE asoures;
     ```
 
