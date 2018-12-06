@@ -7,8 +7,8 @@ class ProductTestCase(TestCase):
 
     def setUp(self):
         self.product = Product(
-            product_name ='Κούρεμα Playmobil',
-            store_name = 'Εξαδάκτυλος',
+            product_name ='Playmobil Haircut',
+            store_name = 'Sixfinger Guy',
             price = 3.0
         )
 

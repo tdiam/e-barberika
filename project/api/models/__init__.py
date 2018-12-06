@@ -9,3 +9,4 @@ Django uses "project.api.models", so this will work anyway.
 Example usage:
     from .[model_name] import *
 '''
+from .Product import *

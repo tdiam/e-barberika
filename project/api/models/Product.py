@@ -5,4 +5,4 @@ class Product(models.Model):
     # Contains name, price and store name
     product_name = models.CharField(max_length=50)
     store_name = models.CharField(max_length=50)
-    price = models.DecimalField()
+    price = models.DecimalField(decimal_places=2, max_digits=10)
