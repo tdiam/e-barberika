@@ -10,7 +10,6 @@ SECRET_KEY = env_str('SECRET_KEY', 'secret' if DEBUG else '')
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,6 +28,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'project.api.middleware.ContentTypeMiddleware'
 ]
 
 TEMPLATES = [
