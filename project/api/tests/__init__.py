@@ -1,0 +1,1 @@
+from .middleware_contenttype import MiddlewareContentTypeTestCase
