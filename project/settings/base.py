@@ -108,3 +108,7 @@ LOGGING = {
         }
     }
 }
+
+
+# API root
+OBSERVATORY_API_ROOT = '/observatory/api/'
