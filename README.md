@@ -19,3 +19,5 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
 * [Εγκατάσταση](docs/installation.md)
 * [Δομή project](docs/structure.md)
 * [Χρήση](docs/usage.md)
+* Υποσυστήματα:
+  * [Token Auth](docs/token_auth/index.md)
