@@ -24,4 +24,5 @@
 1. (Προαιρετικό) Απεγκατάστησε το Python module `mysqlclient`, καθώς δεν είναι πλέον απαραίτητο.
 1. Ακολούθησε τα βήματα 1-6 στις [οδηγίες εγκατάστασης](installation.md).
 1. Έχοντας ενεργοποιημένο το virtualenv, τρέξε την `pip install -e .[dev]` ώστε να εγκατασταθούν τα νέα απαραίτητα modules για το PostgreSQL.
+1. Άλλαξε το `.env` ώστε να χρησιμοποιεί το PostGIS (`DATABASE_URL=postgis://asoures:<password>@localhost/asoures`).
 1. Τρέξε `python manage.py migrate`.
