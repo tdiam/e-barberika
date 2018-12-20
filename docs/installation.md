@@ -15,9 +15,9 @@
 
 1. Το PostgreSQL θα δημιουργήσει αυτόματα έναν χρήστη `postgres` στο σύστημά σου με δικαιώματα superuser, μέσω του οποίου θα εκτελείς τις root εντολές που αφορούν τη βάση. Για τις ανάγκες της εφαρμογής, θα πρέπει αρχικά να φτιάξεις έναν νέο χρήστη `asoures`:  
    ```
-   $ sudo -u postgres createuser --createdb -P asoures
+   $ sudo -u postgres createuser --superuser -P asoures
    ```
-   Όρισε ένα password της επιλογής σου για τον χρήστη. Λόγω του `--createdb` ο χρήστης θα έχει και δικαιώματα δημιουργίας νέων βάσεων.
+   Όρισε ένα password της επιλογής σου για τον χρήστη. Ο χρήστης ορίζεται ως superuser ώστε να μπορεί να δημιουργεί νέες βάσεις και να ενεργοποιεί extensions (όπως το PostGIS).
 
 1. Φτιάξε μια βάση PostgreSQL με όνομα `asoures`. Επειδή έχει ίδιο όνομα με τον χρήστη, ο χρήστης θα έχει αυτόματα δικαιώματα σε αυτήν:  
    ```
@@ -27,14 +27,6 @@
 1. Δημιούργησε και έναν χρήστη συστήματος με το ίδιο όνομα `asoures`:  
    ```
    $ sudo adduser asoures
-   ```
-
-1. Ενεργοποίησε το extension `postgis` στη βάση δεδομένων. Αυτό μπορεί να γίνει μόνο από superuser:  
-   ```
-   $ sudo -u postgres psql -d asoures
-   
-   asoures=# CREATE EXTENSION postgis;
-   asoures=# \q
    ```
 
 1. Απενεργοποίησε τη ρύθμιση forced SSL του PostgreSQL:  
