@@ -3,8 +3,11 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 
 
-class ShopTags(models.Model):
+class ShopTag(models.Model):
     tag = models.CharField(primary_key=True, max_length=255)
+
+    def __str__(self):
+        return self.tag
 
 
 class ShopManager(models.Manager):
@@ -51,7 +54,7 @@ class Shop(models.Model):
 
     withdrawn = models.BooleanField(default=False)
 
-    tags = models.ManyToManyField(ShopTags)
+    tags = models.ManyToManyField(ShopTag)
 
     objects = ShopManager()
 
