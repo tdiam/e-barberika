@@ -1,73 +1,84 @@
 # Εγκατάσταση
 
-1. Εγκατασταση τα απαραιτητα requirements (για Ubuntu):
+> **ΣΗΜΕΙΩΣΗ**: Οι προηγούμενες οδηγίες εγκατάστασης για MySQL αντικαταστάθηκαν από το παρόν. Αν έχεις ακολουθήσει τις παλιές οδηγίες, δες τις [οδηγίες μετάβασης](pg-migration.md).
 
-    ```
-    $ sudo apt-get update
-    $ sudo apt-get install git default-libmysqlclient-dev mysql-server mysql-client python3 python3-pip
-    $ pip3 install virtualenv   # οχι sudo
-    ```
+Οι οδηγίες για την εγκατάσταση και ρύθμιση της PostgreSQL έχουν βασιστεί σε [αυτό το άρθρο](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postg$).
 
-1. Αν εγκαθιστας πρωτη φορα την MySQL, τοτε τρεξε την παρακατω εντολη και ακολουθα τις οδηγιες. Οι ρυθμισεις που μας ενδιαφερουν ειναι ο κωδικος του root χρηστη της MySQL (δωσε εναν κωδικο που *ΔΕΝ* θα ξεχασεις) και στο τελος οταν ρωτησει να κανει Flush Privileges, διαλεξε ναι
+## Οδηγίες
 
-    ```
-    $ sudo mysql_secure_installation
-    ```
+1. Εγκατάσταση των απαραίτητων requirements (για Ubuntu):  
+   ```
+   $ sudo apt-get update
+   $ sudo apt-get install git postgresql postgresql-contrib python3 python3-pip
+   $ pip3 install virtualenv   # οχι sudo
+   ```
 
-1. Φτιαξε μια βαση MySQL με ονομα `asoures` και εναν χρηστη `asoures_user` με προσβαση σε αυτη:
+1. Το PostgreSQL θα δημιουργήσει αυτόματα έναν χρήστη `postgres` στο σύστημά σου με δικαιώματα superuser, μέσω του οποίου θα εκτελείς τις root εντολές που αφορούν τη βάση. Για τις ανάγκες της εφαρμογής, θα πρέπει αρχικά να φτιάξεις έναν νέο χρήστη `asoures`:  
+   ```
+   $ sudo -u postgres createuser --createdb -P asoures
+   ```
+   Όρισε ένα password της επιλογής σου για τον χρήστη. Λόγω του `--createdb` ο χρήστης θα έχει και δικαιώματα δημιουργίας νέων βάσεων.
 
-    ```
-    $ sudo mysql -u root -p
+1. Φτιάξε μια βάση PostgreSQL με όνομα `asoures`. Επειδή έχει ίδιο όνομα με τον χρήστη, ο χρήστης θα έχει αυτόματα δικαιώματα σε αυτήν:  
+   ```
+   $ sudo -u postgres createdb asoures
+   ```
 
-    # θα ζητησει πρωτα τον κωδικο του superuser (του υπολογιστη), και μετα τον κωδικο του root χρηστη της MySQL που ορισες πριν.
-    # αυτο ανοιγει τον client της mysql, σε αυτον:
+1. Δημιούργησε και έναν χρήστη συστήματος με το ίδιο όνομα `asoures`:  
+   ```
+   $ sudo adduser asoures
+   ```
 
-    GRANT ALL PRIVILEGES ON *asoures.* TO asoures_user@localhost IDENTIFIED BY 'PASSWORD';
-    CREATE DATABASE asoures;
-    ```
+1. Ενεργοποίησε το extension `postgis` στη βάση δεδομένων. Αυτό μπορεί να γίνει μόνο από superuser:  
+   ```
+   $ sudo -u postgres psql -d asoures
+   
+   postgres=# CREATE EXTENSION postgis;
+   postgres=# \q
+   ```
 
-1. Κάνε clone το repository στον υπολογιστή σου. Απο δω και επειτα, ολες οι εντολες *πρεπει* να εκτελουνται μεσα στο φακελο `asoures`. Αλλαξε το USERNAME με το ονομα χρηστη σου στο github (OXI το email).
+1. Απενεργοποίησε τη ρύθμιση forced SSL του PostgreSQL:  
+   ```
+   $ sudo vi /etc/postgresql/<version>/main/postgresql.conf
+   ```
+   Όπου `<version>` βάλε τον αριθμό έκδοσης του PostgreSQL που εγκατέστησες. Την ώρα συγγραφής του παρόντος η έκδοση είναι `10`.
+   Αντικατάστησε τη γραμμή `ssl = on` με `ssl = off`.
 
-    ```
-    $ git clone https://USERNAME@github.com/tdiam/asoures
-    $ cd asoures
-    ```
+1. Κάνε clone το repository στον υπολογιστή σου. Από δω και έπειτα, όλες οι εντολές *πρέπει* να εκτελούνται μέσα στο φάκελο `asoures`. Άλλαξε το USERNAME με το όνομα χρήστη σου στο github (OXI το email).  
+   ```
+   $ git clone https://USERNAME@github.com/tdiam/asoures
+   $ cd asoures
+   ```
 
-1. Αντίγραψε το αρχείο `etc/pre-commit` στο `.git/hooks/pre-commit` και κάνε το τελευταίο εκτελέσιμο (`chmod +x`).
+1. Αντίγραψε το αρχείο `etc/pre-commit` στο `.git/hooks/pre-commit` και κάν'το εκτελέσιμο.  
+   ```
+   $ cp etc/pre-commit .git/hooks/pre-commit
+   $ chmod +x .git/hooks/pre-commit
+   ```
 
-    ```
-    $ cp etc/pre-commit .git/hooks/pre-commit
-    $ chmod +x .git/hooks/pre-commit
-    ```
+1. Δημιούργησε ένα νέο [virtual environment](https://realpython.com/python-virtual-environments-a-primer/), στον φάκελο `asoures/.venv`  
+   ```
+   $ ~/.local/bin/virtualenv .venv
+   $ ls -al                    # πρέπει να φαίνεται ένας φάκελος .venv
+   ```
 
-1. Δημιουργησε ενα νεο [virtual environment](https://realpython.com/python-virtual-environments-a-primer/), στον φακελο `asoures/.venv`
+1. Κάνε αντιγραφή το *env.sample* στο *.env* και επεξεργάσου το για να προσαρμόσεις τις ρυθμίσεις στο τοπικό σου περιβάλλον (διόρθωσε τον κωδικό για τη σύνδεση στη βάση). Περισσότερα για το DATABASE_URL [εδώ](https://github.com/kennethreitz/dj-database-url#url-schema):  
+   ```
+   $ cp env.sample .env
+   $ vi .env
+   ```
 
-    ```
-    $ ~/.local/bin/virtualenv .venv
-    $ ls -al                    # πρεπει να φαινεται ενας φακελος .venv
-    ```
+1. Ενεργοποίησε το virtual environment που μόλις δημιούργησες. Αυτό πρέπει να γίνεται κάθε φορά που ανοίγεις καινούριο terminal:  
+   ```
+   $ source .venv/bin/activate    # θα αλλάξει και το prompt
+   ```
 
-1. Κάνε αντιγραφή το *env.sample* στο *.env* και επεξεργάσου το για να προσαρμόσεις τις ρυθμίσεις στο τοπικό σου περιβάλλον (διορθωσε τον κωδικο για τη συνδεση στη βαση). Περισσοτερα για το DATABASE_URL [εδω](https://github.com/kennethreitz/dj-database-url#url-schema):
+1. Εγκατάστησε το django και τα άλλα dependencies του project.  
+   ```
+   $ pip install -e .[dev]
+   ```
 
-    ```
-    $ cp env.sample .env
-    $ gedit .env
-    ```
-
-1. Ενεργοποιησε το virtual environment που μολις δημιουργησες. Αυτο πρεπει να γινεται καθε φορα που ανοιγεις καινουριο terminal
-
-    ```
-    $ source ./.venv/bin/activate    # θα αλλαξει και το prompt
-    ```
-
-1. Εγκατεστησε το django και τα αλλα dependencies του project.
-
-    ```
-    $ pip install -e .[dev]
-    ```
-
-1. Τρέξε τα migrations. Αν ολα εχουν γινει σωστα, θα δεις μηνυμα επιτυχιας.
-
-    ```
-    $ python manage.py migrate
-    ```
+1. Τρέξε τα migrations. Αν όλα έχουν γινει σωστά, θα δεις μήνυμα επιτυχίας.  
+   ```
+   $ python manage.py migrate
+   ```
