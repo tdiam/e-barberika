@@ -9,7 +9,7 @@
 1. Εγκατάσταση των απαραίτητων requirements (για Ubuntu):  
    ```
    $ sudo apt-get update
-   $ sudo apt-get install git postgresql postgresql-contrib python3 python3-pip
+   $ sudo apt-get install git postgresql postgresql-contrib postgis python3 python3-pip
    $ pip3 install virtualenv   # οχι sudo
    ```
 
@@ -33,8 +33,8 @@
    ```
    $ sudo -u postgres psql -d asoures
    
-   postgres=# CREATE EXTENSION postgis;
-   postgres=# \q
+   asoures=# CREATE EXTENSION postgis;
+   asoures=# \q
    ```
 
 1. Απενεργοποίησε τη ρύθμιση forced SSL του PostgreSQL:  
