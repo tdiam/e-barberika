@@ -24,9 +24,10 @@
    $ sudo -u postgres createdb asoures
    ```
 
-1. Δημιούργησε και έναν χρήστη συστήματος με το ίδιο όνομα `asoures`:  
+1. Δημιούργησε και έναν χρήστη συστήματος με το ίδιο όνομα `asoures` και κωδικό της επιλογής σου:  
    ```
-   $ sudo adduser asoures
+   $ sudo useradd -M -s /usr/sbin/nologin asoures
+   $ sudo passwd asoures
    ```
 
 1. Απενεργοποίησε τη ρύθμιση forced SSL του PostgreSQL:  
