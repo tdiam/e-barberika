@@ -1,21 +1,24 @@
 from django.test import TestCase
-from ..models import PriceListing
+from django.contrib.auth.models import User
 
-import datetime
+from ..models import  ShopPlaceholder, ProductPlaceholder, PriceListing
 
 class PriceListingTestCase(TestCase):
     ''' This is the test suite for the Price Listing Model '''
 
     def setUp(self):
+        store = ShopPlaceholder()
+        prod = ProductPlaceholder()
+        usr = User()
+        store.save()
+        prod.save()
+        usr.save()
         self.listing = PriceListing(
-            store_name='Store',
-            product_name='Product',
-            user_name='Name',
-
-            price=10.0,
-            date_inserted=datetime.datetime.now(),
-            date_invalidated=None
-        )
+            shop=store,
+            product=prod,
+            user=usr,
+            price=10.0
+            )
 
     def test_can_create_listing(self):
         '''Test that we can create a listing'''
