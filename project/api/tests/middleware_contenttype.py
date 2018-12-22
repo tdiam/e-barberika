@@ -2,7 +2,7 @@ from django.test import TestCase, RequestFactory
 from django.http import HttpResponse, Http404, HttpResponseBadRequest
 
 from ..middleware import ContentTypeMiddleware
-from ...settings import OBSERVATORY_API_ROOT
+from ...settings import API_ROOT
 
 # A test view that returns 400 bad request if no ?format is given.
 # otherwise it returns 200 ok along with the format name
@@ -25,7 +25,7 @@ class MiddlewareContentTypeTestCase(TestCase):
         self.factory = RequestFactory()
         self.middleware = ContentTypeMiddleware(test_view)
 
-        self.observatory_apiroot = OBSERVATORY_API_ROOT
+        self.observatory_apiroot = API_ROOT
 
     # Check that json is accepted and set properly
     def test_format_json_is_accepted(self):
