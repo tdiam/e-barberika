@@ -16,9 +16,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-# Pricelisting views
-from .api.views import prices_view
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('observatory/api/', include('project.api.urls')),
