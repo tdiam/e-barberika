@@ -17,7 +17,7 @@ setup(
     install_requires=[
         'dj-database-url',
         'Django',
-        'mysqlclient',
+        'psycopg2-binary',
     ],
     extras_require={
         'dev': [
