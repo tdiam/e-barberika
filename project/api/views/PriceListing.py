@@ -5,8 +5,6 @@ import json
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views import View
 
-
-
 #################################################################
 
 # public
