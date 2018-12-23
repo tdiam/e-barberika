@@ -38,12 +38,10 @@ class ShopTestCase(TestCase):
         self.shop.tags.add(tag)
 
         # Check if tag was saved
-        all_tags = [t.tag for t in self.shop.tags.all()]
-        self.assertTrue(self.tag_name in all_tags)
+        self.assertTrue(tag in self.shop.tags.all())
 
         # Check if shop is accessible from tag
-        all_shops = [s.name for s in tag.shop_set.all()]
-        self.assertTrue(self.shop_name in all_shops)
+        self.assertTrue(self.shop in tag.shop_set.all())
 
     def test_withdrawn_shop_does_not_exist(self):
         '''Check if withdrawn shops are included in default queryset'''
@@ -78,3 +76,33 @@ class ShopTestCase(TestCase):
 
         shops_near_b = Shop.objects.within_distance_from(lat, lng, km=2)
         self.assertFalse(self.shop in shops_near_b)
+
+    def test_shops_with_tags_works(self):
+        '''Check if with_tags custom query works correctly'''
+        # Save shop
+        self.shop.save()
+
+        # Add some tags
+        self.shop.tags.create(tag='blue')
+        self.shop.tags.create(tag='yellow')
+
+        # Create another shop with tags
+        shop_b = Shop(name='Κατάστημα Β', address='Ιάσονος 40', coordinates=Point(0, 0))
+        shop_b.save()
+        shop_b.tags.create(tag='black')
+
+        self.subTest(i=0)
+        # Search for yellow, black tags. Both should appear.
+        yellow_or_black = Shop.objects.with_tags(['yellow', 'black'])
+        self.assertTrue(self.shop in yellow_or_black)
+        self.assertTrue(shop_b in yellow_or_black)
+
+        self.subTest(i=1)
+        # Search for blue, yellow tags. Shop A should appear only once.
+        blue_or_yellow = Shop.objects.with_tags(['blue', 'yellow'])
+        self.assertEqual(len(blue_or_yellow), 1)
+
+        self.subTest(i=2)
+        # Search for red tags. None should appear.
+        red = Shop.objects.with_tags(['red'])
+        self.assertEqual(len(red), 0)

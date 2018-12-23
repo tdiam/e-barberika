@@ -10,11 +10,12 @@ class ShopTag(models.Model):
         return self.tag
 
 
-class ShopManager(models.Manager):
+class BaseShopManager(models.Manager):
     def get_queryset(self):
         '''Omit withdrawn shops from results by default'''
         return super().get_queryset().filter(withdrawn=False)
 
+class ShopQuerySet(models.QuerySet):
     def within_distance_from(self, lat, lng, **distance):
         '''Find shops within given distance from given point.
 
@@ -29,9 +30,40 @@ class ShopManager(models.Manager):
             shops = Shop.objects.within_distance_from(39.89, 22.18, km=10)
             ```
         '''
-        return self.get_queryset().filter(
+        return self.filter(
             coordinates__dwithin=(Point(lng, lat), Distance(**distance))
         )
+
+    def with_tags(self, tags):
+        '''Find shops whose tags contain any of the input tags.
+
+        Arguments:
+            - tags: List of tag names.
+
+        Example:
+            ```
+            shops = Shop.objects.with_tags(['value-for-money', 'cozy'])
+            ```
+
+        Details:
+            `tags__tag__in` will search the intermediate table (shop, tag) and get
+            the pairs for which the tag is listed in the input tags array.
+            A join operation will return the corresponding shop for each such pair.
+            If a shop had more than one of its tags matched, it would appear that
+            many times in the result.
+            The `.distinct()` modifier will remove such repetitions.
+        '''
+        return self.filter(
+            tags__tag__in=tags
+        ).distinct()
+
+# Both a custom manager and custom queryset methods are used
+# in order to facilitate by-default exclusion of withdrawn Shops
+# and chainable custom methods like `within_distance_from` and `with_tags`.
+#
+# Adapted from:
+# https://docs.djangoproject.com/en/2.1/topics/db/managers/#from-queryset
+ShopManager = BaseShopManager.from_queryset(ShopQuerySet)
 
 
 class Shop(models.Model):
