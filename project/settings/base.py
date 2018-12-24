@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'project.token_auth',
     'project.api',
 ]
 
@@ -24,12 +26,16 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
     'project.api.middleware.ContentTypeMiddleware'
+    'project.token_auth.middleware.TokenAuthMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'project.token_auth.backends.TokenAuthBackend',
 ]
 
 TEMPLATES = [
@@ -109,6 +115,15 @@ LOGGING = {
     }
 }
 
-
-# API root
+# root
 API_ROOT = '/observatory/api/'
+
+# Token Auth settings
+
+# X-OBSERVATORY-AUTH header is translated to
+# HTTP_X_OBSERVATORY_AUTH in Django's request handlers
+TOKEN_AUTH_HEADER = 'HTTP_X_OBSERVATORY_AUTH'
+
+TOKEN_EXPIRATION = {
+    'hours': 4,
+}
