@@ -3,7 +3,7 @@ from django.conf import settings
 
 # First look at TOKEN_AUTH_URL_PREFIX setting
 # If not set, try API_ROOT
-TOKEN_AUTH_URL_PREFIX = getattr(settings, 'TOKEN_AUTH_URL_PREFIX', '/')
+TOKEN_AUTH_URL_PREFIX = getattr(settings, 'TOKEN_AUTH_URL_PREFIX', None)
 if not TOKEN_AUTH_URL_PREFIX:
     TOKEN_AUTH_URL_PREFIX = getattr(settings, 'API_ROOT', '/')
 
