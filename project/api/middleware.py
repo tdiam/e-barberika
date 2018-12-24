@@ -1,13 +1,13 @@
 from django.http import HttpResponseBadRequest
-from ..settings import API_ROOT
+from django.conf import settings
 
 # Middleware to globally handle 'format' query parameter
 # the default (and only supported) format is 'json', all others return 400 Bad Request
-def ContentTypeMiddleware(get_response):
+def ObservatoryContentTypeMiddleware(get_response):
 
     def middleware(request):
         # only affect API calls to the observatory
-        if not request.path.startswith(API_ROOT):
+        if not request.path.startswith(settings.API_ROOT):
             return get_response(request)
 
         format_param = request.GET.get('format', 'json')

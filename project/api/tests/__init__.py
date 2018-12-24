@@ -1,1 +1,1 @@
-from .middleware_contenttype import MiddlewareContentTypeTestCase
+from .test_middleware import ObservatoryContentTypeMiddlewareTestCase

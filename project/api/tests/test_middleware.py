@@ -1,8 +1,8 @@
 from django.test import TestCase, RequestFactory
-from django.http import HttpResponse, Http404, HttpResponseBadRequest
+from django.http import HttpResponse
+from django.conf import settings
 
-from ..middleware import ContentTypeMiddleware
-from ...settings import API_ROOT
+from project.api.middleware import ObservatoryContentTypeMiddleware
 
 # A test view that returns 400 bad request if no ?format is given.
 # otherwise it returns 200 ok along with the format name
@@ -12,7 +12,7 @@ def test_view(request):
 def normal_view(request):
     return HttpResponse("ok")
 
-class MiddlewareContentTypeTestCase(TestCase):
+class ObservatoryContentTypeMiddlewareTestCase(TestCase):
     '''
     This is the test suite for the content type middleware.
     We want `/?format=json` to be accepted, and all others
@@ -23,9 +23,9 @@ class MiddlewareContentTypeTestCase(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.middleware = ContentTypeMiddleware(test_view)
+        self.middleware = ObservatoryContentTypeMiddleware(test_view)
 
-        self.observatory_apiroot = API_ROOT
+        self.observatory_apiroot = settings.API_ROOT
 
     # Check that json is accepted and set properly
     def test_format_json_is_accepted(self):
@@ -50,9 +50,9 @@ class MiddlewareContentTypeTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content.decode(response.charset), 'json')
 
-    # Check that the middleware only runs for the observatory, not all urls 
+    # Check that the middleware only runs for the observatory, not all urls
     def test_only_observatory_is_affected(self):
-        middleware_for_default = ContentTypeMiddleware(normal_view)
+        middleware_for_default = ObservatoryContentTypeMiddleware(normal_view)
         request = self.factory.get('/anything/?format=xml')
         response = middleware_for_default(request)
 
