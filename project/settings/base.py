@@ -10,7 +10,6 @@ SECRET_KEY = env_str('SECRET_KEY', 'secret' if DEBUG else '')
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,6 +29,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'project.api.middleware.ObservatoryContentTypeMiddleware'
     'project.token_auth.middleware.TokenAuthMiddleware',
 ]
 
@@ -115,9 +115,10 @@ LOGGING = {
     }
 }
 
-# Token Auth settings
-
+# root
 API_ROOT = '/observatory/api/'
+
+# Token Auth settings
 
 # X-OBSERVATORY-AUTH header is translated to
 # HTTP_X_OBSERVATORY_AUTH in Django's request handlers
