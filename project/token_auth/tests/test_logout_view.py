@@ -1,15 +1,14 @@
-import json
-
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 
 from ..models import Token
-from ..views import TokenAuthLogoutView
+from ..views import LogoutView
+
 
 User = get_user_model()
 
-class LogoutViewTestCase(TestCase):
-    '''Checks the functionality of the TokenAuthLogoutView'''
+class TokenAuthLogoutViewTestCase(TestCase):
+    '''Checks the functionality of the LogoutView'''
 
     def setUp(self):
         # Create user
@@ -17,26 +16,27 @@ class LogoutViewTestCase(TestCase):
         self.password = 'johndoe'
         self.user = User.objects.create_user(self.username, password=self.password)
 
-        # Request factory
         self.factory = RequestFactory()
-
-        # View
-        self.view = TokenAuthLogoutView.as_view()
+        self.view = LogoutView.as_view()
 
     def test_logout_removes_tokens(self):
-        '''
-        Checks that logging out removes all tokens associated with that user
-        '''
+        '''Checks that logging out removes all tokens associated with that user'''
+        # Create a token for the user
         token = Token(user=self.user)
         token.save()
-
-        self.assertNotEqual(Token.objects.filter(user=self.user).count(), 0)
 
         request = self.factory.post('/')
         request.user = self.user
         response = self.view(request)
 
         self.assertEqual(response.status_code, 200)
+        # Check that the created token no longer exists
         self.assertEqual(Token.objects.filter(user=self.user).count(), 0)
 
-    # REVIEW: other tests?
+    def test_logout_when_not_logged_in(self):
+        '''Logout should return 204 when no user is logged in'''
+        # request.user will not be set
+        request = self.factory.post('/')
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, 204)
