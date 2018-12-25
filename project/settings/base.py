@@ -29,7 +29,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'project.api.middleware.ObservatoryContentTypeMiddleware'
+    'project.api.middleware.ObservatoryContentTypeMiddleware',
     'project.token_auth.middleware.TokenAuthMiddleware',
 ]
 
