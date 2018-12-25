@@ -5,6 +5,12 @@ from django.views import View
 from .models import Token
 
 
+def JsonMessageUtf8(msg, **kwargs):
+    '''Returns JSON response {'message': msg} while not escaping UTF-8'''
+    kwargs.setdefault('json_dumps_params', {})
+    kwargs['json_dumps_params']['ensure_ascii'] = False
+    return JsonResponse({'message': msg}, **kwargs)
+
 class ObtainTokenLoginView(View):
     '''Endpoint for users to obtain their API tokens.
 
@@ -49,7 +55,7 @@ class LogoutView(View):
         # remove tokens associated with this user
         Token.objects.filter(user=request.user).delete()
 
-        return JsonResponse({'message': 'OK'})
+        return JsonMessageUtf8('OK')
 
 
 class RegisterView(View):
@@ -61,16 +67,12 @@ class RegisterView(View):
         password = request.POST.get('password')
 
         if username is None or password is None:
-            return JsonResponse({
-                'message': 'Τα πεδία username και password είναι υποχρεωτικά'
-            }, status=400)
+            return JsonMessageUtf8('Τα πεδία username και password είναι υποχρεωτικά', status=400)
 
         User = get_user_model()
         if User.objects.filter(username=username).exists():
-            return JsonResponse({
-                'message': f'Το username {username} χρησιμοποιείται ήδη'
-            }, status=400)
+            return JsonMessageUtf8(f'Το username {username} χρησιμοποιείται ήδη', status=400)
 
         User.objects.create_user(username=username, password=password)
 
-        return JsonResponse({'message': 'OK'})
+        return JsonMessageUtf8('OK')

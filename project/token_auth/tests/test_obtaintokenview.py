@@ -18,10 +18,7 @@ class ObtainTokenViewTestCase(TestCase):
         self.password = 'johndoe'
         self.user = User.objects.create_user(self.username, password=self.password)
 
-        # Request factory
         self.factory = RequestFactory()
-
-        # View
         self.view = ObtainTokenLoginView.as_view()
 
     def test_can_obtain_token(self):
