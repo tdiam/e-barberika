@@ -3,14 +3,14 @@ import json
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 
-from ..models import Token
-from ..views import ObtainTokenLoginView
+from project.token_auth.models import Token
+from project.token_auth.views import LoginView
 
 
 User = get_user_model()
 
 class ObtainTokenViewTestCase(TestCase):
-    '''Checks the functionality of the ObtainTokenLoginView'''
+    '''Checks the functionality of the LoginView'''
 
     def setUp(self):
         # Create user
@@ -19,7 +19,7 @@ class ObtainTokenViewTestCase(TestCase):
         self.user = User.objects.create_user(self.username, password=self.password)
 
         self.factory = RequestFactory()
-        self.view = ObtainTokenLoginView.as_view()
+        self.view = LoginView.as_view()
 
     def test_can_obtain_token(self):
         '''User can login, parse token and token is same as in database'''

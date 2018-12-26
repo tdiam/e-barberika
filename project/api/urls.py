@@ -1,7 +1,7 @@
 from django.urls import path
 
-from project.token_auth.views import ObtainTokenLoginView
+from project.token_auth.views import LoginView
 
 urlpatterns = [
-    path('login/', ObtainTokenLoginView.as_view(), name='api-login'),
+    path('login/', LoginView.as_view(), name='api-login'),
 ]

@@ -11,7 +11,7 @@ def JsonMessageUtf8(msg, **kwargs):
     kwargs['json_dumps_params']['ensure_ascii'] = False
     return JsonResponse({'message': msg}, **kwargs)
 
-class ObtainTokenLoginView(View):
+class LoginView(View):
     '''Endpoint for users to obtain their API tokens.
 
     Users log in with their credentials: username and password.
