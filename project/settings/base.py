@@ -31,6 +31,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'project.api.middleware.ObservatoryContentTypeMiddleware',
     'project.token_auth.middleware.TokenAuthMiddleware',
+    'project.api.middleware.ParsePostParametersMiddleware'
 ]
 
 AUTHENTICATION_BACKENDS = [

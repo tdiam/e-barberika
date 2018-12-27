@@ -1,0 +1,2 @@
+from .test_contenttype_middleware import ObservatoryContentTypeMiddlewareTestCase
+from .test_postparamsparse_middleware import ParsePostParametersMiddlewareTestCase
