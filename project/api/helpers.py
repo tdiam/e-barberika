@@ -6,7 +6,7 @@ from django.http import JsonResponse
 
 
 class FlexibleJsonEncoder(json.JSONEncoder):
-    '''JSON encoder that calls __serialize__ on models to get an OrderedDict.
+    '''Extends the JSON encoder to call __serialize__ on models and get serializable representation.
 
     Currently supports model instances and enumerables (such as lists, querysets).
 
@@ -36,24 +36,31 @@ class FlexibleJsonEncoder(json.JSONEncoder):
         super().__init__(**kwargs)
 
     def default(self, o):
+        # If the item is a Model
         if isinstance(o, models.Model):
             if callable(getattr(o, '__serialize__', None)):
                 # For each argument in the object's __serialize__ method
                 their_kwargs = inspect.signature(o.__serialize__).parameters.keys()
-                # Omit kwargs that do not appear in self.serialize_kwargs
+                # Omit kwargs that do not appear in self.serialize_args
                 common_kwargs = [k for k in their_kwargs if k in self.serialize_args]
                 # Get the corresponding value from serialize_args
                 final = {k: self.serialize_args[k] for k in common_kwargs}
                 return o.__serialize__(**final)
+            # If the model does not have a __serialize__ method, return control to JSONEncoder
+            # to raise TypeError
             return super().default(o)
 
+        # If the item is not a Model, try iterating
         try:
             iterable = iter(o)
         except TypeError:
             pass
         else:
+            # If item is iterable, get representation of each of the "children"
+            # and add them to a list
             return [self.default(item) for item in iterable]
 
+        # If all above fail, return control to JSONEncoder to raise TypeError
         return super().default(o)
 
 def ApiResponse(data, **kwargs):

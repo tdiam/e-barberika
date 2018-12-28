@@ -39,7 +39,12 @@ class FlexibleJsonEncoderTestCase(TestCase):
 
     def setUp(self):
         # Create user
-        self.user = SerializableUser(first_name='Γιώργος', last_name='Μαζωνάκης', username='gmazw', email='info@mazw.gr')
+        self.user = SerializableUser(
+            first_name='Γιώργος',
+            last_name='Μαζωνάκης',
+            username='gmazw',
+            email='info@mazw.gr'
+        )
         self.user.save()
 
         # Store expected representation for easy access
@@ -48,19 +53,19 @@ class FlexibleJsonEncoderTestCase(TestCase):
         self.list_json = f'[{self.instance_json}]'
 
     def test_instance_serialization(self):
-        '''Check if serialization of an user instance works correctly'''
+        '''Check if serialization of a user instance works correctly'''
         res = _to_json(self.user)
         self.assertEqual(res, self.instance_json)
 
     def test_serialize_args(self):
         '''serialize_args in json.dumps must be passed as arguments to the __serialize__ method'''
-        res = _to_json(self.user, serialize_args={"upper": True})
+        res = _to_json(self.user, serialize_args={'upper': True})
         self.assertEqual(res, '{"name": {"first": "ΓΙΏΡΓΟΣ", "last": "ΜΑΖΩΝΆΚΗΣ"}, "username": "gmazw", "email": "info@mazw.gr"}')
 
     def test_extra_serialize_args_do_not_raise_exception(self):
         '''Check if only the defined arguments of __serialize__ are passed'''
         # If not, this should raise a TypeError
-        _to_json(self.user, serialize_args={"non_existent_arg": "random value"})
+        _res = _to_json(self.user, serialize_args={'non_existent_arg': 'random value'})
 
     def test_list_serialization(self):
         '''Check if serialization of a user list works correctly'''
