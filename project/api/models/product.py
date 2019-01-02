@@ -29,9 +29,9 @@ class Product(models.Model):
 
     name = models.CharField(max_length=255)
     
-    description = models.CharField(max_length=255)
+    description = models.TextField(max_length=255)
 
-    category = models.CharField(max_length=255)
+    category = models.TextField(max_length=255)
 
     withdrawn = models.BooleanField(default=False)
 
