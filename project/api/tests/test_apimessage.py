@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from ..helpers import ApiMessage
 
+
 class ApiMessageTestCase(TestCase):
     '''Unit test for the ApiMessage helper'''
 
