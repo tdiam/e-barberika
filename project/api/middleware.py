@@ -39,15 +39,15 @@ def ParsePostParametersMiddleware(get_response):
     '''
     def middleware(request):
 
-        # only for POST requests with "Content-Type: x-www-form-urlencoded"
-        if request.method != 'POST' and request.META['CONTENT_TYPE'] != 'application/x-www-form-urlencoded':
-            return get_response(request)
-
-        if request.method == 'POST' and request.META['CONTENT_TYPE'] != 'application/x-www-form-urlencoded':
+        # only for "Content-Type: x-www-form-urlencoded"
+        if request.META['CONTENT_TYPE'] == 'application/x-www-form-urlencoded':
+            # FIXME: this needs to be looked at
+            request.data = QueryDict(request.body, mutable=False)
+        elif request.method == 'POST':
             request.data = request.POST
-            return get_response(request)
+        elif request.method == 'GET':
+            request.data = request.GET
 
-        request.data = QueryDict(request.body, mutable=False)
         return get_response(request)
 
     return middleware
