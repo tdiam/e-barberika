@@ -24,6 +24,7 @@ setup(
             'pylint',
             'pylint-django',
             'git-pylint-commit-hook',
+            'faker',
         ],
     },
 )
