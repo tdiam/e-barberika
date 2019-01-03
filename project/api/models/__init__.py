@@ -11,5 +11,5 @@ Example usage:
 '''
 
 from .shop import *
-
+from .product import *
 from .price import *
