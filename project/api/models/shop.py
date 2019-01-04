@@ -9,6 +9,9 @@ class ShopTag(models.Model):
     def __str__(self):
         return self.tag
 
+    def __serialize__(self):
+        return self.tag
+
 
 class BaseShopManager(models.Manager):
     def get_queryset(self):
@@ -92,3 +95,14 @@ class Shop(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __serialize__(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'lng': self.coordinates.x,
+            'lat': self.coordinates.y,
+            'tags': self.tags.all(),
+            'withdrawn': self.withdrawn,
+        }
