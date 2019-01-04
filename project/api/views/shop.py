@@ -1,7 +1,10 @@
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.views import View
+from django.contrib.gis.geos import Point
 
 from ..helpers import ApiMessage, ApiResponse
-from ..models import Shop
+from ..models import Shop, ShopTag
 
 
 class ShopsView(View):
@@ -84,3 +87,45 @@ class ShopsView(View):
         }
 
         return ApiResponse(data)
+
+    def post(self, request):
+        '''Creates new shop.
+        
+        Parameters:
+         - `name`: Name of the shop.
+         - `address`: Address of the shop.
+         - `lng`: Longitude.
+         - `lat`: Latitude.
+         - `tags`: List of strings that will be applied as tags to the shop (default []).
+        '''
+        name = request.POST.get('name')
+        address = request.POST.get('address')
+        lng = request.POST.get('lng')
+        lat = request.POST.get('lat')
+        tags = request.POST.getlist('tags')
+
+        try:
+            lng = float(lng)
+            lat = float(lat)
+        # TypeError will occur if argument is not number or string (eg None)
+        # ValueError will occur if argument cannot be parsed into a float
+        except (TypeError, ValueError):
+            return ApiMessage('Τα πεδία συντεταγμένων πρέπει να είναι έγκυροι δεκαδικοί αριθμοί', status=400)
+
+        shop = Shop(
+            name=name,
+            address=address,
+            coordinates=Point(lng, lat)
+        )
+        try:
+            # save() does not call the validators
+            # so we need to call full_clean() explicitly
+            # https://docs.djangoproject.com/en/2.1/ref/models/instances/#django.db.models.Model.full_clean
+            shop.full_clean()
+            shop.save()
+        except (ValidationError, IntegrityError):
+            return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
+
+        tag_objs = [ShopTag(tag=tag) for tag in tags]
+        shop.tags.set(tag_objs)
+        return ApiResponse(shop, status=204)
