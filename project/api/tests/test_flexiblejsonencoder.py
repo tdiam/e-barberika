@@ -7,7 +7,7 @@ from django.test import TestCase
 from ..helpers import FlexibleJsonEncoder
 
 
-class SerializableUser(User):
+class FJE_SerializableUser(User):
     '''Proxy User model with __serialize__ method.
 
     A native Django model was needed to test __serialize__,
@@ -39,7 +39,7 @@ class FlexibleJsonEncoderTestCase(TestCase):
 
     def setUp(self):
         # Create user
-        self.user = SerializableUser(
+        self.user = FJE_SerializableUser(
             first_name='Γιώργος',
             last_name='Μαζωνάκης',
             username='gmazw',
@@ -74,7 +74,7 @@ class FlexibleJsonEncoderTestCase(TestCase):
 
     def test_queryset_serialization(self):
         '''Check if serialization of a user queryset works correctly'''
-        res = _to_json(SerializableUser.objects.all())
+        res = _to_json(FJE_SerializableUser.objects.all())
         self.assertEqual(res, self.list_json)
 
     def test_user_is_not_serializable(self):

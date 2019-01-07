@@ -7,7 +7,7 @@ from faker import Faker
 from ..helpers import ApiResponse
 
 
-class SerializableUser(User):
+class AR_SerializableUser(User):
     '''Proxy User model with __serialize__ method.
 
     A native Django model was needed, since declaring temporary models in Django tests is tricky.
@@ -30,14 +30,14 @@ class ApiResponseTestCase(TestCase):
         fake = Faker('el_GR')
         names = [(fake.user_name(), fake.first_name(), fake.last_name()) for _ in range(40)]
 
-        users = [SerializableUser(username=u, first_name=f, last_name=l) for u, f, l in names]
+        users = [AR_SerializableUser(username=u, first_name=f, last_name=l) for u, f, l in names]
         # Create in a single query
-        SerializableUser.objects.bulk_create(users)
+        AR_SerializableUser.objects.bulk_create(users)
 
     def test_single_instance_serialization(self):
         '''Check if serialization of a single user works correctly'''
         # Get one user
-        user = SerializableUser.objects.all()[0]
+        user = AR_SerializableUser.objects.all()[0]
         response = ApiResponse(user)
 
         self.assertEqual(response.status_code, 200)
@@ -45,7 +45,7 @@ class ApiResponseTestCase(TestCase):
 
     def test_complex_data_serialization(self):
         '''Use mixed data with normal Python objects and Django models'''
-        users = SerializableUser.objects.all()[:20]
+        users = AR_SerializableUser.objects.all()[:20]
         data = OrderedDict(
             start=0,
             count=20,
