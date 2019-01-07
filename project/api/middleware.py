@@ -26,29 +26,30 @@ def ObservatoryContentTypeMiddleware(get_response):
     return middleware
 
 
-def ParsePostParametersMiddleware(get_response):
+def ParseUrlEncodedParametersMiddleware(get_response):
     '''
-    Django by default does not parse POST parameters for requests with
+    Django by default does not parse request parameters with
         Content-Type: application/x-www-form-urlencoded
     This may be a problem, because some tools (e.g. `curl -X POST`) use this format
 
     As a solution, this middleware adds a new field to the request, `request.data`
-    that correctly parses all POST parameters. `request.POST` remains unaffected
-
-    REVIEW: should we just update the actual request.POST, instead of adding a new field?
+    that correctly parses the urlencoded request parameters into a QueryDict
     '''
     def middleware(request):
 
         # only for "Content-Type: x-www-form-urlencoded"
-        if request.META['CONTENT_TYPE'] == 'application/x-www-form-urlencoded':
-            # FIXME: this needs to be looked at
+        content_type = request.META.get('CONTENT_TYPE', 'unknown')
+        if content_type == 'application/x-www-form-urlencoded':
             request.data = QueryDict(request.body, mutable=False)
+
+        # for compatibility, let django try its best
         elif request.method == 'POST':
             request.data = request.POST
+
+        # for compatibility, let django try its best
         elif request.method == 'GET':
             request.data = request.GET
 
         return get_response(request)
 
     return middleware
-
