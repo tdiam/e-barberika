@@ -1,41 +1,53 @@
-from django.test import TestCase, RequestFactory
-from django.http import JsonResponse
+from unittest import skipIf
 
-from project.api.middleware import ParseUrlEncodedParametersMiddleware
+from django.test import TestCase
+from django.http import HttpResponse
+from django.conf import settings
 
-from .helpers import Request
+from ..middleware import ParseUrlEncodedParametersMiddleware
+from .helpers import ApiRequestFactory
 
-# A test view
+
 def test_view(request):
-    return JsonResponse(request.data)
+    '''A test view.'''
+    return HttpResponse(status=204)
 
 class ParseUrlEncodedParametersMiddlewareTestCase(TestCase):
     '''
     This is the test suite for the urlencoded parameters parser middleware.
     '''
     def setUp(self):
-        self.factory = RequestFactory()
+        self.factory = ApiRequestFactory()
         self.middleware = ParseUrlEncodedParametersMiddleware(test_view)
+        self.url = settings.API_ROOT
 
-    # Check `request.data` contains url encoded parameters
+    @skipIf(settings.API_ROOT == '/', 'API_ROOT is "/", so all URLs are affected')
+    def test_nonapi_url(self):
+        '''Check if URLs not in API path do not contain `data` attribute.'''
+        request = self.factory.post('/', {'key': 'value'})
+        self.middleware(request)
+
+        self.assertFalse(hasattr(request, 'data'))
+
     def test_form_parameters_are_accepted(self):
-        for i, method in enumerate(['get', 'post', 'put', 'patch', 'delete']):
-            self.subTest(i)
+        '''Check `request.data` contains url encoded parameters'''
+        for method in ['get', 'post', 'put', 'patch', 'delete']:
+            with self.subTest(msg=f'method {method}'):
+                forge = getattr(self.factory, method)
+                request = forge(self.url, {'key': 'value'})
+                self.middleware(request)
 
-            request = Request(method, '/', {'key': 'value'}, factory=self.factory)
-            self.middleware(request)
+                # test that `request.data` contains values
+                self.assertEqual(request.data.get('key'), 'value')
 
-            # test that `request.data` contains values
-            self.assertEqual(request.data.get('key'), 'value')
-
-    # Check `request.data` parses list
     def test_form_parameters_list_are_accepted(self):
-        for i, method in enumerate(['get', 'post', 'put', 'patch', 'delete']):
-            self.subTest(i)
+        '''Check `request.data` parses list'''
+        for method in ['get', 'post', 'put', 'patch', 'delete']:
+            with self.subTest(msg=f'method {method}'):
+                forge = getattr(self.factory, method)
+                request = forge(self.url, {'key': 'value', 'list': ['a', 'b']})
+                self.middleware(request)
 
-            request = Request(method, '/', 'key=value&list=a&list=b', factory=self.factory)
-            self.middleware(request)
-
-            # test that `request.data` contains values
-            self.assertEqual(request.data.get('key'), 'value')
-            self.assertEqual(request.data.getlist('list'), ['a', 'b'])
+                # test that `request.data` contains values
+                self.assertEqual(request.data.get('key'), 'value')
+                self.assertCountEqual(request.data.getlist('list'), ['a', 'b'])

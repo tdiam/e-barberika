@@ -1,2 +1,0 @@
-from .test_contenttype_middleware import ObservatoryContentTypeMiddlewareTestCase
-from .test_parseurlencodedparameters_middleware import ParseUrlEncodedParametersMiddleware

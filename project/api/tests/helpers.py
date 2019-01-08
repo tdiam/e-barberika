@@ -1,42 +1,52 @@
-# helpers.py
-
 from django.test import RequestFactory
-from django.http import QueryDict
+from django.utils.http import urlencode
 
-def Request(method: str, path: str, parameters, factory=None):
+
+API_CONTENT_TYPE = 'application/x-www-form-urlencoded'
+
+class ApiRequestFactory(RequestFactory):
     '''
-    Create a new request with url encoded parameters.
-    If no request factory is given, a default is created.
+    RequestFactory for our API.
 
-    Returns `request` object.
-
-    `parameters` can be either a dictionary or a urlencoded string.
-
-    NOTE: {'list': ['a','b']} does not work, use urlencoded string for arrays
+    This is a subclass of RequestFactory that uses application/x-www-form-urlencoded
+    as the default content type for GET, POST, PATCH, PUT and DELETE, and encodes
+    data as URL encoded parameters.
     '''
-    method = method.lower()
+    def generic(self, method, path, data='',
+                content_type=API_CONTENT_TYPE, secure=False, **kwargs):
+        '''Generic handler of all request methods.'''
+        # Convert dictionary to URL encoded string
+        if content_type == API_CONTENT_TYPE and isinstance(data, dict):
+            # Set doseq=True, otherwise {'a': ['b', 'c']} would be
+            # converted to "a=['b',+'c']" instead of "a=b&a=c".
+            data = urlencode(data, doseq=True)
+        return super().generic(method, path, data, **kwargs)
 
-    if method not in ['get', 'post', 'patch', 'put', 'delete']:
-        raise ValueError("invalid HTTP method")
+    def get(self, path, data=None, secure=False, **kwargs):
+        '''Construct a GET request.
 
-    if factory is None:
-        factory = RequestFactory()
+        GET requests don't use the body anyway, so just call the get
+        method of the superclass and only change the content type.
+        '''
+        kwargs.setdefault('content_type', API_CONTENT_TYPE)
+        return super().get(path, data, secure, **kwargs)
 
-    # 'Post' ==> factory.post
-    forge = getattr(factory, method.lower())
-    request = forge(path)
+    def post(self, path, data=None, content_type=API_CONTENT_TYPE,
+             secure=False, **kwargs):
+        '''Construct a POST request.'''
+        return self.generic('POST', path, data, content_type, secure=secure, **kwargs)
 
-    # url encode parameters and add to request body
-    if isinstance(parameters, dict):
-        qdict = QueryDict('', mutable=True)
-        qdict.update(parameters)
-        request._body = qdict.urlencode()
-    elif isinstance(parameters, str):
-        request._body = parameters
-    else:
-        raise ValueError('invalid parameters')
+    def patch(self, path, data='', content_type=API_CONTENT_TYPE,
+              secure=False, **kwargs):
+        '''Construct a PATCH request.'''
+        return self.generic('PATCH', path, data, content_type, secure=secure, **kwargs)
 
-    # set content type, request factory does not always set it
-    request.META['CONTENT_TYPE'] = 'application/x-www-form-urlencoded'
+    def put(self, path, data='', content_type=API_CONTENT_TYPE,
+            secure=False, **kwargs):
+        '''Construct a PUT request.'''
+        return self.generic('PUT', path, data, content_type, secure=secure, **kwargs)
 
-    return request
+    def delete(self, path, data='', content_type=API_CONTENT_TYPE,
+               secure=False, **kwargs):
+        '''Construct a DELETE request.'''
+        return self.generic('DELETE', path, data, content_type, secure=secure, **kwargs)
