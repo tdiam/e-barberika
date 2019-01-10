@@ -79,6 +79,7 @@ class ShopsGetTestCase(TestCase):
             {'sort': 'id|DESK'},
             {'sort': 'name'},
             {'sort': 'address|ASC'},
+            {'sort': 'id|DESC|ASC|DESC'},
         ]
 
         for i, bad_params in enumerate(bad_param_sets):
@@ -95,21 +96,21 @@ class ShopsGetTestCase(TestCase):
         Shop.objects.filter(id__in=ten_shops).update(withdrawn=True)
 
         # When status is ACTIVE (default)
-        with self.subTest(i=1):
+        with self.subTest(msg='ACTIVE status'):
             req = self.factory.get(self.url)
             res = self.view(req)
             data = json.loads(res.content)
             self.assertEqual(data['total'], 40)
 
         # When status is ALL
-        with self.subTest(i=2):
+        with self.subTest(msg='ALL status'):
             req = self.factory.get(self.url, {'status': 'ALL'})
             res = self.view(req)
             data = json.loads(res.content)
             self.assertEqual(data['total'], 50)
 
         # When status is WITHDRAWN
-        with self.subTest(i=3):
+        with self.subTest(msg='WITHDRAWN status'):
             req = self.factory.get(self.url, {'status': 'WITHDRAWN'})
             res = self.view(req)
             data = json.loads(res.content)
