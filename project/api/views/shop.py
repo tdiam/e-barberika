@@ -80,17 +80,17 @@ class ShopsView(View):
         shops = shops[start : start+count]
 
         data = {
-            "start": start,
-            "count": count,
-            "total": num_of_shops,
-            "shops": shops
+            'start': start,
+            'count': count,
+            'total': num_of_shops,
+            'shops': shops
         }
 
         return ApiResponse(data)
 
     def post(self, request):
         '''Creates new shop.
-        
+
         Parameters:
          - `name`: Name of the shop.
          - `address`: Address of the shop.
@@ -128,4 +128,4 @@ class ShopsView(View):
 
         tag_objs = [ShopTag(tag=tag) for tag in tags]
         shop.tags.set(tag_objs)
-        return ApiResponse(shop, status=204)
+        return ApiResponse(shop, status=201)

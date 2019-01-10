@@ -133,11 +133,11 @@ class ShopsPostTestCase(TestCase):
         )
 
     def test_create_with_good_data(self):
-        '''Check with normal data to see if 204 is returned and the entry is created'''
+        '''Check with normal data to see if 201 is returned and the entry is created'''
         req = self.factory.post(self.url, self.data)
         res = self.view(req)
 
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(res.status_code, 201)
         self.assertTrue(Shop.objects.filter(name=self.data['name']).exists())
 
     def test_create_with_bad_data(self):
