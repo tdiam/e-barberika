@@ -6,6 +6,9 @@ class ProductTag(models.Model):
 
     def __str__(self):
         return self.tag
+    
+    def __serialize__(self):
+        return self.tag
 
 
 class BaseProductManager(models.Manager):
@@ -45,3 +48,13 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __serialize__(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'category': self.category,
+            'tags': self.tags.all(),
+            'withdrawn': self.withdrawn,
+        }
