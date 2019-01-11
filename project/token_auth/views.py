@@ -17,8 +17,8 @@ class LoginView(View):
     Users log in with their credentials: username and password.
     '''
     def post(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         if username is None or password is None:
             return HttpResponseBadRequest('Τα πεδία username και password είναι υποχρεωτικά')
@@ -63,8 +63,8 @@ class RegisterView(View):
     Registers a new user. Does not generate token
     '''
     def post(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         if username is None or password is None:
             return JsonMessageUtf8('Τα πεδία username και password είναι υποχρεωτικά', status=400)
