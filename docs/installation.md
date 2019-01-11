@@ -10,6 +10,7 @@
    ```
    $ sudo apt-get update
    $ sudo apt-get install git postgresql postgresql-contrib postgis python3 python3-pip
+   $ sudo apt-get install apache2 apache2-dev libapache2-mod-wsgi
    $ pip3 install virtualenv   # οχι sudo
    ```
 
