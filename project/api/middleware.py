@@ -7,10 +7,10 @@ def ObservatoryContentTypeMiddleware(get_response):
 
     The default (and only supported) format is 'json', all others return 400 Bad Request.
     '''
-    def middleware(request):
+    def middleware(request, *args, **kwargs):
         # only affect API calls to the observatory
         if not request.path.startswith(settings.API_ROOT):
-            return get_response(request)
+            return get_response(request, *args, **kwargs)
 
         format_param = request.GET.get('format', 'json')
 
@@ -21,7 +21,7 @@ def ObservatoryContentTypeMiddleware(get_response):
         # request.GET['format'] = format_param
         request.content_type = format_param
 
-        return get_response(request)
+        return get_response(request, *args, **kwargs)
 
     return middleware
 
@@ -38,10 +38,10 @@ def ParseUrlEncodedParametersMiddleware(get_response):
     QueryDict docs:
     https://docs.djangoproject.com/en/2.1/ref/request-response/#django.http.QueryDict
     '''
-    def middleware(request):
+    def middleware(request, *args, **kwargs):
         # only affect API calls to the observatory
         if not request.path.startswith(settings.API_ROOT):
-            return get_response(request)
+            return get_response(request, *args, **kwargs)
 
         request.data = QueryDict(request.body, mutable=True)
 
@@ -49,6 +49,6 @@ def ParseUrlEncodedParametersMiddleware(get_response):
         if request.method == 'GET':
             request.data.update(request.GET)
 
-        return get_response(request)
+        return get_response(request, *args, **kwargs)
 
     return middleware
