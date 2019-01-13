@@ -27,10 +27,10 @@ class ShopsView(View):
         ALLOWED_SORT_FIELDS = ['id', 'name']
         ALLOWED_SORT_TYPES = ['ASC', 'DESC']
 
-        start = request.GET.get('start', 0)
-        count = request.GET.get('count', 20)
-        status = request.GET.get('status', 'ACTIVE')
-        sort = request.GET.get('sort', 'id|DESC')
+        start = request.data.get('start', 0)
+        count = request.data.get('count', 20)
+        status = request.data.get('status', 'ACTIVE')
+        sort = request.data.get('sort', 'id|DESC')
 
         # Check `start` parameter
         try:
@@ -98,11 +98,11 @@ class ShopsView(View):
          - `lat`: Latitude.
          - `tags`: List of strings that will be applied as tags to the shop (default []).
         '''
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        lng = request.POST.get('lng')
-        lat = request.POST.get('lat')
-        tags = request.POST.getlist('tags')
+        name = request.data.get('name')
+        address = request.data.get('address')
+        lng = request.data.get('lng')
+        lat = request.data.get('lat')
+        tags = request.data.getlist('tags')
 
         try:
             lng = float(lng)

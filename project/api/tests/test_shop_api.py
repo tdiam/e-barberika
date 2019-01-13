@@ -1,11 +1,13 @@
 import copy
 import json
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.gis.geos import Point
 from faker import Faker
 
+from .helpers import ApiRequestFactory
+from ..middleware import ParseUrlEncodedParametersMiddleware as ApiMiddleware
 from ..models import Shop
 from ..views import ShopsView
 
@@ -15,8 +17,8 @@ class ShopsGetTestCase(TestCase):
     def setUp(self):
         # Get URL for /shops
         self.url = reverse('shops')
-        self.factory = RequestFactory()
-        self.view = ShopsView.as_view()
+        self.factory = ApiRequestFactory()
+        self.view = ApiMiddleware(ShopsView.as_view())
 
         fake = Faker('el_GR')
         shops = []
@@ -122,8 +124,8 @@ class ShopsPostTestCase(TestCase):
     def setUp(self):
         # Get URL for /shops
         self.url = reverse('shops')
-        self.factory = RequestFactory()
-        self.view = ShopsView.as_view()
+        self.factory = ApiRequestFactory()
+        self.view = ApiMiddleware(ShopsView.as_view())
 
         fake = Faker('el_GR')
         self.data = dict(
