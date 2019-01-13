@@ -1,8 +1,9 @@
+from functools import wraps
 import inspect
 import json
 
 from django.db import models
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 class FlexibleJsonEncoder(json.JSONEncoder):
@@ -99,3 +100,24 @@ def ApiMessage(msg, **kwargs):
     kwargs.setdefault('json_dumps_params', {})
     kwargs['json_dumps_params']['ensure_ascii'] = False
     return JsonResponse({'message': msg}, **kwargs)
+
+
+def volunteer_required(function=None):
+    '''
+    Decorator for views that checks that the user is a volunteer,
+    i.e. can create or update entries in the observatory.
+    '''
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if request.user.is_authenticated and (
+                    request.user.is_staff or
+                    request.user.groups.filter(name='Volunteer').exists()
+                ):
+                return view_func(request, *args, **kwargs)
+            return HttpResponse('Unauthorized', status=401)
+        return _wrapped_view
+
+    if function:
+        return decorator(function)
+    return decorator
