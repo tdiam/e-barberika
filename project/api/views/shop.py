@@ -129,3 +129,14 @@ class ShopsView(View):
         tag_objs = [ShopTag(tag=tag) for tag in tags]
         shop.tags.set(tag_objs)
         return ApiResponse(shop, status=201)
+
+
+class ShopView(View):
+    def get(self, request, pk=None):
+        '''Returns the shop with the given id (pk). Error 404 if not found.'''
+        try:
+            shop = Shop.objects.get(pk=pk)
+        except Shop.DoesNotExist:
+            return ApiMessage(f'Το κατάστημα με αναγνωριστικό {pk} δεν βρέθηκε.', status=404)
+        else:
+            return ApiResponse(shop)

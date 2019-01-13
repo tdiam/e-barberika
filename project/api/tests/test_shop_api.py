@@ -9,7 +9,7 @@ from faker import Faker
 from .helpers import ApiRequestFactory
 from ..middleware import ParseUrlEncodedParametersMiddleware as ApiMiddleware
 from ..models import Shop
-from ..views import ShopsView
+from ..views import ShopsView, ShopView
 
 
 class ShopsGetTestCase(TestCase):
@@ -177,3 +177,29 @@ class ShopsPostTestCase(TestCase):
                 req = self.factory.post(self.url, data)
                 res = self.view(req)
                 self.assertEqual(res.status_code, 400)
+
+
+class ShopItemTestCase(TestCase):
+    def setUp(self):
+        self.factory = ApiRequestFactory()
+        self.view = ApiMiddleware(ShopView.as_view())
+
+        # Create a dummy shop
+        fake = Faker('el_GR')
+        lng = float(fake.longitude())
+        lat = float(fake.latitude())
+        self.shop = Shop(
+            name=fake.first_name(),
+            address=fake.address(),
+            coordinates=Point(lng, lat)
+        )
+        self.shop.save()
+        self.url = reverse('shop-item', args=[self.shop.id])
+
+    def test_get_works(self):
+        '''Check if GET /shops/<id> works'''
+        req = self.factory.get(self.url)
+        res = self.view(req, pk=self.shop.id)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, self.shop.name)
