@@ -1,6 +1,7 @@
 import copy
 import json
 
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.gis.geos import Point
@@ -8,8 +9,22 @@ from faker import Faker
 
 from .helpers import ApiRequestFactory
 from ..middleware import ParseUrlEncodedParametersMiddleware as ApiMiddleware
-from ..models import Shop
+from ..models import Shop, ShopTag
 from ..views import ShopsView, ShopView
+
+
+# Helper functions
+def _set(d, key, val):
+    '''Copies d and sets d[key] to val'''
+    res = copy.deepcopy(d)
+    res[key] = val
+    return res
+
+def _del(d, key):
+    '''Copies d and removes d[key]'''
+    res = copy.deepcopy(d)
+    res.pop(key, None)
+    return res
 
 
 class ShopsGetTestCase(TestCase):
@@ -29,7 +44,7 @@ class ShopsGetTestCase(TestCase):
             shops.append(Shop(
                 name=fake.first_name(),
                 address=fake.address(),
-                coordinates=Point(lng, lat)
+                coordinates=Point(lng, lat),
             ))
 
         Shop.objects.bulk_create(shops)
@@ -133,6 +148,7 @@ class ShopsPostTestCase(TestCase):
             address=fake.address(),
             lng=float(fake.longitude()),
             lat=float(fake.latitude()),
+            tags=fake.bs().split(),
         )
 
     def test_create_with_good_data(self):
@@ -142,34 +158,23 @@ class ShopsPostTestCase(TestCase):
 
         self.assertEqual(res.status_code, 201)
         self.assertTrue(Shop.objects.filter(name=self.data['name']).exists())
+        for tag in self.data['tags']:
+            self.assertTrue(ShopTag.objects.filter(shop__name=self.data['name'], tag=tag).exists())
 
     def test_create_with_bad_data(self):
         '''Try omitting or setting bad values for each field to see if 400 Bad Request is returned'''
-        # Helper functions
-        def _set(key, val):
-            '''Copies self.data and sets d[key] to val'''
-            res = copy.deepcopy(self.data)
-            res[key] = val
-            return res
-
-        def _del(key):
-            '''Copies self.data and removes d[key]'''
-            res = copy.deepcopy(self.data)
-            res.pop(key, None)
-            return res
-
         datasets = [
-            _del('name'),
-            _set('name', ''),
-            _del('address'),
-            _set('address', ''),
-            _del('lng'),
-            _set('lng', '181.0'),
-            _set('lng', 'abcdef'),
-            _set('lng', ''),
-            _set('lat', '-92.48'),
-            _set('lat', 'xyz'),
-            _set('lat', ''),
+            _del(self.data, 'name'),
+            _set(self.data, 'name', ''),
+            _del(self.data, 'address'),
+            _set(self.data, 'address', ''),
+            _del(self.data, 'lng'),
+            _set(self.data, 'lng', '181.0'),
+            _set(self.data, 'lng', 'abcdef'),
+            _set(self.data, 'lng', ''),
+            _set(self.data, 'lat', '-92.48'),
+            _set(self.data, 'lat', 'xyz'),
+            _set(self.data, 'lat', ''),
         ]
 
         for i, data in enumerate(datasets):
@@ -181,25 +186,147 @@ class ShopsPostTestCase(TestCase):
 
 class ShopItemTestCase(TestCase):
     def setUp(self):
+        # Only so that middleware is applied
+        # Not necessary to reflect exact resource path
+        self.url = settings.API_ROOT
         self.factory = ApiRequestFactory()
         self.view = ApiMiddleware(ShopView.as_view())
 
-        # Create a dummy shop
         fake = Faker('el_GR')
         lng = float(fake.longitude())
         lat = float(fake.latitude())
         self.shop = Shop(
             name=fake.first_name(),
             address=fake.address(),
-            coordinates=Point(lng, lat)
+            coordinates=Point(lng, lat),
         )
         self.shop.save()
-        self.url = reverse('shop-item', args=[self.shop.id])
+        tag_objs = [ShopTag(tag=t) for t in fake.bs().split()]
+        for t in tag_objs:
+            t.save()
 
-    def test_get_works(self):
-        '''Check if GET /shops/<id> works'''
+        self.shop.tags.set(tag_objs)
+
+        self.new_data = dict(
+            name=fake.first_name(),
+            address=fake.address(),
+            lng=float(fake.longitude()),
+            lat=float(fake.latitude()),
+            tags=fake.bs().split(),
+        )
+
+    def test_get_finds_existing_shop(self):
+        '''Check if GET /shops/<id> returns the created shop'''
         req = self.factory.get(self.url)
         res = self.view(req, pk=self.shop.id)
 
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, self.shop.name)
+
+    def test_get_returns_404_for_nonexisting(self):
+        '''Check if GET returns 404 when given nonexisting ids'''
+        ids = [-1, self.shop.id + 1, 'nonexisting-id', '']
+
+        for id_ in ids:
+            with self.subTest(msg=f'id={id_}'):
+                req = self.factory.get(self.url)
+                res = self.view(req, pk=id_)
+
+                self.assertEqual(res.status_code, 404)
+
+    def test_put_replaces_existing_shop(self):
+        '''Check if PUT /shops/<id> replaces existing shop'''
+        req = self.factory.put(self.url, self.new_data)
+        res = self.view(req, pk=self.shop.id)
+
+        self.shop.refresh_from_db()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.shop.name, self.new_data['name'])
+        for t in self.new_data['tags']:
+            self.assertTrue(ShopTag.objects.filter(shop__id=self.shop.id, tag=t).exists())
+
+    def test_put_without_tags_clears_them(self):
+        '''Check if passing no tags to PUT clears them for this shop'''
+        data = _del(self.new_data, 'tags')
+        req = self.factory.put(self.url, data)
+        res = self.view(req, pk=self.shop.id)
+
+        self.shop.refresh_from_db()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.shop.tags.count(), 0)
+
+    def test_put_fails_on_invalid_data(self):
+        '''Check if PUT returns 400 when given incomplete or invalid data'''
+        datasets = [
+            _del(self.new_data, 'name'),
+            _set(self.new_data, 'name', ''),
+            _del(self.new_data, 'address'),
+            _set(self.new_data, 'address', ''),
+            _del(self.new_data, 'lng'),
+            _set(self.new_data, 'lng', '451'),
+            _set(self.new_data, 'lng', 'invalid'),
+            _set(self.new_data, 'lng', ''),
+            _set(self.new_data, 'lat', '-110.4'),
+            _set(self.new_data, 'lat', 'zzzzz'),
+            _set(self.new_data, 'lat', ''),
+        ]
+
+        for i, data in enumerate(datasets):
+            with self.subTest(i=i):
+                req = self.factory.put(self.url, data)
+                res = self.view(req, pk=self.shop.id)
+                self.assertEqual(res.status_code, 400)
+
+    def test_patch_edits_existing_shop(self):
+        '''Check if PATCH updates information of existing shop'''
+        datasets = [
+            {'name': self.new_data['name']},
+            {'address': self.new_data['address']},
+            {'lng': self.new_data['lng']},
+            _del(self.new_data, 'name'),
+            _del(self.new_data, 'address'),
+            _del(self.new_data, 'lng'),
+        ]
+
+        for i, data in enumerate(datasets):
+            with self.subTest(i=i):
+                req = self.factory.patch(self.url, data)
+                res = self.view(req, pk=self.shop.id)
+
+                self.assertEqual(res.status_code, 200)
+                # Get updated information from database
+                self.shop.refresh_from_db()
+
+                # Check if all fields have been updated successfully
+                for field, val in data.items():
+                    if field == 'tags':
+                        stored_tags = list(self.shop.tags.values_list('tag', flat=True))
+                        self.assertCountEqual(stored_tags, val)
+                    else:
+                        if field == 'lng':
+                            stored_val = self.shop.coordinates.x
+                        elif field == 'lat':
+                            stored_val = self.shop.coordinates.y
+                        else:
+                            stored_val = getattr(self.shop, field)
+                        self.assertEqual(stored_val, val)
+
+    def test_patch_fails_with_bad_data(self):
+        '''Check if PATCH returns 400 when given invalid data'''
+        datasets = [
+            {'name': ''},
+            {'address': ''},
+            {'lng': '451'},
+            {'lng': 'invalid'},
+            {'lng': ''},
+            {'lat': '-110.4'},
+            {'lat': ''},
+        ]
+
+        for i, data in enumerate(datasets):
+            with self.subTest(i=i):
+                req = self.factory.patch(self.url, data)
+                res = self.view(req, pk=self.shop.id)
+                self.assertEqual(res.status_code, 400)

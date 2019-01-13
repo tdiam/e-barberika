@@ -8,6 +8,7 @@ from ..models import Shop, ShopTag
 
 
 class ShopsView(View):
+    '''Endpoint for collection requests /shops/'''
     def get(self, request):
         '''Returns a list of the shops in the observatory.
 
@@ -127,16 +128,119 @@ class ShopsView(View):
             return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
 
         tag_objs = [ShopTag(tag=tag) for tag in tags]
+        for t in tag_objs:
+            t.save()
+
         shop.tags.set(tag_objs)
         return ApiResponse(shop, status=201)
 
 
 class ShopView(View):
+    '''Endpoint for item requests /shops/<id>/'''
     def get(self, request, pk=None):
         '''Returns the shop with the given id (pk). Error 404 if not found.'''
         try:
             shop = Shop.objects.get(pk=pk)
-        except Shop.DoesNotExist:
+        # ValueError will be raised when pk cannot be converted to integer
+        except (Shop.DoesNotExist, ValueError):
             return ApiMessage(f'Το κατάστημα με αναγνωριστικό {pk} δεν βρέθηκε.', status=404)
         else:
             return ApiResponse(shop)
+
+    def put(self, request, pk=None):
+        '''Replaces existing shop.
+
+        Parameters: Same as in POST /shops.
+        '''
+
+        try:
+            shop = Shop.objects.get(pk=pk)
+        except (Shop.DoesNotExist, ValueError):
+            return ApiMessage(f'Το κατάστημα με αναγνωριστικό {pk} δεν βρέθηκε.', status=404)
+
+        name = request.data.get('name')
+        address = request.data.get('address')
+        lng = request.data.get('lng')
+        lat = request.data.get('lat')
+        tags = request.data.getlist('tags')
+
+        try:
+            lng = float(lng)
+            lat = float(lat)
+        # TypeError will occur if argument is not number or string (eg None)
+        # ValueError will occur if argument cannot be parsed into a float
+        except (TypeError, ValueError):
+            return ApiMessage('Τα πεδία συντεταγμένων πρέπει να είναι έγκυροι δεκαδικοί αριθμοί', status=400)
+
+        shop.name = name
+        shop.address = address
+        shop.coordinates = Point(lng, lat)
+        try:
+            # save() does not call the validators
+            # so we need to call full_clean() explicitly
+            # https://docs.djangoproject.com/en/2.1/ref/models/instances/#django.db.models.Model.full_clean
+            shop.full_clean()
+            shop.save()
+        except (ValidationError, IntegrityError):
+            return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
+
+        tag_objs = [ShopTag(tag=tag) for tag in tags]
+        for t in tag_objs:
+            t.save()
+
+        shop.tags.set(tag_objs)
+        return ApiResponse(shop)
+
+    def patch(self, request, pk=None):
+        '''Edits some fields of an existing shop.
+
+        Parameters: Same as in POST /shops.
+        '''
+
+        try:
+            shop = Shop.objects.get(pk=pk)
+        except (Shop.DoesNotExist, ValueError):
+            return ApiMessage(f'Το κατάστημα με αναγνωριστικό {pk} δεν βρέθηκε.', status=404)
+
+        name = request.data.get('name')
+        address = request.data.get('address')
+        lng = request.data.get('lng')
+        lat = request.data.get('lat')
+        tags = request.data.getlist('tags')
+
+        if name is not None:
+            shop.name = name
+
+        if address is not None:
+            shop.address = address
+
+        if lng is not None:
+            try:
+                lng = float(lng)
+            except ValueError:
+                return ApiMessage('Τα πεδία συντεταγμένων πρέπει να είναι έγκυροι δεκαδικοί αριθμοί', status=400)
+            else:
+                shop.coordinates = Point(lng, shop.coordinates.y)
+
+        if lat is not None:
+            try:
+                lat = float(lat)
+            except ValueError:
+                return ApiMessage('Τα πεδία συντεταγμένων πρέπει να είναι έγκυροι δεκαδικοί αριθμοί', status=400)
+            else:
+                shop.coordinates = Point(shop.coordinates.x, lat)
+
+        if tags:
+            tag_objs = [ShopTag(tag=tag) for tag in tags]
+            for t in tag_objs:
+                t.save()
+
+            shop.tags.set(tag_objs)
+
+        try:
+            shop.full_clean()
+            shop.save()
+        except (ValidationError, IntegrityError):
+            return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
+
+        return ApiResponse(shop)
