@@ -1,15 +1,18 @@
 import json
 
-from django.test import TestCase, RequestFactory
+from django.conf import settings
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from project.token_auth.models import Token
-from project.token_auth.views import LoginView
+from ..middleware import ParseUrlEncodedParametersMiddleware as ApiMiddleware
+from ..views import LoginView
+from .helpers import ApiRequestFactory
 
 
 User = get_user_model()
 
-class ObtainTokenViewTestCase(TestCase):
+class LoginViewTestCase(TestCase):
     '''Checks the functionality of the LoginView'''
 
     def setUp(self):
@@ -18,13 +21,15 @@ class ObtainTokenViewTestCase(TestCase):
         self.password = 'johndoe'
         self.user = User.objects.create_user(self.username, password=self.password)
 
-        self.factory = RequestFactory()
-        self.view = LoginView.as_view()
+        self.factory = ApiRequestFactory()
+        self.view = ApiMiddleware(LoginView.as_view())
+        # Use API_ROOT as url in requests so that middleware is applied
+        self.url = settings.API_ROOT
 
     def test_can_obtain_token(self):
         '''User can login, parse token and token is same as in database'''
 
-        request = self.factory.post('/', {
+        request = self.factory.post(self.url, {
             'username': self.username,
             'password': self.password
         })
@@ -45,7 +50,7 @@ class ObtainTokenViewTestCase(TestCase):
     def test_fail_for_invalid_user(self):
         '''Checks that view returns 401-Unauthorized if fake credentials are given'''
 
-        request = self.factory.post('/', {
+        request = self.factory.post(self.url, {
             'username': 'fakeuser',
             'password': 'fakeuser'
         })
@@ -60,7 +65,7 @@ class ObtainTokenViewTestCase(TestCase):
         may expire between the two requests.
         '''
 
-        request = self.factory.post('/', {
+        request = self.factory.post(self.url, {
             'username': self.username,
             'password': self.password
         })

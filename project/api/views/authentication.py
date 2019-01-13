@@ -1,15 +1,10 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 
-from .models import Token
+from project.token_auth.models import Token
+from ..helpers import ApiMessage
 
-
-def JsonMessageUtf8(msg, **kwargs):
-    '''Returns JSON response {'message': msg} while not escaping UTF-8'''
-    kwargs.setdefault('json_dumps_params', {})
-    kwargs['json_dumps_params']['ensure_ascii'] = False
-    return JsonResponse({'message': msg}, **kwargs)
 
 class LoginView(View):
     '''Endpoint for users to obtain their API tokens.
@@ -21,7 +16,7 @@ class LoginView(View):
         password = request.data.get('password')
 
         if username is None or password is None:
-            return HttpResponseBadRequest('Τα πεδία username και password είναι υποχρεωτικά')
+            return ApiMessage('Τα πεδία username και password είναι υποχρεωτικά', status=400)
 
         user = authenticate(request, username=username, password=password)
 
@@ -55,7 +50,7 @@ class LogoutView(View):
         # remove tokens associated with this user
         Token.objects.filter(user=request.user).delete()
 
-        return JsonMessageUtf8('OK')
+        return ApiMessage('OK')
 
 
 class RegisterView(View):
@@ -67,12 +62,12 @@ class RegisterView(View):
         password = request.data.get('password')
 
         if username is None or password is None:
-            return JsonMessageUtf8('Τα πεδία username και password είναι υποχρεωτικά', status=400)
+            return ApiMessage('Τα πεδία username και password είναι υποχρεωτικά', status=400)
 
         User = get_user_model()
         if User.objects.filter(username=username).exists():
-            return JsonMessageUtf8(f'Το username {username} χρησιμοποιείται ήδη', status=400)
+            return ApiMessage(f'Το username {username} χρησιμοποιείται ήδη', status=400)
 
         User.objects.create_user(username=username, password=password)
 
-        return JsonMessageUtf8('OK')
+        return ApiMessage('OK', status=201)
