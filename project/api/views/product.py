@@ -24,10 +24,10 @@ class ProductsView(View):
         ALLOWED_SORT_FIELDS = ['id', 'name']
         ALLOWED_SORT_TYPES = ['ASC', 'DESC']
 
-        start = request.GET.get('start', 0)
-        count = request.GET.get('count', 20)
-        status = request.GET.get('status', 'ACTIVE')
-        sort = request.GET.get('sort', 'id|DESC')
+        start = request.data.get('start', 0)
+        count = request.data.get('count', 20)
+        status = request.data.get('status', 'ACTIVE')
+        sort = request.data.get('sort', 'id|DESC')
 
         # Check `start` parameter
         try:
@@ -87,10 +87,10 @@ class ProductsView(View):
 
     def post(self, request):
     
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        category = request.POST.get('category')
-        tags = request.POST.getlist('tags')
+        name = request.data.get('name')
+        description = request.data.get('description')
+        category = request.data.get('category')
+        tags = request.data.getlist('tags')
 
         product = Product(
             name=name,
@@ -103,10 +103,96 @@ class ProductsView(View):
             # https://docs.djangoproject.com/en/2.1/ref/models/instances/#django.db.models.Model.full_clean
             product.full_clean()
             product.save()
-        except (ValidationError, IntegrityError) as e:
-            print(e)
+        except (ValidationError, IntegrityError):
             return ApiMessage('Data format is invalid', status=400)
 
         tag_objs = [ProductTag(tag=tag) for tag in tags]
+        for t in tag_objs:
+            t.save()
         product.tags.set(tag_objs)
         return ApiResponse(product, status=201)
+
+class ProductView(View):
+    def get(self, request, pk=None):
+        '''Returns the product with the given id (pk). Error 404 if not found.'''
+        try:
+            product = Product.objects.get(pk=pk)
+        # ValueError will be raised when pk cannot be converted to integer
+        except (Product.DoesNotExist, ValueError):
+            return ApiMessage(f'Product with id {pk} not found.', status=404)
+        else:
+            return ApiResponse(product)
+
+    def put(self, request, pk=None):
+        '''Replaces existing product.
+        Parameters: Same as in POST /products.
+        '''
+
+        try:
+            product = Product.objects.get(pk=pk)
+        except (Product.DoesNotExist, ValueError):
+            return ApiMessage(f'Product with id {pk} not found.', status=404)
+
+        name = request.data.get('name')
+        description = request.data.get('description')
+        category = request.data.get('category')
+        tags = request.data.getlist('tags')
+
+
+        product.name = name
+        product.description = description
+        product.category = category
+        try:
+            # save() does not call the validators
+            # so we need to call full_clean() explicitly
+            # https://docs.djangoproject.com/en/2.1/ref/models/instances/#django.db.models.Model.full_clean
+            product.full_clean()
+            product.save()
+        except (ValidationError, IntegrityError):
+            return ApiMessage('Data format is invalid', status=400)
+
+        tag_objs = [ProductTag(tag=tag) for tag in tags]
+        for t in tag_objs:
+            t.save()
+
+        product.tags.set(tag_objs)
+        return ApiResponse(product)
+
+    def patch(self, request, pk=None):
+        '''Edits some fields of an existing product.
+        Parameters: Same as in POST /products.
+        '''
+
+        try:
+            product = Product.objects.get(pk=pk)
+        except (Product.DoesNotExist, ValueError):
+            return ApiMessage(f'Product with id {pk} not found.', status=404)
+
+        name = request.data.get('name')
+        description = request.data.get('description')
+        category = request.data.get('category')
+        tags = request.data.getlist('tags')
+
+        if name is not None:
+            product.name = name
+
+        if description is not None:
+            product.description = description
+
+        if category is not None:
+            product.category = category
+
+        if tags:
+            tag_objs = [ProductTag(tag=tag) for tag in tags]
+            for t in tag_objs:
+                t.save()
+
+            product.tags.set(tag_objs)
+
+        try:
+            product.full_clean()
+            product.save()
+        except (ValidationError, IntegrityError):
+            return ApiMessage('Data format is invalid', status=400)
+
+        return ApiResponse(product)

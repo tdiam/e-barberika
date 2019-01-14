@@ -4,7 +4,6 @@ from django.conf import settings
 
 def ObservatoryContentTypeMiddleware(get_response):
     '''Middleware to globally handle 'format' query parameter
-
     The default (and only supported) format is 'json', all others return 400 Bad Request.
     '''
     def middleware(request, *args, **kwargs):
@@ -29,12 +28,10 @@ def ObservatoryContentTypeMiddleware(get_response):
 def ParseUrlEncodedParametersMiddleware(get_response):
     '''
     Parses request parameters in API calls and stores them in `request.data`.
-
     Django by default only parses request parameters when submitted via a form.
     Since our application works through API calls, we need this middleware that
     adds a new field to the request, `request.data` and correctly parses into it
     the urlencoded request parameters in the form of a QueryDict.
-
     QueryDict docs:
     https://docs.djangoproject.com/en/2.1/ref/request-response/#django.http.QueryDict
     '''
