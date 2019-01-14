@@ -72,7 +72,7 @@ class RegisterView(View):
         user = User.objects.create_user(username=username, password=password)
 
         # Add user to Volunteer group
-        Group.objects.get_or_create(name='Volunteer')
-        user.groups.add(Group.objects.filter(name='Volunteer').get())
+        group, _ = Group.objects.get_or_create(name='Volunteer')
+        user.groups.add(group)
 
         return ApiMessage('OK', status=201)
