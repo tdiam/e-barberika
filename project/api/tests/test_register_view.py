@@ -50,8 +50,8 @@ class TokenAuthRegisterViewTestCase(TestCase):
         response = self.view(request)
         self.assertEqual(response.status_code, 400)
 
-    def test_can_register_user(self):
-        '''Registration with new username should succeed'''
+    def test_can_register_user_and_add_to_volunteers(self):
+        '''Registration with new username should succeed and add them to volunteers'''
         request = self.factory.post(self.url, {
             'username': 'mattmurdock',
             'password': 'definitely blind'
@@ -60,4 +60,8 @@ class TokenAuthRegisterViewTestCase(TestCase):
         response = self.view(request)
 
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(User.objects.filter(username='mattmurdock').exists())
+
+        user = User.objects.filter(username='mattmurdock')
+        self.assertTrue(user.exists())
+        user = user.get()
+        self.assertTrue(user.groups.filter(name='Volunteer').exists())
