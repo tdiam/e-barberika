@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import Point
 
-from ..models import Shop_tmp, Product_tmp, Price
+from project.api.models import Shop, Product, Price
 
 
 class PriceTestCase(TestCase):
@@ -10,13 +11,14 @@ class PriceTestCase(TestCase):
     def setUp(self):
         User = get_user_model()
 
-        shop = Shop_tmp()
+        shop = Shop(name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
         shop.save()
 
-        product = Product_tmp()
+        product = Product(name='Αντρικιο', description='Γυναικειο', category='κουρεμα')
         product.save()
 
-        user = User()
+        userinfo = dict(username='johndoe', password='johndoe')
+        user = User(**userinfo)
         user.save()
 
         self.entry = Price(shop=shop, product=product, user=user, price=10.0)
