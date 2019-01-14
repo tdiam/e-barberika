@@ -35,7 +35,7 @@ class ProductsView(View):
             if start < 0:
                 raise ValueError
         except ValueError:
-            return ApiMessage('Το `start` πρέπει να είναι θετικός ακέραιος', status=400)
+            return ApiMessage('The `start` must be a positive integer', status=400)
 
         # Check `count` parameter
         try:
@@ -43,11 +43,11 @@ class ProductsView(View):
             if count < 0:
                 raise ValueError
         except ValueError:
-            return ApiMessage('Το `count` πρέπει να είναι θετικός ακέραιος', status=400)
+            return ApiMessage('The `count` must be a positive integer', status=400)
 
         # Check `status` parameter
         if status not in ALLOWED_STATUS_TYPES:
-            return ApiMessage(f'Μη έγκυρο status καταστημάτων "{status}"', status=400)
+            return ApiMessage(f'Invalid product status "{status}"', status=400)
 
         # Check `sort` parameter
         try:
@@ -55,7 +55,7 @@ class ProductsView(View):
             if sort_field not in ALLOWED_SORT_FIELDS or sort_type not in ALLOWED_SORT_TYPES:
                 raise ValueError
         except ValueError:
-            return ApiMessage(f'Μη έγκυρο κριτήριο ταξινόμησης "{sort}"', status=400)
+            return ApiMessage(f'Invalid sorting criterion "{sort}"', status=400)
         else:
             # Process `sort`
             if sort_type == 'ASC':
@@ -103,8 +103,9 @@ class ProductsView(View):
             # https://docs.djangoproject.com/en/2.1/ref/models/instances/#django.db.models.Model.full_clean
             product.full_clean()
             product.save()
-        except (ValidationError, IntegrityError):
-            return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
+        except (ValidationError, IntegrityError) as e:
+            print(e)
+            return ApiMessage('Data format is invalid', status=400)
 
         tag_objs = [ProductTag(tag=tag) for tag in tags]
         product.tags.set(tag_objs)
