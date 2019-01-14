@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from .models import Token
 
@@ -20,7 +21,7 @@ class TokenAuthBackend:
         try:
             t = Token.objects.get(key=token)
             return t.user
-        except Token.DoesNotExist:
+        except (Token.DoesNotExist, ValidationError):
             return None
 
     def get_user(self, user_id):

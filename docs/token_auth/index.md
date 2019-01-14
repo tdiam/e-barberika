@@ -15,28 +15,12 @@
    POST / HTTP/1.1
    Host: localhost
    ...
-   X-TOKEN-AUTH: Token xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   X-TOKEN-AUTH: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
    ...
    ```
 * Το Token Auth έχει ορίσει ένα [middleware](https://docs.djangoproject.com/en/2.1/topics/http/middleware/) που όταν εντοπίζει το header `X-TOKEN-AUTH`, προσπαθεί να κάνει πιστοποίηση μέσω του token. Αυτή η πιστοποίηση έχει υλοποιηθεί από το Token Auth ως [custom backend](https://docs.djangoproject.com/en/2.1/topics/auth/customizing/).
 
 ## Χρήση
-
-### Endpoint σύνδεσης
-Το `LoginView` του Token Auth υλοποιεί τη διαδικασία δημιουργίας token μέσω της σύνδεσης χρήστη με username, password. Για να το χρησιμοποιήσετε στο project, αρκεί να το αναθέσετε σε κάποιο URL της επιλογής σας.
-
-Παράδειγμα:
-```python
-# project/api/urls.py
-
-from django.urls import path
-
-from project.token_auth.views import LoginView
-
-urlpatterns = [
-    path('login/', LoginView.as_view())
-]
-```
 
 ### Για περιορισμό πρόσβασης σε views
 Όλοι οι [τρόποι περιορισμού πρόσβασης](https://docs.djangoproject.com/en/2.1/topics/auth/default/#limiting-access-to-logged-in-users) που προσφέρει από προεπιλογή το Django εξακολουθούν να ισχύουν.
@@ -56,8 +40,7 @@ class AddTodo(LoginRequiredMixin, View):
 ```
 
 ### Για τους χρήστες του API
-Το μόνο που χρειάζεται είναι να ληφθεί το token και μετά να χρησιμοποιηθεί σε επόμενα αιτήματα.
-Η τιμή του header πρέπει να είναι της μορφής `Token {token}`.
+Το μόνο που χρειάζεται είναι να ληφθεί το token και μετά να χρησιμοποιηθεί σε επόμενα αιτήματα μέσω του header `X-TOKEN-AUTH`.
 
 Παράδειγμα:
 ```python
@@ -73,7 +56,7 @@ token = r.json()['token']
 # Use token for a random request
 payload = {'name': 'Walk the dog'}
 headers = {
-    'X-TOKEN-AUTH': 'Token {}'.format(token)
+    'X-TOKEN-AUTH': token
 }
 
 # Add a todo item

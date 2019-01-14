@@ -19,9 +19,13 @@ class TokenAuthBackendTestCase(TestCase):
         check = authenticate(token=self.token.key)
         self.assertEqual(self.user.username, check.username)
 
+    def test_invalidtoken_cant_login(self):
+        '''Checks if authentication with invalid token fails'''
+        check = authenticate(token='not-a-valid-token')
+        self.assertIsNone(check)
+
     def test_faketoken_cant_login(self):
         '''Checks if authentication with fake token fails'''
-
         faketoken = Token.fake.get()
 
         check = authenticate(token=faketoken)

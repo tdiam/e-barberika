@@ -19,16 +19,15 @@ class TokenAuthMiddleware:
             return self.get_response(request, *args, **kwargs)
 
         # The auth header must have the following form:
-        #   `X-TOKEN-AUTH: Token xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-        # i.e. the keyword `Token` followed by the token UUID
-        auth_header = request.META.get(app_settings.TOKEN_AUTH_HEADER, '').split()
+        #   `X-TOKEN-AUTH: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+        token = request.META.get(app_settings.TOKEN_AUTH_HEADER, '')
 
-        # If user passed no token header or an invalid token header, ignore
-        if not auth_header or auth_header[0].lower() != 'token':
+        # If user passed no token header
+        if not token:
             return self.get_response(request, *args, **kwargs)
 
-        # If token header is valid, get token and try to authenticate
-        user = authenticate(token=auth_header[1])
+        # Otherwise, try to authenticate
+        user = authenticate(token=token)
         if user:
             # If successful, store user instance in request
             request.user = user
