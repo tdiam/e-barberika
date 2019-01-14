@@ -5,6 +5,8 @@ from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.gis.geos import Point
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from faker import Faker
 
 from .helpers import ApiRequestFactory
@@ -12,6 +14,8 @@ from ..middleware import ParseUrlEncodedParametersMiddleware as ApiMiddleware
 from ..models import Shop, ShopTag
 from ..views import ShopsView, ShopView
 
+
+User = get_user_model()
 
 # Helper functions
 def _set(d, key, val):
@@ -142,6 +146,10 @@ class ShopsPostTestCase(TestCase):
         self.factory = ApiRequestFactory()
         self.view = ApiMiddleware(ShopsView.as_view())
 
+        # Create volunteer
+        self.volunteer = User.objects.create_user(username='volunteer', password='volunteer')
+        self.volunteer.groups.create(name='Volunteer')
+
         fake = Faker('el_GR')
         self.data = dict(
             name=fake.first_name(),
@@ -151,9 +159,18 @@ class ShopsPostTestCase(TestCase):
             tags=fake.bs().split(),
         )
 
+    def test_access_level(self):
+        '''Check if POST is only accessible to volunteer users'''
+        req = self.factory.post(self.url, self.data)
+        req.user = AnonymousUser()
+        res = self.view(req)
+
+        self.assertEqual(res.status_code, 401)
+
     def test_create_with_good_data(self):
         '''Check with normal data to see if 201 is returned and the entry is created'''
         req = self.factory.post(self.url, self.data)
+        req.user = self.volunteer
         res = self.view(req)
 
         self.assertEqual(res.status_code, 201)
@@ -180,6 +197,7 @@ class ShopsPostTestCase(TestCase):
         for i, data in enumerate(datasets):
             with self.subTest(i=i):
                 req = self.factory.post(self.url, data)
+                req.user = self.volunteer
                 res = self.view(req)
                 self.assertEqual(res.status_code, 400)
 
@@ -191,6 +209,13 @@ class ShopItemTestCase(TestCase):
         self.url = settings.API_ROOT
         self.factory = ApiRequestFactory()
         self.view = ApiMiddleware(ShopView.as_view())
+
+        # Create volunteer
+        self.volunteer = User.objects.create_user(username='volunteer', password='volunteer')
+        self.volunteer.groups.create(name='Volunteer')
+
+        # Create admin
+        self.admin = User.objects.create_user(username='admin', password='admin', is_staff=True)
 
         fake = Faker('el_GR')
         lng = float(fake.longitude())
@@ -215,6 +240,17 @@ class ShopItemTestCase(TestCase):
             tags=fake.bs().split(),
         )
 
+    def test_access_level(self):
+        '''Check if view protects volunteer-only methods'''
+        methods = ['put', 'patch', 'delete']
+
+        for method in methods:
+            forge = getattr(self.factory, method)
+            req = forge(self.url)
+            req.user = AnonymousUser()
+            res = self.view(req, pk=self.shop.id)
+            self.assertEqual(res.status_code, 401)
+
     def test_get_finds_existing_shop(self):
         '''Check if GET /shops/<id> returns the created shop'''
         req = self.factory.get(self.url)
@@ -237,6 +273,7 @@ class ShopItemTestCase(TestCase):
     def test_put_replaces_existing_shop(self):
         '''Check if PUT /shops/<id> replaces existing shop'''
         req = self.factory.put(self.url, self.new_data)
+        req.user = self.volunteer
         res = self.view(req, pk=self.shop.id)
 
         self.shop.refresh_from_db()
@@ -250,6 +287,7 @@ class ShopItemTestCase(TestCase):
         '''Check if passing no tags to PUT clears them for this shop'''
         data = _del(self.new_data, 'tags')
         req = self.factory.put(self.url, data)
+        req.user = self.volunteer
         res = self.view(req, pk=self.shop.id)
 
         self.shop.refresh_from_db()
@@ -276,6 +314,7 @@ class ShopItemTestCase(TestCase):
         for i, data in enumerate(datasets):
             with self.subTest(i=i):
                 req = self.factory.put(self.url, data)
+                req.user = self.volunteer
                 res = self.view(req, pk=self.shop.id)
                 self.assertEqual(res.status_code, 400)
 
@@ -293,6 +332,7 @@ class ShopItemTestCase(TestCase):
         for i, data in enumerate(datasets):
             with self.subTest(i=i):
                 req = self.factory.patch(self.url, data)
+                req.user = self.volunteer
                 res = self.view(req, pk=self.shop.id)
 
                 self.assertEqual(res.status_code, 200)
@@ -328,5 +368,37 @@ class ShopItemTestCase(TestCase):
         for i, data in enumerate(datasets):
             with self.subTest(i=i):
                 req = self.factory.patch(self.url, data)
+                req.user = self.volunteer
                 res = self.view(req, pk=self.shop.id)
                 self.assertEqual(res.status_code, 400)
+
+    def test_delete_returns_404_for_wrong_id(self):
+        '''Check if DELETE returns 404 when given a wrong shop ID'''
+        req = self.factory.delete(self.url)
+        req.user = self.volunteer
+
+        for shop_id in [-1, self.shop.id + 1, 'invalid-id']:
+            res = self.view(req, pk=shop_id)
+            self.assertEqual(res.status_code, 404)
+
+    def test_delete_withdraws_when_user_is_volunteer(self):
+        '''Check if DELETE withdraws the shop when user is a volunteer'''
+        req = self.factory.delete(self.url)
+        req.user = self.volunteer
+        res = self.view(req, pk=self.shop.id)
+
+        # Get updated information from database
+        self.shop.refresh_from_db()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(self.shop.withdrawn)
+
+    def test_delete_removes_shop_when_user_is_admin(self):
+        '''Check if DELETE removes the shop from db when user is an admin'''
+        req = self.factory.delete(self.url)
+        req.user = self.admin
+        res = self.view(req, pk=self.shop.id)
+
+        self.assertEqual(res.status_code, 200)
+        with self.assertRaises(Shop.DoesNotExist):
+            self.shop.refresh_from_db()

@@ -2,8 +2,9 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.views import View
 from django.contrib.gis.geos import Point
+from django.utils.decorators import method_decorator
 
-from ..helpers import ApiMessage, ApiResponse
+from ..helpers import ApiMessage, ApiResponse, volunteer_required, is_admin
 from ..models import Shop, ShopTag
 
 
@@ -89,6 +90,7 @@ class ShopsView(View):
 
         return ApiResponse(data)
 
+    @method_decorator(volunteer_required)
     def post(self, request):
         '''Creates new shop.
 
@@ -147,6 +149,7 @@ class ShopView(View):
         else:
             return ApiResponse(shop)
 
+    @method_decorator(volunteer_required)
     def put(self, request, pk=None):
         '''Replaces existing shop.
 
@@ -191,6 +194,7 @@ class ShopView(View):
         shop.tags.set(tag_objs)
         return ApiResponse(shop)
 
+    @method_decorator(volunteer_required)
     def patch(self, request, pk=None):
         '''Edits some fields of an existing shop.
 
@@ -244,3 +248,19 @@ class ShopView(View):
             return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
 
         return ApiResponse(shop)
+
+    @method_decorator(volunteer_required)
+    def delete(self, request, pk=None):
+        '''Removes an existing shop.'''
+        try:
+            shop = Shop.objects.get(pk=pk)
+        except (Shop.DoesNotExist, ValueError):
+            return ApiMessage(f'Το κατάστημα με αναγνωριστικό {pk} δεν βρέθηκε.', status=404)
+
+        if is_admin(request):
+            shop.delete()
+        else:
+            shop.withdrawn = True
+            shop.save()
+
+        return ApiMessage('OK')
