@@ -2,6 +2,8 @@ from datetime import datetime
 
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.views import View
+from django.db.models import Q
+
 
 from django.conf import settings
 
@@ -10,19 +12,17 @@ from django.contrib.gis.geos import Point
 
 from project.api.models import Price, Product, Shop
 
+from project.api.helpers import ApiResponse, ApiMessage
+
 
 #################################################################
-## helper functions
+## helpers
 
 ALLOWED_SORT_FIELDS = ['geoDist', 'price', 'date']
 ALLOWED_SORT_TYPE = ['ASC', 'DESC']
 
-def JSON_RESPONSE(data, status=200):
-    return JsonResponse(data, json_dumps_params={'ensure_ascii': False}, status=status)
-
-
-def JSON_RESPONSE_400(msg):
-    return JSON_RESPONSE({'status': msg}, status=400)
+def ApiMessage400(x):
+    return ApiMessage(x, status=400)
 
 #################################################################
 
@@ -81,20 +81,20 @@ class PricesView(View):
             if start < 0:
                 raise ValueError()
         except ValueError:
-            return JSON_RESPONSE_400('Το `start` πρεπει να ειναι θετικος ακεραιος')
+            return ApiMessage400('Το `start` πρεπει να ειναι θετικος ακεραιος')
 
         # count
         try:
             count = int(count)
-            if count < 0:
+            if count <= 0:
                 raise ValueError()
         except ValueError:
-            return JSON_RESPONSE_400('Το `count` πρεπει να ειναι θετικος ακεραιος')
+            return ApiMessage400('Το `count` πρεπει να ειναι θετικος ακεραιος')
 
         # geolocation checks
         if (geo_dist or geo_lat or geo_lng) is not None:
             if  (geo_dist and geo_lat and geo_lng) is None:
-                return JSON_RESPONSE_400('Tα `geoDist`, `geoLng` και `geoLat` πρεπει να οριζονται μαζι')
+                return ApiMessage400('Tα `geoDist`, `geoLng` και `geoLat` πρεπει να οριζονται μαζι')
 
             # distance
             try:
@@ -102,7 +102,7 @@ class PricesView(View):
                 if geo_dist < 0:
                     raise ValueError()
             except ValueError:
-                return JSON_RESPONSE_400('Το `geo_dist` πρεπει να ειναι θετικος ακεραιος')
+                return ApiMessage400('Το `geo_dist` πρεπει να ειναι θετικος ακεραιος')
 
             # latitude
             try:
@@ -110,7 +110,7 @@ class PricesView(View):
                 if not (-90 <= geo_lat <= 90):
                     raise ValueError()
             except ValueError:
-                return JSON_RESPONSE_400('Το `geo_lat` δεν ειναι εγκυρο')
+                return ApiMessage400('Το `geo_lat` δεν ειναι εγκυρο')
 
             # lοngitude
             try:
@@ -118,8 +118,9 @@ class PricesView(View):
                 if not (-180 <= geo_lng <= 180):
                     raise ValueError()
             except ValueError:
-                return JSON_RESPONSE_400('Το `geo_lng` δεν ειναι εγκυρο')
+                return ApiMessage400('Το `geo_lng` δεν ειναι εγκυρο')
 
+            geo_point = Point(geo_lng, geo_lat, srid=4326)
             geo_filter = True
 
         # date checks
@@ -128,40 +129,40 @@ class PricesView(View):
             date_to = date_from
         else:
             if (date_from and date_to) is None:
-                return JSON_RESPONSE_400('Τα `dateFrom` και `dateTo` πρεπει να οριζονται μαζι')
+                return ApiMessage400('Τα `dateFrom` και `dateTo` πρεπει να οριζονται μαζι')
 
             try:
                 date_from = Price.parse_date(date_from)
                 date_to = Price.parse_date(date_to)
 
                 if not Price.check_dates(date_from, date_to):
-                    return JSON_RESPONSE_400('Το `dateFrom` πρεπει να ειναι παλαιοτερο του `dateTo`')
+                    return ApiMessage400('Το `dateFrom` πρεπει να ειναι παλαιοτερο του `dateTo`')
             except ValueError:
-                return JSON_RESPONSE_400('Οι ημερομηνίες πρέπει να είναι EEEE-MM-HH')
+                return ApiMessage400('Οι ημερομηνίες πρέπει να είναι EEEE-MM-HH')
 
         # shop ids checks
-        if shops is not None:
+        if shops:
             try:
                 shops = list({int(x) for x in shops})                   # keep unique
                 shop_ids_filter = True
             except ValueError:
-                return JSON_RESPONSE_400('To `shops` πρεπει να ειναι λιστα ακεραιων')
+                return ApiMessage400('To `shops` πρεπει να ειναι λιστα ακεραιων')
 
         # product ids checks
-        if products is not None:
+        if products:
             try:
                 products = list({int(x) for x in products})             # keep unique
                 product_ids_filter = True
             except ValueError:
-                return JSON_RESPONSE_400('To `products` πρεπει να ειναι λιστα ακεραιων')
+                return ApiMessage400('To `products` πρεπει να ειναι λιστα ακεραιων')
 
         # tags checks
-        if tags is not None:
+        if tags:
             try:
                 tags = list({str(x) for x in tags})                     # keep unique
                 tags_filter = True
             except ValueError:
-                return JSON_RESPONSE_400('To `tags` πρεπει να ειναι λιστα απο tags')
+                return ApiMessage400('To `tags` πρεπει να ειναι λιστα απο tags')
 
         ########################################################################
         ## querying
@@ -169,37 +170,31 @@ class PricesView(View):
         prices = Price.objects.all()
 
         if shop_ids_filter:
-            prices = prices.filter(shop__pk__in=shops)
+            prices = prices.filter(shop__id__in=shops)
 
         if product_ids_filter:
-            prices = prices.filter(product__pk__in=products)
+            prices = prices.filter(product__id__in=products)
 
         if tags_filter:
             shops_with_tags = Shop.objects.with_tags(tags)
             products_with_tags = Product.objects.with_tags(tags)
 
-            prices_with_shop_tags = prices.filter(shop__in=shops_with_tags)
-            prices_with_product_tags = prices.filter(product__in=products_with_tags)
-
-            prices = prices_with_shop_tags.union(prices_with_product_tags)
+            # this could be a model method :)
+            prices = prices.filter(
+                Q(shop__in=shops_with_tags)
+                | Q(product__in=products_with_tags))
 
         if date_filter:
-            # set1: prices that end between [dateFrom, dateTo]
-            # set2: prices that start between [dateFrom, dateTo]
-            # set3: prices that contain [dateFrom, dateTo]
-
-            prices_set1 = prices.filter(date_to__gte=date_from, date_to__lte=date_to)
-            prices_set2 = prices.filter(date_from__gte=date_from, date_from__lte=date_to)
-            prices_set3 = prices.filter(date_from__lte=date_from, date_to__gte=date_to)
-
-            prices = prices_set1.union(prices_set2, prices_set3)
+            # this could be a model method :)
+            prices = prices.filter(
+                Q(date_to__gte=date_from, date_to__lte=date_to)
+                | Q(date_from__gte=date_from, date_from__lte=date_to)
+                | Q(date_from__lte=date_from, date_to__gte=date_to))
 
         if geo_filter:
             shops_within_distance = Shop.objects.within_distance_from(geo_lat, geo_lng, km=geo_dist)
-
             prices = prices.filter(shop__in=shops_within_distance)
-            prices = prices.annotate(geoDist=Distance('shop__coordinates', Point(geo_lng, geo_lat, srid=4326)))
-
+            prices = prices.annotate(geoDist=Distance('shop__coordinates', geo_point))
 
         ########################################################################
         ## sorting
@@ -213,11 +208,13 @@ class PricesView(View):
                 sort_field, sort_type = x.split('|')
 
                 if sort_field not in ALLOWED_SORT_FIELDS:
-                    return JSON_RESPONSE_400(f'Αγνωστο κριτηριο ταξινομησης {sort_field}')
+                    return ApiMessage400(f'Αγνωστο κριτηριο ταξινομησης {sort_field}')
                 elif sort_field in sort_fields:
-                    return JSON_RESPONSE_400(f'Το κριτηριο ταξινομησης {sort_field} εμφανιζεται πανω απο μια φορες')
+                    return ApiMessage400(f'Το κριτηριο ταξινομησης {sort_field} εμφανιζεται πανω απο μια φορες')
                 elif sort_type not in ALLOWED_SORT_TYPE:
-                    return JSON_RESPONSE_400(f'Μη εγκυρος τροπος ταξινομησης {sort_field}|{sort_type}')
+                    return ApiMessage400(f'Μη εγκυρος τροπος ταξινομησης {sort_field}|{sort_type}')
+                elif sort_type == 'geoDist' and not geo_filter:
+                    return ApiMessage400(f'Μη εγκυρος τροπος ταξινομησης {sort_field}|{sort_type}, δεν εχει δοθει σημειο αναφορας')
 
                 sort_fields.append(sort_field)
 
@@ -228,7 +225,7 @@ class PricesView(View):
 
                 order_by_args.append(sort_field)
             except ValueError:
-                JSON_RESPONSE_400(f'Μη εγκυρο κριτηριο ταξινομησης {x}')
+                ApiMessage400(f'Μη εγκυρο κριτηριο ταξινομησης {x}')
 
         # do the actual sorting
         prices = prices.order_by(*order_by_args)
@@ -246,7 +243,7 @@ class PricesView(View):
             prices = prices[start:]
         else:
             prices = Price.objects.none()
-
+            
         ########################################################################
         ## bake json
         ########################################################################
@@ -258,17 +255,17 @@ class PricesView(View):
         for price in prices:
             shop_distance = None
             if geo_filter:
-                shop_distance = Distance(Point(geo_lng, geo_lat), price.shop.coordinates)
+                shop_distance = price.geoDist.km
 
             result['prices'].append(dict(
-                price=price.price,
-                date=price.dateFrom.strftime('%Y-%m-%d'),
+                price=float(price.price),
+                date=price.date_from.strftime('%Y-%m-%d'),
                 productName=price.product.name,
-                productId=price.product.id,                             # FIXME: when it comes
-                productTags=[str(x) for x in price.product.tags.all()], # FIXME?
+                productId=price.product.id,
+                productTags=[str(x) for x in price.product.tags.all()],
                 shopId=price.shop.id,
                 shopName=price.shop.name,
-                shopTags=[str(x) for x in price.shop.tags.all()],       # FIXME?
+                shopTags=[str(x) for x in price.shop.tags.all()],
                 shopAddress=price.shop.address,
                 shopDist=shop_distance
             ))
@@ -276,18 +273,16 @@ class PricesView(View):
         ########################################################################
         ## its over, its done
         ########################################################################
-        return JSON_RESPONSE(result)
+        return ApiResponse(result)
 
 
     # POST /observatory/api/prices/
     def post(self, request):
         # not authenticated == anonymous.
-        # FIXME: explicitly check that user is a volunteer/admin?
         if not hasattr(request, 'user') or not request.user.is_authenticated:
             return HttpResponseForbidden()
 
         try:
-            # TODO: how do we handle NULL `date_to` field? `3000-12-12` seems like a good workaround
             args = dict(
                 shop=Shop.objects.get(pk=int(request.POST.get('shopId'))),
                 product=Product.objects.get(pk=int(request.POST.get('productId'))),
@@ -299,14 +294,14 @@ class PricesView(View):
 
             # try creating new price
             if not Price.add_price(**args):
-                return HttpResponseBadRequest()
+                return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         except Exception as e:
             # if settings.DEBUG:
             # print(e.__class__.__name__, e)
 
             # FIXME: what if something happened on our end?
-            return HttpResponseBadRequest()
+            return ApiMessage400('Δόθηκαν μη έγκυρες παράμετροι')
 
         # all ok
         # return 201, resource created

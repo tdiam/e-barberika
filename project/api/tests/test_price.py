@@ -11,17 +11,17 @@ class PriceTestCase(TestCase):
     def setUp(self):
         User = get_user_model()
 
-        shop = Shop(name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
-        shop.save()
+        self.shop = Shop(name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
+        self.shop.save()
 
-        product = Product(name='Αντρικιο', description='Γυναικειο', category='κουρεμα')
-        product.save()
+        self.product = Product(name='Αντρικιο', description='Γυναικειο', category='κουρεμα')
+        self.product.save()
 
         userinfo = dict(username='johndoe', password='johndoe')
-        user = User(**userinfo)
-        user.save()
+        self.user = User(**userinfo)
+        self.user.save()
 
-        self.entry = Price(shop=shop, product=product, user=user, price=10.0)
+        self.entry = Price(shop=self.shop, product=self.product, user=self.user, price=10.0)
 
     def test_can_add_price(self):
         ''' check if adding price works '''
@@ -29,3 +29,9 @@ class PriceTestCase(TestCase):
         self.entry.save()
 
         self.assertEqual(Price.objects.count(), prev_count + 1)
+
+    def test_can_use_add_price(self):
+        res = Price.add_price(shop=self.shop, product=self.product, user=self.user, date_to=Price.parse_date('2018-10-10'), date_from=Price.parse_date('2018-09-09'), price=10.0)
+
+        self.assertTrue(res)
+        self.assertEqual(Price.objects.count(), 1)
