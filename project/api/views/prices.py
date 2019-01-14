@@ -1,14 +1,12 @@
 from datetime import datetime
 
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse
 from django.views import View
 from django.db.models import Q
 
-
-from django.conf import settings
-
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
+from django.utils.decorators import method_decorator
 
 from project.api.models import Price, Product, Shop
 
@@ -277,11 +275,8 @@ class PricesView(View):
 
 
     # POST /observatory/api/prices/
+    @method_decorator(volunteer_required)
     def post(self, request):
-        # not authenticated == anonymous.
-        if not hasattr(request, 'user') or not request.user.is_authenticated:
-            return HttpResponseForbidden()
-
         try:
             args = dict(
                 shop=Shop.objects.get(pk=int(request.POST.get('shopId'))),

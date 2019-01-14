@@ -5,7 +5,7 @@ from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 
-from project.api.models import Product, Shop, Price
+from project.api.models import Product, Shop, Price, ProductTag, ShopTag
 from project.api.views import PricesView
 
 class PricePostTestCase(TestCase):
@@ -55,6 +55,12 @@ class PricePostTestCase(TestCase):
         resp = self.view(request)
         # print(resp.content.decode())
         return resp
+
+    def test_without_user(self):
+        request = self.factory.post('/', {})
+        resp = self.view(request)
+
+        self.assertEqual(resp.status_code, 403)
 
     def test_post_prices(self):
         ''' check if POST /observatory/api/prices/ works '''
@@ -134,22 +140,44 @@ class PriceGetTestCase(TestCase):
         self.factory = RequestFactory()
         self.view = PricesView.as_view()
 
+        # create two shops
         self.shop = Shop(id=10, name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
         self.shop_away = Shop(id=11, name='χεξadaktylos', address='Devils horn', coordinates=Point(10, 10))
         self.shop.save()
         self.shop_away.save()
 
+        # add a few tags
+        shoptag = ShopTag('shoptag')
+        shoptag.save()
+        self.shop.tags.add(shoptag)
+        self.shop.save()
+        commontag_shop = ShopTag('commontag')
+        commontag_shop.save()
+        self.shop_away.tags.add(commontag_shop)
+        self.shop_away.save()
+
+        # create two products
         self.product = Product(id=20, name='Αντρικιο', description='Γυναικειο', category='κουρεμα')
         self.product.save()
-
-
         self.product_2 = Product(id=21, name='λαδι μαλλιων', description='αντρικο', category='αναλωσιμο')
         self.product_2.save()
 
+        # add tags
+        producttag = ProductTag('producttag')
+        producttag.save()
+        self.product_2.tags.add(producttag)
+        self.product_2.save()
+        commontag_prod = ProductTag('commontag')
+        commontag_prod.save()
+        self.product.tags.add(commontag_prod)
+        self.product.save()
+
+        # create a user
         userinfo = dict(username='johndoe', password='johndoe')
         self.user = User(**userinfo)
         self.user.save()
 
+        # add a few prices
         price_1 = Price(shop=self.shop, product=self.product, user=self.user,
                         date_from=Price.parse_date('2018-10-15'),
                         date_to=Price.parse_date('2018-10-20'),
@@ -393,3 +421,54 @@ class PriceGetTestCase(TestCase):
                 self.assertLessEqual(p['shopDist'], distance)
 
 
+    def test_checking_tags_works(self):
+
+        # check with tag of product
+        self.subTest(0)
+        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=producttag')
+        j = json.loads(res.content.decode())
+
+        # assert all returned prices have that product/shop tag
+        shop_ids = []
+        product_ids = []
+        for p in j['prices']:
+            shop_ids.append(p['shopId'])
+            product_ids.append(p['productId'])
+            self.assertIn('producttag', p['shopTags'] + p['productTags'])
+
+        # also that all products and shops with those tags are in the results
+        self.assertEqual(j['total'], 1)
+        self.assertIn(21, product_ids)
+
+        # check with tag of shop
+        self.subTest(1)
+        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=shoptag')
+        j = json.loads(res.content.decode())
+
+        shop_ids = []
+        product_ids = []
+        for p in j['prices']:
+            shop_ids.append(p['shopId'])
+            product_ids.append(p['productId'])
+            self.assertIn('shoptag', p['shopTags'] + p['productTags'])
+
+        # also that all products and shops with those tags are in the results
+        self.assertEqual(j['total'], 2)
+        self.assertIn(10, shop_ids)
+
+        # check with shared tag
+        self.subTest(2)
+        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=commontag')
+        j = json.loads(res.content.decode())
+
+        shop_ids = []
+        product_ids = []
+        for p in j['prices']:
+            shop_ids.append(p['shopId'])
+            product_ids.append(p['productId'])
+            self.assertIn('commontag', p['shopTags'] + p['productTags'])
+
+        # also that all products and shops with those tags are in the results
+        self.assertEqual(j['total'], 2)
+        self.assertIn(10, shop_ids)
+        self.assertIn(20, product_ids)
