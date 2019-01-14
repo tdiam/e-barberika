@@ -70,7 +70,9 @@ class RegisterView(View):
             return ApiMessage(f'Το username {username} χρησιμοποιείται ήδη', status=400)
 
         user = User.objects.create_user(username=username, password=password)
+
         # Add user to Volunteer group
-        user.groups.add(Group.objects.filter(name='Volunteer'))
+        Group.objects.get_or_create(name='Volunteer')
+        user.groups.add(Group.objects.filter(name='Volunteer').get())
 
         return ApiMessage('OK', status=201)

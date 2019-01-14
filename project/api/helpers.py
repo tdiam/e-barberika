@@ -104,7 +104,7 @@ def ApiMessage(msg, **kwargs):
 
 def is_volunteer(request):
     '''Checks if the logged in user has Volunteer permissions'''
-    return request.user.is_authenticated and (
+    return hasattr(request, 'user') and request.user.is_authenticated and (
         request.user.is_staff or
         request.user.groups.filter(name='Volunteer').exists()
     )
@@ -128,7 +128,7 @@ def volunteer_required(function=None):
 
 def is_admin(request):
     '''Checks if the logged in user has Admin permissions'''
-    return request.user.is_authenticated and request.user.is_staff
+    return hasattr(request, 'user') and request.user.is_authenticated and request.user.is_staff
 
 def admin_required(function=None):
     '''
