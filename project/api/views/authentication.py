@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.models import Group
 from django.http import JsonResponse, HttpResponse
 from django.views import View
 
@@ -68,6 +69,8 @@ class RegisterView(View):
         if User.objects.filter(username=username).exists():
             return ApiMessage(f'Το username {username} χρησιμοποιείται ήδη', status=400)
 
-        User.objects.create_user(username=username, password=password)
+        user = User.objects.create_user(username=username, password=password)
+        # Add user to Volunteer group
+        user.groups.add(Group.objects.filter(name='Volunteer'))
 
         return ApiMessage('OK', status=201)

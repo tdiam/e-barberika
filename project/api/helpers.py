@@ -1,8 +1,9 @@
+from functools import wraps
 import inspect
 import json
 
 from django.db import models
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 class FlexibleJsonEncoder(json.JSONEncoder):
@@ -99,3 +100,51 @@ def ApiMessage(msg, **kwargs):
     kwargs.setdefault('json_dumps_params', {})
     kwargs['json_dumps_params']['ensure_ascii'] = False
     return JsonResponse({'message': msg}, **kwargs)
+
+
+def is_volunteer(request):
+    '''Checks if the logged in user has Volunteer permissions'''
+    return request.user.is_authenticated and (
+        request.user.is_staff or
+        request.user.groups.filter(name='Volunteer').exists()
+    )
+
+def volunteer_required(function=None):
+    '''
+    Decorator for views that checks that the user is a volunteer,
+    i.e. can create or update entries in the observatory.
+    '''
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if is_volunteer(request):
+                return view_func(request, *args, **kwargs)
+            return HttpResponse('Unauthorized', status=401)
+        return _wrapped_view
+
+    if function:
+        return decorator(function)
+    return decorator
+
+def is_admin(request):
+    '''Checks if the logged in user has Admin permissions'''
+    return request.user.is_authenticated and request.user.is_staff
+
+def admin_required(function=None):
+    '''
+    Decorator for views that checks that the user is a staff member,
+    i.e. can login to the administration interface and is thus able
+    to create, update or delete resources.
+    '''
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if is_admin(request):
+                return view_func(request, *args, **kwargs)
+            return HttpResponse('Unauthorized', status=401)
+        return _wrapped_view
+
+    if function:
+        return decorator(function)
+    return decorator
+    
