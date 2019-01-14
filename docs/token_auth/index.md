@@ -23,7 +23,7 @@
 ## Χρήση
 
 ### Endpoint σύνδεσης
-Το `ObtainTokenLoginView` του Token Auth υλοποιεί τη διαδικασία δημιουργίας token μέσω της σύνδεσης χρήστη με username, password. Για να το χρησιμοποιήσετε στο project, αρκεί να το αναθέσετε σε κάποιο URL της επιλογής σας.
+Το `LoginView` του Token Auth υλοποιεί τη διαδικασία δημιουργίας token μέσω της σύνδεσης χρήστη με username, password. Για να το χρησιμοποιήσετε στο project, αρκεί να το αναθέσετε σε κάποιο URL της επιλογής σας.
 
 Παράδειγμα:
 ```python
@@ -31,10 +31,10 @@
 
 from django.urls import path
 
-from project.token_auth.views import ObtainTokenLoginView
+from project.token_auth.views import LoginView
 
 urlpatterns = [
-    path('login/', ObtainTokenLoginView.as_view())
+    path('login/', LoginView.as_view())
 ]
 ```
 
