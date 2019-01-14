@@ -4,6 +4,7 @@ import json
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
+from django.contrib.auth.models import Group
 
 from project.api.models import Product, Shop, Price, ProductTag, ShopTag
 from project.api.views import PricesView
@@ -29,6 +30,9 @@ class PricePostTestCase(TestCase):
         userinfo = dict(username='johndoe', password='johndoe')
         self.user = User(**userinfo)
         self.user.save()
+
+        grp, _ = Group.objects.get_or_create(name='Volunteer')
+        self.user.groups.add(grp)
 
         # proto request
         self.request = dict(
@@ -56,12 +60,6 @@ class PricePostTestCase(TestCase):
         # print(resp.content.decode())
         return resp
 
-    def test_without_user(self):
-        request = self.factory.post('/', {})
-        resp = self.view(request)
-
-        self.assertEqual(resp.status_code, 403)
-
     def test_post_prices(self):
         ''' check if POST /observatory/api/prices/ works '''
         prev_count = Price.objects.count()
@@ -76,7 +74,7 @@ class PricePostTestCase(TestCase):
         request = self.factory.post('/', self.request)
         response = self.view(request)
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_post_prices_invalid_parameters(self):
         ''' invalid params --> 400 bad request '''

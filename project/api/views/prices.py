@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 
 from project.api.models import Price, Product, Shop
 
-from project.api.helpers import ApiResponse, ApiMessage
+from project.api.helpers import ApiResponse, ApiMessage, volunteer_required
 
 
 #################################################################
@@ -292,10 +292,6 @@ class PricesView(View):
                 return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         except Exception as e:
-            # if settings.DEBUG:
-            # print(e.__class__.__name__, e)
-
-            # FIXME: what if something happened on our end?
             return ApiMessage400('Δόθηκαν μη έγκυρες παράμετροι')
 
         # all ok
