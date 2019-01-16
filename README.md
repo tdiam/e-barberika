@@ -22,3 +22,4 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
   * [Token Auth](docs/token_auth/index.md)
   * [API helpers](docs/api_helpers/index.md)
   * [Ομάδες χρηστών](docs/user_groups/index.md)
+  * [SSL](docs/ssl.md)

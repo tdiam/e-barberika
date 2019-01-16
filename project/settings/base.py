@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'project.token_auth',
     'project.api',
+    'project.https'
 ]
 
 MIDDLEWARE = [
