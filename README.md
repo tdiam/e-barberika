@@ -19,6 +19,7 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
 * [Δομή project](docs/structure.md)
 * [Χρήση](docs/usage.md)
 * Υποσυστήματα:
+  * [Client](docs/client/index.md)
   * [Token Auth](docs/token_auth/index.md)
   * [API helpers](docs/api_helpers/index.md)
   * [Ομάδες χρηστών](docs/user_groups/index.md)
