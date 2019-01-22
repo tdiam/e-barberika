@@ -69,3 +69,7 @@ venv.bak/
 
 # Visual Studio Code
 .vscode/
+
+# NodeJS stuff
+project/client/node_modules
+project/client/build
