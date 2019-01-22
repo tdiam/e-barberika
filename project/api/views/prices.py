@@ -100,7 +100,7 @@ class PricesView(View):
                 if geo_dist < 0:
                     raise ValueError()
             except ValueError:
-                return ApiMessage400('Το `geo_dist` πρεπει να ειναι θετικος ακεραιος')
+                return ApiMessage400('Το `geoDist` πρεπει να ειναι θετικος ακεραιος')
 
             # latitude
             try:
@@ -108,7 +108,7 @@ class PricesView(View):
                 if not (-90 <= geo_lat <= 90):
                     raise ValueError()
             except ValueError:
-                return ApiMessage400('Το `geo_lat` δεν ειναι εγκυρο')
+                return ApiMessage400('Το `geoLat` δεν ειναι εγκυρο')
 
             # lοngitude
             try:
@@ -116,7 +116,7 @@ class PricesView(View):
                 if not (-180 <= geo_lng <= 180):
                     raise ValueError()
             except ValueError:
-                return ApiMessage400('Το `geo_lng` δεν ειναι εγκυρο')
+                return ApiMessage400('Το `geoLng` δεν ειναι εγκυρο')
 
             geo_point = Point(geo_lng, geo_lat, srid=4326)
             geo_filter = True
