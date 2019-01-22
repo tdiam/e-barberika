@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.views import View
-from django.db.models import Q, ObjectDoesNotExist
+from django.db.models import Q
 
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
@@ -207,11 +207,11 @@ class PricesView(View):
 
                 if sort_field not in ALLOWED_SORT_FIELDS:
                     return ApiMessage400(f'Αγνωστο κριτηριο ταξινομησης {sort_field}')
-                elif sort_field in sort_fields:
+                if sort_field in sort_fields:
                     return ApiMessage400(f'Το κριτηριο ταξινομησης {sort_field} εμφανιζεται πανω απο μια φορες')
-                elif sort_type not in ALLOWED_SORT_TYPE:
+                if sort_type not in ALLOWED_SORT_TYPE:
                     return ApiMessage400(f'Μη εγκυρος τροπος ταξινομησης {sort_field}|{sort_type}')
-                elif sort_type == 'geoDist' and not geo_filter:
+                if sort_type == 'geoDist' and not geo_filter:
                     return ApiMessage400(f'Μη εγκυρος τροπος ταξινομησης {sort_field}|{sort_type}, δεν εχει δοθει σημειο αναφορας')
 
                 sort_fields.append(sort_field)
@@ -278,13 +278,13 @@ class PricesView(View):
         try:
             shop_id = request.data.get('shopId')
             args['shop'] = Shop.objects.get(pk=int(shop_id))
-        except (TypeError, ValueError, ObjectDoesNotExist):
+        except (TypeError, ValueError, Shop.DoesNotExist):
             return ApiMessage400(f'Μη έγκυρο shopId: {shop_id}')
 
         try:
             product_id = request.data.get('productId')
             args['product'] = Product.objects.get(pk=int(product_id))
-        except (TypeError, ValueError, ObjectDoesNotExist):
+        except (TypeError, ValueError, Product.DoesNotExist):
             return ApiMessage400(f'Μη έγκυρο productId: {product_id}')
 
         try:

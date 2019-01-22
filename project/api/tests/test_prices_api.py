@@ -107,15 +107,18 @@ class PricePostTestCase(TestCase):
 
     def test_post_prices_updates_old_date_for_same_shop_product(self):
         response = self._get_response(self.request)
-        old_price = Price.objects.all().filter(shop__id=self.request['shopId'], date_from=Price.parse_date('2018-10-30')).get()
+        old_price = Price.objects.get(
+            shop__id=self.request['shopId'],
+            date_from=Price.parse_date('2018-10-30')
+        )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Price.objects.all().count(), 1)
+        self.assertEqual(Price.objects.count(), 1)
         self.assertEqual(old_price.date_to, datetime.date(Price.parse_date('2018-11-30')))
 
         response = self._get_response(self.request_away)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Price.objects.all().count(), 2)
+        self.assertEqual(Price.objects.count(), 2)
 
         req = dict(self.request)
         req['dateFrom'] = '2018-11-15'
@@ -127,9 +130,18 @@ class PricePostTestCase(TestCase):
         self.assertEqual(response.status_code, 201)
 
         # check if new price was added ok
-        old_price = Price.objects.all().filter(shop__id=self.request['shopId'], date_from=Price.parse_date('2018-10-30')).get()
-        new_price = Price.objects.all().filter(shop__id=self.request['shopId'], date_from=Price.parse_date('2018-11-15')).get()
-        unaffected_price = Price.objects.all().filter(shop__id=self.request_away['shopId'], date_from=Price.parse_date('2018-10-30')).get()
+        old_price = Price.objects.get(
+            shop__id=self.request['shopId'],
+            date_from=Price.parse_date('2018-10-30')
+        )
+        new_price = Price.objects.get(
+            shop__id=self.request['shopId'],
+            date_from=Price.parse_date('2018-11-15')
+        )
+        unaffected_price = Price.objects.get(
+            shop__id=self.request_away['shopId'],
+            date_from=Price.parse_date('2018-10-30')
+        )
 
         # check to see if previous `price.dateTo` was updated
         self.assertEqual(old_price.date_to, new_price.date_from)
@@ -223,80 +235,80 @@ class PriceGetTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
 
     def test_can_send_start(self):
-        res = self._request({'start' : 10})
+        res = self._request({'start': 10})
         self.assertEqual(res.status_code, 200)
 
         self.assertEqual(json.loads(res.content)['start'], 10)
 
     def test_can_detect_false_start(self):
-        res = self._request({'start' : 'asd'})
+        res = self._request({'start': 'asd'})
         self.assertEqual(res.status_code, 400)
 
     def test_can_send_count(self):
-        res = self._request({'count' : 56})
+        res = self._request({'count': 56})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(json.loads(res.content)['count'], 56)
 
     def test_can_request_zero_count(self):
-        res = self._request({'count' : 0})
+        res = self._request({'count': 0})
         self.assertEqual(res.status_code, 200)
         j = json.loads(res.content)
         self.assertEqual(j['count'], 0)
         self.assertEqual(len(j['prices']), 0)
 
     def test_can_detect_false_count(self):
-        res = self._request({'count' : 'asf'})
+        res = self._request({'count': 'asf'})
         self.assertEqual(res.status_code, 400)
 
     def test_can_send_start_n_count(self):
-        res = self._request({'start' : 10, 'count' : 20})
+        res = self._request({'start': 10, 'count': 20})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(json.loads(res.content)['start'], 10)
         self.assertEqual(json.loads(res.content)['count'], 20)
 
 
     def test_cannot_send_one_geo(self):
-        res = self._request({'geoDist' : 3})
+        res = self._request({'geoDist': 3})
         self.assertEqual(res.status_code, 400)
 
     def test_cannot_send_two_geos(self):
-        res = self._request({'geoLat' : 4.564, 'geoLng' : 78.23546})
+        res = self._request({'geoLat': 4.564, 'geoLng': 78.23546})
         self.assertEqual(res.status_code, 400)
 
     def test_can_send_all_geos(self):
-        res = self._request({'geoDist' : 3, 'geoLat' : 34.46354634, 'geoLng' : 46.346})
+        res = self._request({'geoDist': 3, 'geoLat': 34.46354634, 'geoLng': 46.346})
         self.assertEqual(res.status_code, 200)
 
     def test_can_detect_wrong_dist(self):
-        res = self._request({'geoDist' : 3.45, 'geoLat' : 34.46354634, 'geoLng' : 46.346})
+        res = self._request({'geoDist': 3.45, 'geoLat': 34.46354634, 'geoLng': 46.346})
         self.assertEqual(res.status_code, 400)
 
     def test_can_detect_wrong_lat(self):
-        res = self._request({'geoDist' : 3, 'geoLat' : 90.000001, 'geoLng' : 46.346})
+        res = self._request({'geoDist': 3, 'geoLat': 90.000001, 'geoLng': 46.346})
         self.assertEqual(res.status_code, 400)
 
     def test_can_detect_wrong_lng(self):
-        res = self._request({'geoDist' : 3, 'geoLat' : 34.46354634, 'geoLng' : 180.000001})
+        res = self._request({'geoDist': 3, 'geoLat': 34.46354634, 'geoLng': 180.000001})
         self.assertEqual(res.status_code, 400)
 
     def test_cannot_send_one_date(self):
-        res = self._request({'dateFrom' : '2018-12-23'})
+        res = self._request({'dateFrom': '2018-12-23'})
         self.assertEqual(res.status_code, 400)
 
     def test_can_send_correct_dates(self):
-        res = self._request({'dateFrom' : '2018-12-21', 'dateTo' : '2018-12-25'})
+        res = self._request({'dateFrom': '2018-12-21', 'dateTo': '2018-12-25'})
         self.assertEqual(res.status_code, 200)
 
     def test_can_send_same_dates(self):
-        res = self._request({'dateFrom' : '2018-12-21', 'dateTo' : '2018-12-21'})
+        res = self._request({'dateFrom': '2018-12-21', 'dateTo': '2018-12-21'})
         self.assertEqual(res.status_code, 200)
 
     def test_cannot_send_not_correctly_formatted_dates(self):
-        res = self._request({'dateFrom' : '2018-2-21', 'dateTo' : '2018-12-21'})
+        res = self._request({'dateFrom': '2018-2-21', 'dateTo': '2018-12-21'})
         self.assertEqual(res.status_code, 400)
 
     def test_cannot_send_out_of_order_dates(self):
-        res = self._request({'dateFrom' : '2018-12-27', 'dateTo' : '2018-12-21'})
+        res = self._request({'dateFrom': '2018-12-27', 'dateTo': '2018-12-21'})
         self.assertEqual(res.status_code, 400)
 
     def test_can_send_lists(self):
