@@ -2,9 +2,12 @@
 
 from datetime import datetime
 
-from django.db import models
+from django.db import models, IntegrityError
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+
 from project.api.models import Shop, Product
+from project.api.helpers import user_is_volunteer
 
 #########################
 
@@ -38,15 +41,18 @@ class Price(models.Model):
         '''
         return (date_from or date_to) is None or date_from <= date_to
 
-    def is_valid(self):
-        try:
-            assert self.price > 0
-            assert Price.check_dates(self.date_from, self.date_to)
-            assert self.user.is_authenticated
+    def clean(self):
+        '''
+        checks that a Price object is valid. raises `ValidationError` otherwise
+        '''
+        if self.price <= 0:
+            raise ValidationError('price must be positive')
 
-            return True
-        except (AssertionError, AttributeError):
-            return False
+        if not Price.check_dates(self.date_from, self.date_to):
+            raise ValidationError('invalid dates')
+
+        if not user_is_volunteer(self.user):
+            raise ValidationError('unauthorized user')
 
     @staticmethod
     def add_price(**kwargs):
@@ -56,35 +62,36 @@ class Price(models.Model):
         '''
         try:
             p = Price(**kwargs)
-            if not p.is_valid():
-                return False
+            p.clean()
+        except (TypeError, ValueError, ValidationError):
+            return False
 
-            has_unsolvable_conflicts = Price.objects.filter(
-                date_from__gte=p.date_from,
-                date_from__lte=p.date_to,
-                shop__id=p.shop.id,
-                product__id=p.product.id).exists()
+        has_unsolvable_conflicts = Price.objects.filter(
+            date_from__gte=p.date_from,
+            date_from__lte=p.date_to,
+            shop__id=p.shop.id,
+            product__id=p.product.id).exists()
 
-            if has_unsolvable_conflicts:
-                return False
+        if has_unsolvable_conflicts:
+            return False
 
-            # in case of conflict, update `date_to` of old price.
-            try:
-                conflicting = Price.objects.filter(
-                    date_from__lte=p.date_from,
-                    date_to__gte=p.date_from,
-                    shop__id=p.shop.id,
-                    product__id=p.product.id).get()
+        # in case of conflict, update `date_to` of old price.
+        conflicting_qs = Price.objects.filter(
+            date_from__lte=p.date_from,
+            date_to__gte=p.date_from,
+            shop__id=p.shop.id,
+            product__id=p.product.id)
 
-                # resolve conflict
-                conflicting.date_to = p.date_from
-                conflicting.save()
-            except models.ObjectDoesNotExist:
-                pass
+        if conflicting_qs.exists():
+            conflicting = conflicting_qs.get()
 
-            # save price
+            # resolve conflict
+            conflicting.date_to = p.date_from
+            conflicting.save()
+
+        # save price
+        try:
             p.save()
             return True
-        except Exception as e:
-            print(f'{e.__class__.__name__}: {e}')
+        except IntegrityError:
             return False

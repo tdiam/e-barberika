@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.views import View
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
 
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
@@ -41,21 +41,21 @@ class PricesView(View):
         ## parsing url params
         ######################################################################
 
-        start = request.GET.get('start', start_default)
-        count = request.GET.get('count', count_default)
+        start = request.data.get('start', start_default)
+        count = request.data.get('count', count_default)
 
-        geo_dist = request.GET.get('geoDist', None)
-        geo_lng = request.GET.get('geoLng', None)
-        geo_lat = request.GET.get('geoLat', None)
+        geo_dist = request.data.get('geoDist', None)
+        geo_lng = request.data.get('geoLng', None)
+        geo_lat = request.data.get('geoLat', None)
 
-        date_from = request.GET.get('dateFrom', None)
-        date_to = request.GET.get('dateTo', None)
+        date_from = request.data.get('dateFrom', None)
+        date_to = request.data.get('dateTo', None)
 
-        shops = request.GET.getlist('shops', None)
-        products = request.GET.getlist('products', None)
-        tags = request.GET.getlist('tags', None)
+        shops = request.data.getlist('shops', None)
+        products = request.data.getlist('products', None)
+        tags = request.data.getlist('tags', None)
 
-        sort = request.GET.getlist('sort', sort_default)
+        sort = request.data.getlist('sort', sort_default)
 
         ######################################################################
         ## filters to apply, none by default
@@ -84,7 +84,7 @@ class PricesView(View):
         # count
         try:
             count = int(count)
-            if count <= 0:
+            if count < 0:
                 raise ValueError()
         except ValueError:
             return ApiMessage400('Το `count` πρεπει να ειναι θετικος ακεραιος')
@@ -234,14 +234,8 @@ class PricesView(View):
         ## Just slice the objects properly
         ########################################################################
         total = prices.count()
+        prices = prices[start:(start+count)]
 
-        if total >= start + count:
-            prices = prices[start:(start+count)]
-        elif total >= start:
-            prices = prices[start:]
-        else:
-            prices = Price.objects.none()
-            
         ########################################################################
         ## bake json
         ########################################################################
@@ -277,22 +271,43 @@ class PricesView(View):
     # POST /observatory/api/prices/
     @method_decorator(volunteer_required)
     def post(self, request):
+        args = {
+            'user': request.user
+        }
+
         try:
-            args = dict(
-                shop=Shop.objects.get(pk=int(request.POST.get('shopId'))),
-                product=Product.objects.get(pk=int(request.POST.get('productId'))),
-                price=float(request.POST.get('price')),
-                date_from=Price.parse_date(request.POST.get('dateFrom')),
-                date_to=Price.parse_date(request.POST.get('dateTo')),
-                user=request.user
-            )
+            shop_id = request.data.get('shopId')
+            args['shop'] = Shop.objects.get(pk=int(shop_id))
+        except (TypeError, ValueError, ObjectDoesNotExist):
+            return ApiMessage400(f'Μη έγκυρο shopId: {shop_id}')
 
-            # try creating new price
-            if not Price.add_price(**args):
-                return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
+        try:
+            product_id = request.data.get('productId')
+            args['product'] = Product.objects.get(pk=int(product_id))
+        except (TypeError, ValueError, ObjectDoesNotExist):
+            return ApiMessage400(f'Μη έγκυρο productId: {product_id}')
 
-        except Exception as e:
-            return ApiMessage400('Δόθηκαν μη έγκυρες παράμετροι')
+        try:
+            price = request.data.get('price')
+            args['price'] = float(price)
+        except (TypeError, ValueError):
+            return ApiMessage400(f'Μη έγκυρη τιμή προϊόντος: {price}')
+
+        try:
+            date_from = request.data.get('dateFrom')
+            args['date_from'] = Price.parse_date(date_from)
+        except (TypeError, ValueError):
+            return ApiMessage400(f'Μη έγκυρη μορφή ημερομηνίας: {date_from}')
+
+        try:
+            date_to = request.data.get('dateTo')
+            args['date_to'] = Price.parse_date(date_to)
+        except (TypeError, ValueError):
+            return ApiMessage400(f'Μη έγκυρη μορφή ημερομηνίας: {date_to}')
+
+        # try creating new price
+        if not Price.add_price(**args):
+            return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         # all ok
         # return 201, resource created

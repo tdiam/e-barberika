@@ -1,13 +1,17 @@
 from datetime import datetime
 import json
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.contrib.auth.models import Group
+from django.conf import settings
 
 from project.api.models import Product, Shop, Price, ProductTag, ShopTag
 from project.api.views import PricesView
+from project.api.middleware import ParseUrlEncodedParametersMiddleware
+
+from .helpers import ApiRequestFactory
 
 class PricePostTestCase(TestCase):
     ''' Test suite for price model '''
@@ -16,8 +20,8 @@ class PricePostTestCase(TestCase):
         # _
         User = get_user_model()
 
-        self.factory = RequestFactory()
-        self.view = PricesView.as_view()
+        self.factory = ApiRequestFactory()
+        self.view = ParseUrlEncodedParametersMiddleware(PricesView.as_view())
 
         shop = Shop(id=10, name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
         shop_away = Shop(id=11, name='χεξadaktylos', address='Devils horn', coordinates=Point(10, 10))
@@ -51,9 +55,8 @@ class PricePostTestCase(TestCase):
             price=31
         )
 
-
     def _get_response(self, request_data):
-        request = self.factory.post('/', request_data)
+        request = self.factory.post(settings.API_ROOT, request_data)
         request.user = self.user
 
         resp = self.view(request)
@@ -93,6 +96,15 @@ class PricePostTestCase(TestCase):
         response = self._get_response(req)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_prices_missing_parameters(self):
+        ''' invalid params --> 400 bad request '''
+        for which in self.request:
+            req = dict(self.request)
+            del req[which]
+
+            response = self._get_response(req)
+            self.assertEqual(response.status_code, 400)
+
     def test_post_prices_updates_old_date_for_same_shop_product(self):
         response = self._get_response(self.request)
         old_price = Price.objects.all().filter(shop__id=self.request['shopId'], date_from=Price.parse_date('2018-10-30')).get()
@@ -130,13 +142,12 @@ class PricePostTestCase(TestCase):
 
 
 
-
-
 class PriceGetTestCase(TestCase):
     def setUp(self):
         User = get_user_model()
-        self.factory = RequestFactory()
-        self.view = PricesView.as_view()
+
+        self.factory = ApiRequestFactory()
+        self.view = ParseUrlEncodedParametersMiddleware(PricesView.as_view())
 
         # create two shops
         self.shop = Shop(id=10, name='hexαδακτυλος', address='Αριστοφανους 32', coordinates=Point(22.18339, 39.89279))
@@ -196,11 +207,11 @@ class PriceGetTestCase(TestCase):
 
     def _request(self, params=None):
         if isinstance(params, dict):
-            req = self.factory.get('/', params)
+            req = self.factory.get(settings.API_ROOT, params)
         elif isinstance(params, str):
-            req = self.factory.get('/' + params)
+            req = self.factory.get(settings.API_ROOT + params)
         else:
-            req = self.factory.get('/')
+            req = self.factory.get(settings.API_ROOT)
         r = self.view(req)
 
         # print(r.content)
@@ -225,6 +236,13 @@ class PriceGetTestCase(TestCase):
         res = self._request({'count' : 56})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(json.loads(res.content)['count'], 56)
+
+    def test_can_request_zero_count(self):
+        res = self._request({'count' : 0})
+        self.assertEqual(res.status_code, 200)
+        j = json.loads(res.content)
+        self.assertEqual(j['count'], 0)
+        self.assertEqual(len(j['prices']), 0)
 
     def test_can_detect_false_count(self):
         res = self._request({'count' : 'asf'})
@@ -411,7 +429,6 @@ class PriceGetTestCase(TestCase):
     def test_checking_distance_works(self):
         for x in range(10):
             distance = x * 1000
-            self.subTest(x)
 
             res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&geoLng=38&geoLat=27&geoDist={distance}')
             j = json.loads(res.content.decode())
@@ -422,7 +439,6 @@ class PriceGetTestCase(TestCase):
     def test_checking_tags_works(self):
 
         # check with tag of product
-        self.subTest(0)
         res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=producttag')
         j = json.loads(res.content.decode())
 
@@ -439,7 +455,6 @@ class PriceGetTestCase(TestCase):
         self.assertIn(21, product_ids)
 
         # check with tag of shop
-        self.subTest(1)
         res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=shoptag')
         j = json.loads(res.content.decode())
 
@@ -455,7 +470,6 @@ class PriceGetTestCase(TestCase):
         self.assertIn(10, shop_ids)
 
         # check with shared tag
-        self.subTest(2)
         res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=commontag')
         j = json.loads(res.content.decode())
 

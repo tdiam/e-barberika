@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.gis.geos import Point
 
 from project.api.models import Shop, Product, Price
@@ -20,6 +21,8 @@ class PriceTestCase(TestCase):
         userinfo = dict(username='johndoe', password='johndoe')
         self.user = User(**userinfo)
         self.user.save()
+        grp, _ = Group.objects.get_or_create(name='Volunteer')
+        self.user.groups.add(grp)
 
         self.entry = Price(shop=self.shop, product=self.product, user=self.user, price=10.0)
 
