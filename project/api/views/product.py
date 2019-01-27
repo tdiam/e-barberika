@@ -1,8 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.views import View
+from django.utils.decorators import method_decorator
 
-from ..helpers import ApiMessage, ApiResponse
+from ..helpers import ApiMessage, ApiResponse, volunteer_required, is_admin
 from ..models import Product, ProductTag
 
 
@@ -85,6 +86,7 @@ class ProductsView(View):
 
         return ApiResponse(data)
 
+    @method_decorator(volunteer_required)
     def post(self, request):
     
         name = request.data.get('name')
@@ -123,6 +125,7 @@ class ProductView(View):
         else:
             return ApiResponse(product)
 
+    @method_decorator(volunteer_required)
     def put(self, request, pk=None):
         '''Replaces existing product.
         Parameters: Same as in POST /products.
@@ -158,6 +161,7 @@ class ProductView(View):
         product.tags.set(tag_objs)
         return ApiResponse(product)
 
+    @method_decorator(volunteer_required)
     def patch(self, request, pk=None):
         '''Edits some fields of an existing product.
         Parameters: Same as in POST /products.
@@ -196,3 +200,19 @@ class ProductView(View):
             return ApiMessage('Data format is invalid', status=400)
 
         return ApiResponse(product)
+
+    @method_decorator(volunteer_required)
+    def delete(self, request, pk=None):
+        '''Removes an existing product.'''
+        try:
+            product = Product.objects.get(pk=pk)
+        except (Product.DoesNotExist, ValueError):
+            return ApiMessage(f'Product with id {pk} not found.', status=404)
+
+        if is_admin(request):
+            product.delete()
+        else:
+            product.withdrawn = True
+            product.save()
+
+        return ApiMessage('OK')
