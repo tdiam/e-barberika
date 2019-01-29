@@ -102,12 +102,17 @@ def ApiMessage(msg, **kwargs):
     return JsonResponse({'message': msg}, **kwargs)
 
 
+def user_is_volunteer(user):
+    '''Check if user belongs in the Volunteer group or is admin.'''
+    return user.is_authenticated and (
+        user.is_staff or
+        user.groups.filter(name='Volunteer').exists()
+    )
+
 def is_volunteer(request):
     '''Checks if the logged in user has Volunteer permissions'''
-    return hasattr(request, 'user') and request.user.is_authenticated and (
-        request.user.is_staff or
-        request.user.groups.filter(name='Volunteer').exists()
-    )
+    return hasattr(request, 'user') and user_is_volunteer(request.user)
+
 
 def volunteer_required(function=None):
     '''
@@ -126,9 +131,12 @@ def volunteer_required(function=None):
         return decorator(function)
     return decorator
 
+def user_is_admin(user):
+    return user.is_authenticated and user.is_staff
+
 def is_admin(request):
     '''Checks if the logged in user has Admin permissions'''
-    return hasattr(request, 'user') and request.user.is_authenticated and request.user.is_staff
+    return hasattr(request, 'user') and user_is_admin(request.user)
 
 def admin_required(function=None):
     '''
@@ -147,4 +155,3 @@ def admin_required(function=None):
     if function:
         return decorator(function)
     return decorator
-    
