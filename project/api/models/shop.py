@@ -1,12 +1,21 @@
+from django.core.exceptions import ValidationError
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 
 
+def coordinates_validator(point):
+    '''Raises ValidationError if the given coordinates field isn't in valid WGS84 format'''
+    if not(-180 <= point.x <= 180 and -90 <= point.y <= 90):
+        raise ValidationError('Latitude must be between -90 and 90 degrees and longitude between -180 and 180 degrees')
+
 class ShopTag(models.Model):
     tag = models.CharField(primary_key=True, max_length=255)
 
     def __str__(self):
+        return self.tag
+
+    def __serialize__(self):
         return self.tag
 
 
@@ -82,7 +91,7 @@ class Shop(models.Model):
     #
     # NOTE: If the field is set via Python and the Point model is used,
     # the syntax is Point(longitude, latitude).
-    coordinates = models.PointField(geography=True)
+    coordinates = models.PointField(geography=True, validators=[coordinates_validator])
 
     withdrawn = models.BooleanField(default=False)
 
@@ -92,3 +101,14 @@ class Shop(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __serialize__(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'lng': self.coordinates.x,
+            'lat': self.coordinates.y,
+            'tags': self.tags.all(),
+            'withdrawn': self.withdrawn,
+        }
