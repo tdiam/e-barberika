@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     LoginView, LogoutView, RegisterView,
-    ProductsView, ProductView
+    ProductsView, ProductView,
     PricesView,
     ShopsView, ShopView
 )
