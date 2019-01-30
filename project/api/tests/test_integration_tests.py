@@ -129,11 +129,11 @@ class IntegrationTests(LiveServerTestCase):
         self.user_logs_in()
 
         # products
-        # self.user_adds_two_products()
-        # self.user_lists_the_products()
-        # self.user_updates_a_product()
-        # self.user_gets_a_product()
-        # self.user_deletes_a_product()
+        self.user_adds_two_products()
+        self.user_lists_the_products()
+        self.user_updates_a_product()
+        self.user_gets_a_product()
+        self.user_deletes_a_product()
 
         # shops
         self.user_adds_two_shops()
