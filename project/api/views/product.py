@@ -36,7 +36,7 @@ class ProductsView(View):
             if start < 0:
                 raise ValueError
         except ValueError:
-            return ApiMessage('The `start` must be a positive integer', status=400)
+            return ApiMessage('To `start` πρέπει να είναι μη αρνητικός ακέραιος', status=400)
 
         # Check `count` parameter
         try:
@@ -44,11 +44,11 @@ class ProductsView(View):
             if count < 0:
                 raise ValueError
         except ValueError:
-            return ApiMessage('The `count` must be a positive integer', status=400)
+            return ApiMessage('Το `count` πρέπει να είναι θετικός ακέραιος', status=400)
 
         # Check `status` parameter
         if status not in ALLOWED_STATUS_TYPES:
-            return ApiMessage(f'Invalid product status "{status}"', status=400)
+            return ApiMessage(f'Μη έγκυρο status `{status}`', status=400)
 
         # Check `sort` parameter
         try:
@@ -56,7 +56,7 @@ class ProductsView(View):
             if sort_field not in ALLOWED_SORT_FIELDS or sort_type not in ALLOWED_SORT_TYPES:
                 raise ValueError
         except ValueError:
-            return ApiMessage(f'Invalid sorting criterion "{sort}"', status=400)
+            return ApiMessage(f'Μη έγκυρος τρόπος ταξινόμησης `{sort}`', status=400)
         else:
             # Process `sort`
             if sort_type == 'ASC':
@@ -106,7 +106,7 @@ class ProductsView(View):
             product.full_clean()
             product.save()
         except (ValidationError, IntegrityError):
-            return ApiMessage('Data format is invalid', status=400)
+            return ApiMessage('Μη έγκυρα δεδομένα', status=400)
 
         tag_objs = [ProductTag(tag=tag) for tag in tags]
         for t in tag_objs:
@@ -121,7 +121,7 @@ class ProductView(View):
             product = Product.objects.get(pk=pk)
         # ValueError will be raised when pk cannot be converted to integer
         except (Product.DoesNotExist, ValueError):
-            return ApiMessage(f'Product with id {pk} not found.', status=404)
+            return ApiMessage(f'Δε βρέθηκε προϊόν με αναγνωριστικό `{pk}`.', status=404)
         else:
             return ApiResponse(product)
 
@@ -134,7 +134,7 @@ class ProductView(View):
         try:
             product = Product.objects.get(pk=pk)
         except (Product.DoesNotExist, ValueError):
-            return ApiMessage(f'Product with id {pk} not found.', status=404)
+            return ApiMessage(f'Δε βρέθηκε προϊόν με αναγνωριστικό `{pk}`.', status=404)
 
         name = request.data.get('name')
         description = request.data.get('description')
@@ -152,7 +152,7 @@ class ProductView(View):
             product.full_clean()
             product.save()
         except (ValidationError, IntegrityError):
-            return ApiMessage('Data format is invalid', status=400)
+            return ApiMessage('Μη έγκυρα δεδομένα', status=400)
 
         tag_objs = [ProductTag(tag=tag) for tag in tags]
         for t in tag_objs:
@@ -170,7 +170,7 @@ class ProductView(View):
         try:
             product = Product.objects.get(pk=pk)
         except (Product.DoesNotExist, ValueError):
-            return ApiMessage(f'Product with id {pk} not found.', status=404)
+            return ApiMessage(f'Δε βρέθηκε προϊόν με αναγνωριστικό `{pk}`.', status=404)
 
         name = request.data.get('name')
         description = request.data.get('description')
@@ -197,7 +197,7 @@ class ProductView(View):
             product.full_clean()
             product.save()
         except (ValidationError, IntegrityError):
-            return ApiMessage('Data format is invalid', status=400)
+            return ApiMessage('Μη έγκυρα δεδομένα', status=400)
 
         return ApiResponse(product)
 
@@ -207,7 +207,7 @@ class ProductView(View):
         try:
             product = Product.objects.get(pk=pk)
         except (Product.DoesNotExist, ValueError):
-            return ApiMessage(f'Product with id {pk} not found.', status=404)
+            return ApiMessage(f'Δε βρέθηκε προϊόν με αναγνωριστικό `{pk}`.', status=404)
 
         if is_admin(request):
             product.delete()
