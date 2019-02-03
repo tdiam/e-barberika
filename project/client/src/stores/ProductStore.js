@@ -1,15 +1,18 @@
 import { observable, action, decorate, runInAction } from 'mobx'
-import Api from '../utils/api'
+
+import Api from '../utils/Api'
+import { handleError } from './helpers'
 
 class ProductStore {
     constructor(root) {
         this.rootStore = root
+        this.handleError = handleError.bind(this)
     }
 
     products = []
     pagination = { start: 0, count: 0, total: 0 }
     product = {}
-    state = 'pending' // One of 'pending' | 'done' | 'error'
+    state = 'done' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
     /**
      * Fetches list of products from API and stores them in the `products` observable.
@@ -17,14 +20,13 @@ class ProductStore {
      * 
      * @param {Object} params The query params of start, count, status and sort.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async getProducts(params) {
+        this.state = 'pending'
         this.products = []
         this.pagination = { start: 0, count: 0, total: 0 }
-        this.state = 'pending'
         try {
-            const res = await Api.get('/products/', params)
+            const res = await Api().get('/products/', params)
             const { start, count, total, products } = res.data
             runInAction(() => {
                 this.state = 'done'
@@ -32,8 +34,7 @@ class ProductStore {
                 this.pagination = { start, count, total }
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -42,20 +43,18 @@ class ProductStore {
      * 
      * @param {Number} id The product id.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async getProduct(id) {
         this.product = {}
         this.state = 'pending'
         try {
-            const res = await Api.get(`/products/${id}/`)
+            const res = await Api().get(`/products/${id}/`)
             runInAction(() => {
                 this.state = 'done'
                 this.product = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -64,20 +63,18 @@ class ProductStore {
      * 
      * @param {Object} data The submitted data.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async addProduct(data) {
         this.product = {}
         this.state = 'pending'
         try {
-            const res = await Api.post('/products/', data)
+            const res = await Api({ token: this.rootStore.user.token }).post('/products/', data)
             runInAction(() => {
                 this.state = 'done'
                 this.product = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -88,20 +85,18 @@ class ProductStore {
      * @param {Number} id The product id.
      * @param {Object} data The submitted data.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async editProduct(id, data) {
         this.product = {}
         this.state = 'pending'
         try {
-            const res = await Api.patch(`/products/${id}/`, data)
+            const res = await Api({ token: this.rootStore.user.token }).patch(`/products/${id}/`, data)
             runInAction(() => {
                 this.state = 'done'
                 this.product = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -110,19 +105,17 @@ class ProductStore {
      * 
      * @param {Number} id The product id.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async deleteProduct(id) {
         this.product = {}
         this.state = 'pending'
         try {
-            await Api.delete(`/products/${id}/`)
+            await Api({ token: this.rootStore.user.token }).delete(`/products/${id}/`)
             runInAction(() => {
                 this.state = 'done'
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 }

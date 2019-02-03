@@ -1,15 +1,18 @@
 import { observable, action, decorate, runInAction } from 'mobx'
-import Api from '../utils/api'
+
+import Api from '../utils/Api'
+import { handleError } from './helpers'
 
 class ShopStore {
     constructor(root) {
         this.rootStore = root
+        this.handleError = handleError.bind(this)
     }
 
     shops = []
     pagination = { start: 0, count: 0, total: 0 }
     shop = {}
-    state = 'pending' // One of 'pending' | 'done' | 'error'
+    state = 'done' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
     /**
      * Fetches list of shops from API and stores them in the `shops` observable.
@@ -17,15 +20,13 @@ class ShopStore {
      * 
      * @param {Object} params The query params of start, count, status and sort.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async getShops(params) {
+        this.state = 'pending'
         this.shops = []
         this.pagination = { start: 0, count: 0, total: 0 }
-        this.state = 'pending'
         try {
-            const res = await Api.get('/shops/', params)
-            console.log(res.data)
+            const res = await Api().get('/shops/', params)
             const { start, count, total, shops } = res.data
             runInAction(() => {
                 this.state = 'done'
@@ -33,8 +34,7 @@ class ShopStore {
                 this.pagination = { start, count, total }
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -43,20 +43,18 @@ class ShopStore {
      * 
      * @param {Number} id The shop id.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async getShop(id) {
         this.shop = {}
         this.state = 'pending'
         try {
-            const res = await Api.get(`/shops/${id}/`)
+            const res = await Api().get(`/shops/${id}/`)
             runInAction(() => {
                 this.state = 'done'
                 this.shop = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -65,20 +63,18 @@ class ShopStore {
      * 
      * @param {Object} data The submitted data.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async addShop(data) {
         this.shop = {}
         this.state = 'pending'
         try {
-            const res = await Api.post('/shops/', data)
+            const res = await Api({ token: this.rootStore.user.token }).post('/shops/', data)
             runInAction(() => {
                 this.state = 'done'
                 this.shop = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -89,20 +85,18 @@ class ShopStore {
      * @param {Number} id The shop id.
      * @param {Object} data The submitted data.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async editShop(id, data) {
         this.shop = {}
         this.state = 'pending'
         try {
-            const res = await Api.patch(`/shops/${id}/`, data)
+            const res = await Api({ token: this.rootStore.user.token }).patch(`/shops/${id}/`, data)
             runInAction(() => {
                 this.state = 'done'
                 this.shop = res.data
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 
@@ -111,19 +105,17 @@ class ShopStore {
      * 
      * @param {Number} id The shop id.
      * @returns Nothing.
-     * @error On error, sets state and prints to error console.
      */
     async deleteShop(id) {
         this.shop = {}
         this.state = 'pending'
         try {
-            await Api.delete(`/shops/${id}/`)
+            await Api({ token: this.rootStore.user.token }).delete(`/shops/${id}/`)
             runInAction(() => {
                 this.state = 'done'
             })
         } catch(err) {
-            this.state = 'error'
-            console.error(err)
+            this.handleError(err)
         }
     }
 }

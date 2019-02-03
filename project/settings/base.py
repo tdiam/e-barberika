@@ -1,5 +1,6 @@
 '''Sets default configuration parameters and imports from environment'''
 import dj_database_url
+from corsheaders.defaults import default_headers as cors_default_headers
 
 from .env import env_bool, env_list, env_setting, abs_path, env_str
 
@@ -121,6 +122,9 @@ LOGGING = {
 
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = cors_default_headers + (
+    'X-OBSERVATORY-AUTH',
+)
 
 # API root path
 API_ROOT = '/observatory/api/'
