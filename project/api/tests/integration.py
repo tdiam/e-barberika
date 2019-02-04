@@ -225,6 +225,7 @@ class IntegrationTests:
             # make sure that shop was not deleted
             r = requests.get(self.live_server_url + urls['shops'] + '1')
             self.assertEqual(r.status_code, 200)
+            self.assertShopsEqual(r.json(), shops[3])
 
         ########################################################################
         # INDIVIDUAL SHOP TESTS
