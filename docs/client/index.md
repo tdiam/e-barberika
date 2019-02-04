@@ -1,20 +1,13 @@
 # Client
 
+## Εισαγωγή
+
 Το project περιέχει δύο "εφαρμογές", τον client και τον server. Τρέχουν ανεξάρτητα η μία από την άλλη, άρα έχουν διαφορετικές IP/θύρες. Ο Client μας είναι χτισμένος σε NodeJS + React + MobX και δημιουργήθηκε με το [`create-react-app`](https://reactjs.org/docs/create-a-new-react-app.html). Βρίσκεται στον φάκελο `project/client/`.
 
 Ο client δεν συνδέεται με το υπόλοιπο Django project του server, απλά χρησιμοποιεί το API του, όπως θα μπορούσε να χρησιμοποιεί ένα οποιοδήποτε άλλο API.
 
-## Εντολές
+## [Ρύθμιση και εκτέλεση](config_and_execution.md)
 
-Για να ξεκινήσουμε τον client, μπαίνουμε στον φάκελο `project/client/` και τρέχουμε:
-```
-npm start
-```
+## [State management](state_management.md)
 
-## State management
-
-> To **state management** αφορά τη διαχείριση της κατάστασης ενός ή παραπάνω αντικειμένων σε μια διεπαφή χρήστη, όπως τα πεδία κειμένου, τα κουμπιά, η πολλαπλή επιλογή κλπ. Σε αυτήν την τεχνική σχεδίασης διεπαφών, η κατάσταση ενός αντικειμένου εξαρτάται από τις καταστάσεις άλλων αντικειμένων. Για παράδειγμα, ένα κουμπί θα είναι clickable μόνο όταν τα πεδία εισόδου έχουν έγκυρες τιμές, ενώ θα είναι disabled όταν τα πεδία είναι κενά ή δεν έχουν έγκυρες τιμές.
->
-> [Wikipedia](https://en.wikipedia.org/wiki/State_management)
-
-[Πλήρες documentation εδώ](state_management.md)
+## [API](api.md)
