@@ -38,6 +38,7 @@ class Header extends Component {
                     { /* Example of hiding restricted pages */
                         this.store.isLoggedIn && <li><Link to="/shops/add">Add Shop</Link></li>
                     }
+                    <li><Link to="/map">Map</Link></li>
                 </ul>
             </nav>
         )
