@@ -6,6 +6,8 @@
 
 Ο client δεν συνδέεται με το υπόλοιπο Django project του server, απλά χρησιμοποιεί το API του, όπως θα μπορούσε να χρησιμοποιεί ένα οποιοδήποτε άλλο API.
 
+## [Εγκατάσταση](installation.md)
+
 ## [Ρύθμιση και εκτέλεση](config_and_execution.md)
 
 ## [State management](state_management.md)
