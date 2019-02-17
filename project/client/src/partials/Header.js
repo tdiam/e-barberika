@@ -20,20 +20,25 @@ class Header extends Component {
             userAction = (<button onClick={ this.handleLogout }>Log out</button>)
         } else {
             // Otherwise show log in button
-            userAction = (<Link to="/login">Log in</Link>)
+            userAction = (<React.Fragment><Link to="/login">Log in</Link> | <Link to="/signup">Sign up</Link> </React.Fragment>)
         }
 
         const hello = (
-            <h3>
-                Hello { this.store.userOrGuest }! { userAction }
-            </h3>
+            <React.Fragment>
+                <h3>
+                { this.store.userOrGuest }! 
+                </h3>
+                <h3>
+                    { userAction }
+                </h3>
+            </React.Fragment> 
         )
 
         return (
             <nav>
+                <h1><Link to="/">ΠΑΡΑΤΗΡΗΤΗΡΙΟ</Link></h1>
                 { hello }
                 <ul>
-                    <li><Link to="/">Home</Link></li>
                     <li><Link to="/shops">Shops</Link></li>
                     { /* Example of hiding restricted pages */
                         this.store.isLoggedIn && <li><Link to="/shops/add">Add Shop</Link></li>
