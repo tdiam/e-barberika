@@ -9,7 +9,7 @@ class Home extends Component {
     
     state = {
         query: '',
-        filter: {}
+        filters: {}
     }
 
     setQuery = (query) => {
