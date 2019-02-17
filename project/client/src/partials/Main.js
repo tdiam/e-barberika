@@ -6,6 +6,7 @@ import LoginForm from '../pages/LoginForm'
 import ShopListing from '../pages/ShopListing'
 import AddShop from '../pages/AddShop'
 import MapDemo from '../pages/MapDemo'
+import SignupForm from '../pages/SignupForm';
 
 class Main extends Component {
     render() {
@@ -16,6 +17,7 @@ class Main extends Component {
                 <Route exact path="/shops" component={ ShopListing } />
                 <Route exact path="/shops/add" component={ AddShop } />
                 <Route exact path="/map" component={ MapDemo } />
+                <Route exact path="/signup" component={ SignupForm } />
             </>
         )
     }
