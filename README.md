@@ -23,3 +23,5 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
   * [API helpers](docs/api_helpers/index.md)
   * [Ομάδες χρηστών](docs/user_groups/index.md)
   * [SSL](docs/ssl.md)
+* [1ο Παραδοτέο](docs/deliverable1.md)
+* [2ο Παραδοτέο](docs/deliverable2.md)
