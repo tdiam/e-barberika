@@ -13,4 +13,5 @@
 * UML Class
 
 ## Διάγραμμα ER
-* Διάγραμμα ER
+Άνοιγμα μέσω του [ERDPlus](https://erdplus.com/#/)
+* [Διάγραμμα ER](erd/ER-Diagram.erdplus)
