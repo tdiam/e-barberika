@@ -27,7 +27,7 @@ export default class SearchBar extends Component {
                 type="text" 
                 name="searchbar" 
                 id="searchbar"
-                onKeyPress={ this.handleChange }
+                onChange={ this.handleChange }
                 text={ this.state.searchbar }
             />
             <button type="submit">-></button>
