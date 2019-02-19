@@ -55,7 +55,7 @@ class AuthStore {
     }
 
     /**
-     * Logout user if there is one logged in
+     * Logout user if there is one logged in and clear user if successful
      *
      * @returns Nothing
      * @error On error, sets state and prints to error console.
@@ -73,6 +73,7 @@ class AuthStore {
             runInAction(() => {
                 this.state = 'done'
             })
+            this.rootStore.clearUser()
         } catch(err) {
             this.handleError(err)
         }
