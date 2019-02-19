@@ -33,10 +33,56 @@ class AuthStore {
             this.handleError(err)
         }
     }
+
+    /**
+     * Register user
+     * 
+     * @param {String} username
+     * @param {String} password
+     * @returns Nothing
+     * @error On error, sets state and prints to error console.
+     */
+    async register(username, password) {
+        this.state = 'pending'
+        try {
+            const res = await Api().post('/register/', { username, password })
+            runInAction(() => {
+                this.state = 'done'
+            })
+        } catch(err) {
+            this.handleError(err)
+        }
+    }
+
+    /**
+     * Logout user if there is one logged in
+     *
+     * @returns Nothing
+     * @error On error, sets state and prints to error console.
+     */
+    async logout() {
+        this.state = 'pending'
+        const token = this.rootStore.user.token
+        if(!token) {
+            this.state = 'done'
+            console.info('No user was logged in')
+            return
+        }
+        try {
+            await Api({ token }).post('/logout/', {})
+            runInAction(() => {
+                this.state = 'done'
+            })
+        } catch(err) {
+            this.handleError(err)
+        }
+    }
 }
 decorate(AuthStore, {
     state: observable,
     authenticate: action,
+    register: action,
+    logout: action,
 })
 
 export default AuthStore
