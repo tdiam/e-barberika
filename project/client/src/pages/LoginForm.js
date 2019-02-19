@@ -12,7 +12,7 @@ class LoginForm extends Component {
         this.store = this.props.store.authStore
     }
 
-    state = { username: '', password: '' }
+    state = { username: '', password: '', message: '' }
 
     handleChange = (e) => {
         this.setState({
@@ -20,9 +20,16 @@ class LoginForm extends Component {
         })
     }
 
-    handleSubmit = (e) => {
+    handleSubmit = async (e) => {
         e.preventDefault()
-        this.store.authenticate(this.state.username, this.state.password)
+        await this.store.authenticate(this.state.username, this.state.password)
+        /*
+         redirect
+         src: https://gist.github.com/elitan/5e4cab413dc201e0598ee05287ee4338
+         */
+        // console.log(this.store.rootStore.user)
+        if (this.store.rootStore.user.username) this.props.history.push('/')
+        else this.setState({password: '', message: 'Incorrect username or password!'})
     }
 
     render() {
@@ -38,6 +45,7 @@ class LoginForm extends Component {
                     <input name="password" id="password" type="password" required
                             value={ this.state.password } onChange={ this.handleChange }></input>
                 </div>
+                <p style={{color: '#ff0000'}}>{ this.state.message }</p>
                 <button>Log in</button>
             </form>
         )
