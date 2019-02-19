@@ -42,7 +42,13 @@
     }
     ```
   - `addPrice({ price, dateFrom, dateTo, productId, shopId })`
+* `AuthStore`
+  - `authenticate(username, password)`
+  - `register(username, password)`
+  - `logout()`
 
 Καθεμία από τις παραπάνω κλήσεις ενημερώνει τα πεδία του αντίστοιχου store με τα δεδομένα που έλαβε από τον server. Για παράδειγμα η `getShops` θα βάλει στο `ShopStore.shops` τη λίστα με τα καταστήματα. Η `editProduct` θα βάλει στο `ProductStore.product` το τροποποιημένο προϊόν.
 
 Οι `deleteShop, deleteProduct, addPrice` δεν αποθηκεύουν κάτι.
+
+Το `AuthStore` από την άλλη αποθηκεύει τα δεδομένα του στο πεδίο `user` του `RootStore` ώστε να είναι διαθέσιμες σε όλα τα stores οι πληροφορίες `user.username` και `user.token`.
