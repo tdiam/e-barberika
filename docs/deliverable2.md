@@ -6,11 +6,11 @@
 
 ## Διαγράμματα UML
 Άνοιγμα μέσω του [VisualParadigm Online](https://online.visual-paradigm.com/):
-* UML Use Case
-* UML Activity
-* UML Sequence/Communication
+* [UML Use Case](umls/UseCaseUML_Insert.xml)
+* [UML Activity](umls/ActivityUML_Insert.xml)
+* [UML Sequence/Communication](uml/SequenceUML_Insert.xml)
 * [UML Deployment/Component](umls/Deployment.xml)
-* UML Class
+* [UML Class](umls/class.xml)
 
 ## Διάγραμμα ER
 Άνοιγμα μέσω του [ERDPlus](https://erdplus.com/#/)
