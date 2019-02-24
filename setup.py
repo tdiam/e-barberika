@@ -18,6 +18,8 @@ setup(
         'dj-database-url',
         'Django',
         'psycopg2-binary',
+        'django-cors-headers',
+        'mod-wsgi'
     ],
     extras_require={
         'dev': [

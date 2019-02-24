@@ -20,6 +20,7 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
 * [Χρήση](docs/usage.md)
 * Υποσυστήματα:
   * [Tests](docs/tests.md)
+  * [Client](docs/client/index.md)
   * [Token Auth](docs/token_auth/index.md)
   * [API helpers](docs/api_helpers/index.md)
   * [Ομάδες χρηστών](docs/user_groups/index.md)

@@ -1,5 +1,6 @@
 '''Sets default configuration parameters and imports from environment'''
 import dj_database_url
+from corsheaders.defaults import default_headers as cors_default_headers
 
 from .env import env_bool, env_list, env_setting, abs_path, env_str
 
@@ -18,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'corsheaders',
     'project.token_auth',
     'project.api',
     'project.https'
@@ -26,6 +28,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -117,7 +120,13 @@ LOGGING = {
     }
 }
 
-# root
+# CORS settings
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = cors_default_headers + (
+    'X-OBSERVATORY-AUTH',
+)
+
+# API root path
 API_ROOT = '/observatory/api/'
 
 # Token Auth settings
