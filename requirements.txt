@@ -4,3 +4,4 @@ psycopg2-binary==2.7.6.1
 pytz==2018.6
 mod-wsgi==4.6.5
 django-cors-headers==2.4.0
+requests=2.21.0

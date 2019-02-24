@@ -19,7 +19,8 @@ setup(
         'Django',
         'psycopg2-binary',
         'django-cors-headers',
-        'mod-wsgi'
+        'mod-wsgi',
+        'requests'
     ],
     extras_require={
         'dev': [
