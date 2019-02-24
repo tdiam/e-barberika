@@ -19,7 +19,7 @@ setup(
         'Django',
         'psycopg2-binary',
         'django-cors-headers',
-        'mod-wsgi'
+        'mod-wsgi',
     ],
     extras_require={
         'dev': [
@@ -27,6 +27,7 @@ setup(
             'pylint-django',
             'git-pylint-commit-hook',
             'faker',
+            'requests',
         ],
     },
 )
