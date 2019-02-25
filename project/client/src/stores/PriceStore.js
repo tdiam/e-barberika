@@ -11,7 +11,7 @@ class PriceStore {
 
     prices = []
     pagination = { start: 0, count: 0, total: 0 }
-    state = 'done' // One of 'pending' | 'done' | 'unauthorized' | 'error'
+    state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
     /**
      * Fetches list of prices from API and stores them in the `prices` observable.
