@@ -45,7 +45,7 @@ class AuthStore {
     async register(username, password) {
         this.state = 'pending'
         try {
-            const res = await Api().post('/register/', { username, password })
+            await Api().post('/register/', { username, password })
             runInAction(() => {
                 this.state = 'done'
             })
