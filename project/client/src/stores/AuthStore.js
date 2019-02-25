@@ -9,7 +9,7 @@ class AuthStore {
         this.handleError = handleError.bind(this)
     }
 
-    state = 'done' // One of 'pending' | 'done' | 'unauthorized' | 'error'
+    state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
     /**
      * Authenticate with given credentials and store token if successful

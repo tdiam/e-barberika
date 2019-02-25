@@ -12,7 +12,7 @@ class ShopStore {
     shops = []
     pagination = { start: 0, count: 0, total: 0 }
     shop = {}
-    state = 'done' // One of 'pending' | 'done' | 'unauthorized' | 'error'
+    state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
     /**
      * Fetches list of shops from API and stores them in the `shops` observable.
