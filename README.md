@@ -12,6 +12,19 @@ Project σε Django για το μάθημα της [Τεχνολογίας Λο
 1. Βασίλης Ξανθόπουλος - 03115186
 1. Γιώργος Χοχλάκης - 03115133
 
+## Deployment
+
+Για deploy της εφαρμογης:
+
+```
+# σεταρισμα του περιβαλλοντος, εγκατασταση πακετων, βασης, κλπ
+$ export DEBUG=no
+$ ./deploy.sh
+
+# εναρξη του server
+$ venv/bin/python manage.py runhttps 8443
+```
+
 ## Documentation
 
 * [Κανόνες συνεισφοράς](docs/contributing.md)

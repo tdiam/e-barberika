@@ -22,7 +22,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'project.token_auth',
     'project.api',
-    'project.https'
+    'project.https',
+    'project.reactview'
 ]
 
 MIDDLEWARE = [
@@ -138,3 +139,12 @@ TOKEN_AUTH_HEADER = 'HTTP_X_OBSERVATORY_AUTH'
 TOKEN_EXPIRATION = {
     'hours': 4,
 }
+
+# Needed for react
+REACT_APP = abs_path('project/client/build/')
+STATICFILES_DIRS = (
+    REACT_APP,
+    abs_path(REACT_APP + 'static/'),
+)
+
+REACT_APP_INDEX_HTML = abs_path(REACT_APP + 'index.html')

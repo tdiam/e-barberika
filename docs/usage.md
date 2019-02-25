@@ -7,6 +7,12 @@ $ manage.py runserver 8000
 
 O server ακουει στη διευθυνση `http://localhost:8000/`
 
+Τα URL που χρησιμοποιουμε ειναι:
+
+* **BASE_URL/observatory/api/** Σε αυτο το URL ειναι διαθεσιμο το API
+* **BASE_URL** Σε αυτο το URL ειναι διαθεσιμο το frontend
+* **BASE_URL/admin/** Σε αυτο το URL ειναι διαθεσιμο η διαχειριστικη πλατφορμα που παρεχεται απο το Django
+
 ## Xρήση με SSL
 
 [Περισσοτερα εδω](ssl.md)

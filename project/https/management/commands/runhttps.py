@@ -19,6 +19,13 @@ class Command(BaseCommand):
         # switch to BASE_DIR
         os.chdir(BASE_DIR)
 
+        # update react .env with api base url
+        with open('project/client/.env', 'w') as dotenv:
+            dotenv.write(f'\nREACT_APP_API_URL="https://asoures.gr:{PORT}/observatory/api/"\n')
+
+        # re-build frontend, to use the correct REACT_APP_API_URL
+        os.system(f'cd project/client && npm run build')
+
         # create directory for static files
         os.system('python manage.py collectstatic --noinput')
 
