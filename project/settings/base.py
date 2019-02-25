@@ -22,8 +22,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'project.token_auth',
     'project.api',
-    'project.https',
-    'project.reactview'
+    'project.deployment'
 ]
 
 MIDDLEWARE = [
