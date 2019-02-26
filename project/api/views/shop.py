@@ -70,11 +70,11 @@ class ShopsView(View):
 
         # Process `status`
         if status == 'ALL':
-            shops = Shop._base_manager.all()
-        elif status == 'WITHDRAWN':
-            shops = Shop._base_manager.filter(withdrawn=True)
-        else: # ACTIVE
             shops = Shop.objects.all()
+        elif status == 'WITHDRAWN':
+            shops = Shop.objects.filter(withdrawn=True)
+        else: # ACTIVE
+            shops = Shop.objects.filter(withdrawn=False)
 
         # Process `start` and `count`
         num_of_shops = shops.count()

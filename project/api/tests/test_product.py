@@ -38,14 +38,16 @@ class ProductTestCase(TestCase):
         # Check if product is accessible from tag
         self.assertTrue(self.product in tag.product_set.all())
 
-    def test_withdrawn_product_does_not_exist(self):
+    def test_withdrawn_product_exists(self):
         '''Check if withdrawn products are included in default queryset'''
         # Save product as withdrawn
         self.product.withdrawn = True
         self.product.save()
 
-        with self.assertRaises(Product.DoesNotExist):
+        try:
             _products = Product.objects.get(pk=self.product.pk)
+        except Product.DoesNotExist:
+            self.fail('withdrawn product should be accessible')
 
     def test_products_with_tags_works(self):
         '''Check if with_tags custom query works correctly'''

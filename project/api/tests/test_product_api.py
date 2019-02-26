@@ -252,6 +252,24 @@ class ProductItemTestCase(TestCase):
 
                 self.assertEqual(res.status_code, 404)
 
+    def test_get_returns_withdrawn_product(self):
+        '''Check if GET /product/<id> returns product even if it is withdrawn'''
+        fake = Faker('el_GR')
+        prod = Product(
+            name=fake.first_name(),
+            description=fake.text(max_nb_chars=200, ext_word_list=None),
+            category=fake.word(ext_word_list=None),
+            withdrawn=True
+        )
+        prod.save()
+        
+        request = self.factory.get(self.url)
+        res = self.view(request, pk=prod.pk)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json.loads(res.content)['withdrawn'], True)
+
+
     def test_put_replaces_existing_product(self):
         '''Check if PUT /products/<id> replaces existing product'''
         req = self.factory.put(self.url, self.new_data)

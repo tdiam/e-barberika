@@ -66,11 +66,11 @@ class ProductsView(View):
 
         # Process `status`
         if status == 'ALL':
-            products = Product._base_manager.all()
-        elif status == 'WITHDRAWN':
-            products = Product._base_manager.filter(withdrawn=True)
-        else: # ACTIVE
             products = Product.objects.all()
+        elif status == 'WITHDRAWN':
+            products = Product.objects.filter(withdrawn=True)
+        else: # ACTIVE
+            products = Product.objects.filter(withdrawn=False)
 
         # Process `start` and `count`
         num_of_products = products.count()

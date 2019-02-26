@@ -270,6 +270,23 @@ class ShopItemTestCase(TestCase):
 
                 self.assertEqual(res.status_code, 404)
 
+    def test_get_returns_withdrawn_shop(self):
+        '''Check if GET /product/<id> returns product even if it is withdrawn'''
+        fake = Faker('el_GR')
+        shop = Shop(
+            name=fake.first_name(),
+            address=fake.address(),
+            coordinates=Point(float(fake.longitude()), float(fake.latitude())),
+            withdrawn=True
+        )
+        shop.save()
+        
+        request = self.factory.get(self.url)
+        res = self.view(request, pk=shop.pk)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json.loads(res.content)['withdrawn'], True)
+
     def test_put_replaces_existing_shop(self):
         '''Check if PUT /shops/<id> replaces existing shop'''
         req = self.factory.put(self.url, self.new_data)

@@ -43,14 +43,16 @@ class ShopTestCase(TestCase):
         # Check if shop is accessible from tag
         self.assertTrue(self.shop in tag.shop_set.all())
 
-    def test_withdrawn_shop_does_not_exist(self):
+    def test_withdrawn_shop_exists(self):
         '''Check if withdrawn shops are included in default queryset'''
         # Save shop as withdrawn
         self.shop.withdrawn = True
         self.shop.save()
 
-        with self.assertRaises(Shop.DoesNotExist):
+        try:
             _shops = Shop.objects.get(pk=self.shop.pk)
+        except Shop.DoesNotExist:
+            self.fail('withdrawn shop should be accessible')
 
     def test_shops_within_distance_works(self):
         '''Define a close and a far point and check if within_distance_from queries work correctly'''

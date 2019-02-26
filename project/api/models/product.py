@@ -6,15 +6,9 @@ class ProductTag(models.Model):
 
     def __str__(self):
         return self.tag
-    
+
     def __serialize__(self):
         return self.tag
-
-
-class BaseProductManager(models.Manager):
-    def get_queryset(self):
-        '''Omit withdrawn products from results by default'''
-        return super().get_queryset().filter(withdrawn=False)
 
 
 class ProductQuerySet(models.QuerySet):
@@ -26,8 +20,7 @@ class ProductQuerySet(models.QuerySet):
 
 # Adapted from:
 # https://docs.djangoproject.com/en/2.1/topics/db/managers/#from-queryset
-ProductManager = BaseProductManager.from_queryset(ProductQuerySet)
-
+ProductManager = models.Manager.from_queryset(ProductQuerySet)
 
 class Product(models.Model):
 
@@ -47,7 +40,7 @@ class Product(models.Model):
     objects = ProductManager()
 
     def __str__(self):
-        return self.name
+        return self.name + (' (withdrawn)' if self.withdrawn else '')
 
     def __serialize__(self):
         return {
