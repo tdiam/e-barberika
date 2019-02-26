@@ -60,13 +60,16 @@ if [ "x$SKIP_PGRES_CREATE_DB_AND_USER" != "xyes" ]; then
     sudo -u postgres dropuser "$DB_NAME" --if-exists
     sudo userdel "$DB_NAME"
 
-    echo "Enter password '$DB_PASS' below:"
-    echo "$DB_PASS" >> "$DIR/.tmp"
-    echo "$DB_PASS" >> "$DIR/.tmp"
-    sudo -u postgres createuser --superuser -P "$DB_NAME"
+    # create postgres role
+    sudo -u postgres psql -c "CREATE USER $DB_NAME WITH PASSWORD '$DB_PASS' SUPERUSER;" 
     sudo -u postgres createdb "$DB_NAME"
+
+    # create normal user
     sudo useradd -M -s /usr/sbin/nologin "$DB_NAME"
+    echo "$DB_PASS" >> "$DIR/.tmp"
+    echo "$DB_PASS" >> "$DIR/.tmp"
     sudo passwd "$DB_NAME" < "$DIR/.tmp"
+    sudo -- sh -c "echo '[User]\nSystemAccount=true' > '/var/lib/AccountsService/users/$DB_NAME'"
     rm "$DIR/.tmp"
 fi
 
@@ -138,10 +141,10 @@ echo "
 Done. Next Steps:
 -----------------
 
-$ python manage.py populatedb 100           # add 100 shops and products to db
-$ python manage.py 
+Populate database:
+    $ python manage.py populatedb 100           # add 100 shops and products to db
 
-Development servers (changes go live immediately):
+Development servers:
     $ cd project/client && npm run start  (ReactJS)
     $ python manage.py runserver 8000     (Django)
 
