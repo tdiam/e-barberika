@@ -7,10 +7,6 @@ import SearchFilters from '../components/SearchFilters';
 
 
 class Home extends Component {
-    constructor(props) {
-        super(props)
-        this.store = this.props.store.priceStore
-    }
     state = {
         query: '',
         filters: {}
@@ -41,7 +37,6 @@ class Home extends Component {
                 <SearchResults  
                     query={ this.state.query }
                     filters={ this.state.filters }
-                    store={ this.store }
                 />
             </React.Fragment>
         )
