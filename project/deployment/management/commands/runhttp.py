@@ -24,7 +24,7 @@ class Command(BaseCommand):
             dotenv.write(f'\nREACT_APP_API_URL="http://localhost:{PORT}/observatory/api/"\n')
 
         # re-build frontend, to use the correct REACT_APP_API_URL
-        os.system(f'cd project/client && npm run build')
+        os.system(f'cd project/client && echo "Building ReactJS" && npm run build > /dev/null')
 
         # create directory for static files
         os.system('python manage.py collectstatic --noinput')

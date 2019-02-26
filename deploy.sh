@@ -11,14 +11,15 @@ DIR=`realpath $DIR`
 ##### CONFIGURE THESE #####
 SKIP_PACKAGE_INSTALLATION="no"
 SKIP_NPM_INSTALL="no"
-SKIP_NPM_BUILD="no"
+SKIP_NPM_BUILD="yes"
 SKIP_PGRES_CREATE_DB_AND_USER="no"
 SKIP_PGRES_DISABLE_FORCED_SSL="no"
 SKIP_SETUP_VENV="no"
 SKIP_UPDATE_HOSTS="no"
+SKIP_CREATE_SUPERUSER="no"
 
 # Virtual environment folder
-VENV="$DIR/venv"
+VENV="$DIR/.venv"
 PIP="$VENV/bin/pip"
 PYTHON="$VENV/bin/python"
 
@@ -27,6 +28,11 @@ PYTHON="$VENV/bin/python"
 # Don't change if you dont know what you are doing
 DB_NAME="asoures2"
 DB_PASS="password"
+
+# django super user
+SU_USER="asoures"
+SU_EMAIL="asoures@asoures.gr"
+SU_PASS="asoures"
 
 if [ "x$SKIP_PACKAGE_INSTALLATION" != "xyes" ] ; then
     echo "Installing packages..."
@@ -115,6 +121,12 @@ if [ "x$SKIP_UPDATE_HOSTS" != "xyes" ]; then
     fi
 fi
 
+if [ "x$SKIP_CREATE_SUPERUSER" != "xyes" ]; then
+    # based on https://stackoverflow.com/questions/6244382/how-to-automate-createsuperuser-on-django
+    echo "Creating superuser $SU_USER"
+    $PYTHON "$DIR/manage.py" addroot "$SU_USER" "$SU_EMAIL" "$SU_PASS"
+fi
+
 echo ""
 echo ""
 echo "-----------------"
@@ -132,6 +144,8 @@ echo "    python manage.py integration_test"
 echo ""
 echo "3) Add fake database data:"
 echo "    python manage.py populate"
+
+# TODO: these need to be clearer
 echo ""
 echo "4) Start development server:"
 echo "    export REACT_APP_API_URL='http://localhost:8000/observatory/api/'"
@@ -141,4 +155,8 @@ echo ""
 echo "5) Start apache server:"
 echo "    python manage.py runserver 8443"
 echo ""
+echo "6) Start the server and open a browser to:"
+echo "    BASE_URL/                 : ReactJS frontend"
+echo "    BASE_URL/observatory/api/ : Backend"
+echo "    BASE_URL/admin/           : Django admin interface (login $SU_USER:$SU_PASS)"
 echo ""
