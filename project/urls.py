@@ -15,11 +15,16 @@ Including another URLconf
 '''
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.shortcuts import redirect
 
 from project.deployment.views import ReactAppView
 
 urlpatterns = [
+    # admin interface
+    path('admin', lambda r : redirect('admin/')),
     path('admin/', admin.site.urls),
+
+    # backend API
     path('observatory/api/', include('project.api.urls')),
 
     # send all other paths to React
