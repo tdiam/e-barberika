@@ -7,8 +7,28 @@
 DIR=`dirname $0`
 DIR=`realpath $DIR`
 
+# Set to "yes" to setup for development server
+# Any other value sets up for release
+DEBUG="yes"
+
+# Virtual environment folder
+VENV_FOLDER=".venv"
+VENV="$DIR/.venv"
+PIP="$VENV/bin/pip"
+PYTHON="$VENV/bin/python"
+
+# 100% secure
+# CAREFUL: will destroy previous db and user with this name
+# Don't change if you dont know what you are doing
+DB_NAME="asoures"
+DB_PASS="asoures"
+
+# default backend superuser
+SU_USER="asoures"
+SU_EMAIL="asoures@asoures.gr"
+SU_PASS="asoures"
+
 # Skip steps if already done, set to "yes"
-##### CONFIGURE THESE #####
 SKIP_PACKAGE_INSTALLATION="no"
 SKIP_NPM_INSTALL="no"
 SKIP_NPM_BUILD="yes"
@@ -17,22 +37,6 @@ SKIP_PGRES_DISABLE_FORCED_SSL="no"
 SKIP_SETUP_VENV="no"
 SKIP_UPDATE_HOSTS="no"
 SKIP_CREATE_SUPERUSER="no"
-
-# Virtual environment folder
-VENV="$DIR/.venv"
-PIP="$VENV/bin/pip"
-PYTHON="$VENV/bin/python"
-
-# 100% secure
-# CAREFUL: will destroy previous db and user with this name
-# Don't change if you dont know what you are doing
-DB_NAME="asoures2"
-DB_PASS="password"
-
-# django super user
-SU_USER="asoures"
-SU_EMAIL="asoures@asoures.gr"
-SU_PASS="asoures"
 
 if [ "x$SKIP_PACKAGE_INSTALLATION" != "xyes" ] ; then
     echo "Installing packages..."
@@ -85,15 +89,15 @@ fi
 [ -e "$DIR/asoures.egg-info" ] && echo "Removing old asoures.egg-info" && rm -rf "$DIR/asoures.egg-info"
 if [ "x$SKIP_SETUP_VENV" != "xyes" ]; then
     echo "Installing virtualenv"
-    pip3 install --user virtualenv
+    pip3 install --user virtualenv > /dev/null
 
     echo "Setting up python virtual environment in $VENV"
     [ -e "$VENV" ] && rm -rf "$VENV" # trust me
     mkdir -p "$VENV"
-    ~/.local/bin/virtualenv "$VENV"
+    ~/.local/bin/virtualenv "$VENV" > /dev/null
 
     echo "Installing django and other dependencies"
-    cd "$DIR" && $PIP install -e .[dev]
+    cd "$DIR" && $PIP install -e .[dev] > /dev/null
 fi
 
 echo -n "Updating environment file "
@@ -109,7 +113,7 @@ else
 fi
 
 echo "Running migrations"
-cd "$DIR" && $PYTHON manage.py migrate
+cd "$DIR" && $PYTHON manage.py migrate > /dev/null
 
 if [ "x$SKIP_UPDATE_HOSTS" != "xyes" ]; then
     echo "Updating hosts"
@@ -127,36 +131,22 @@ if [ "x$SKIP_CREATE_SUPERUSER" != "xyes" ]; then
     $PYTHON "$DIR/manage.py" addroot "$SU_USER" "$SU_EMAIL" "$SU_PASS"
 fi
 
-echo ""
-echo ""
-echo "-----------------"
-echo "Done. Next steps:"
-echo "-----------------"
-echo ""
-echo "0) Activate environment (REQUIRED)"
-echo "    source $VENV/bin/activate && cd $DIR"
-echo ""
-echo "1) Run unit tests:"
-echo "    python manage.py test"
-echo ""
-echo "2) Run integration tests:"
-echo "    python manage.py integration_test"
-echo ""
-echo "3) Add fake database data:"
-echo "    python manage.py populate"
+echo "
 
-# TODO: these need to be clearer
-echo ""
-echo "4) Start development server:"
-echo "    export REACT_APP_API_URL='http://localhost:8000/observatory/api/'"
-echo "    python manage.py runserver 8000            (Django)"
-echo "    cd project/client && npm run start         (ReactJS only)"
-echo ""
-echo "5) Start apache server:"
-echo "    python manage.py runserver 8443"
-echo ""
-echo "6) Start the server and open a browser to:"
-echo "    BASE_URL/                 : ReactJS frontend"
-echo "    BASE_URL/observatory/api/ : Backend"
-echo "    BASE_URL/admin/           : Django admin interface (login $SU_USER:$SU_PASS)"
-echo ""
+
+-----------------
+Done. Next Steps:
+-----------------
+
+$ python manage.py populatedb 100           # add 100 shops and products to db
+$ python manage.py 
+
+Development servers (changes go live immediately):
+    $ cd project/client && npm run start  (ReactJS)
+    $ python manage.py runserver 8000     (Django)
+
+Start HTTP or HTTPS server for Django and ReactJS build:
+    $ python manage.py runhttps 8443
+    $ python manage.py runhttp 8000
+
+"

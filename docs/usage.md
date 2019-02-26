@@ -1,33 +1,28 @@
-## Χρήση
 
-Για να ξεκινήσεις τον server, εκτέλεσε την εντολή:
-```
-$ manage.py runserver 8000
-```
-
-O server ακουει στη διευθυνση `http://localhost:8000/`
-
-Τα URL που χρησιμοποιουμε ειναι:
-
-* **BASE_URL/observatory/api/** Σε αυτο το URL ειναι διαθεσιμο το API
-* **BASE_URL** Σε αυτο το URL ειναι διαθεσιμο το frontend
-* **BASE_URL/admin/** Σε αυτο το URL ειναι διαθεσιμο η διαχειριστικη πλατφορμα που παρεχεται απο το Django
-
-## Xρήση με SSL
-
-[Περισσοτερα εδω](ssl.md)
-
-Για να τρέξεις τον server πάνω από https:
+## Έναρξη του HTTPS server
 
 ```
-# ρυθμιση του hostfile, δεν χρειαζεται καθε φορα
-sudo echo "127.0.0.1 asoures.gr" >> /etc/hosts
+$ python manage.py runhttps 8443
 ```
 
-Έπειτα, για να τρεξει ο server:
+H εφαρμογή (frontend και backend) είναι διαθέσιμη στο  `https://asoures.gr:8443/`.
+
+
+## Έναρξη των development server
+
+To frontend της εφαρμογής χρησιμοποιεί ReactJS, ενώ το backend είναι υλοποιημένο σε Django. Κάθε ένα από αυτά έχει τον δικό του development server. Αυτοί τρέχουν εντελώς εντελώς ανεξάρτητα σε ξεχωριστές πόρτες. Το μόνο που χρειάζεται είναι το frontend να γνωρίζει την διεύθυνση στην οποία είναι διαθέσιμο το backend API. Συνεπώς, για την εκκίνηση των development servers:
 
 ```
-manage.py runhttps 8443
+$ python manage.py runserver 8000           # Django ακούει στο http://localhost:8000
+
+$ export REACT_APP_API_URL=http://localhost:8000/observatory/api/
+$ cd project/client && npm run start        # ReactJS ακούει στο http://localhost:3000 
 ```
 
-Ο server ακουει στη διευθυνση `https://asoures.gr:8443/`.
+Ο Django server έχει επίσης ρυθμιστεί να σερβίρει και το frontend, εφόσον αυτό χτιστεί με `npm run build`. Για διευκόλυνση της διαδικασίας, υπάρχει η custom εντολή:
+
+```
+$ python manage.py runhttp 8000
+```
+
+O server ακούει στη διεύθυνση `http://localhost:8000/`
