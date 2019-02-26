@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { inject, observer } from 'mobx-react'
 import SearchBar from '../components/SearchBar';
 // import SearchField from 'react-search-field';
 import SearchResults from '../components/SearchResults';
@@ -6,7 +7,10 @@ import SearchFilters from '../components/SearchFilters';
 
 
 class Home extends Component {
-    
+    constructor(props) {
+        super(props)
+        this.store = this.props.store.priceStore
+    }
     state = {
         query: '',
         filters: {}
@@ -37,10 +41,11 @@ class Home extends Component {
                 <SearchResults  
                     query={ this.state.query }
                     filters={ this.state.filters }
+                    store={ this.store }
                 />
             </React.Fragment>
         )
     }
 }
 
-export default Home
+export default inject('store')(observer(Home))
