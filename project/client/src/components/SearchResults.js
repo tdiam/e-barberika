@@ -9,19 +9,21 @@ class SearchResults extends Component {
     this.store = this.props.store
   }
   
-  componentWillReceiveProps() {
+  componentWillReceiveProps(nextProps) {
     // Execute API call that will update the store state
+    
     let params = new URLSearchParams();
-    let tags = this.props.query.split(" ")
+    let tags = nextProps.query.split(" ")
     tags.forEach(tag => (params.append("tags", tag)))
     //console.log(params.keys())
     console.log(this.props.query)
+    console.log(nextProps.query)
     this.store.priceStore.getPrices(params)
   }
   
   render() {
     let priceItems = this.store.priceStore.prices.map(price => (
-      <li>{ price.productName }, { price.shopName }, { price.price }</li>))
+      <li key={ /* "hashing" */ price.productId + price.shopId }>{ price.productName }, { price.shopName }, { price.price }</li>))
     return (
       <StateHandler state={ this.store.priceStore.state }>
       {() => (
