@@ -17,6 +17,7 @@ VENV="$DIR/.venv"
 PIP="$VENV/bin/pip"
 PYTHON="$VENV/bin/python"
 VIRTUALENV_EXE="~/.local/bin/virtualenv"
+SYSTEM_PYTHON3_EXE='python3.6'
 
 # 100% secure
 # CAREFUL: will destroy previous db and user with this name
@@ -104,7 +105,7 @@ if [ "x$SKIP_SETUP_VENV" != "xyes" ]; then
     fi
 
     echo "Using virtualenv executable: '$VIRTUALENV_EXE'"
-    "$VIRTUALENV_EXE" "$VENV" > /dev/null
+    "$VIRTUALENV_EXE" --python="$SYSTEM_PYTHON3_EXE" "$VENV" > /dev/null
 
     echo "Installing django and other dependencies"
     cd "$DIR" && "$PIP" install -e .[dev] > /dev/null
