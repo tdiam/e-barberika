@@ -127,7 +127,7 @@ class IntegrationTests:
         # TEST SENARIO
         ########################################################################
         def test_client(self):
-            '''run test client. implemented as a single test, to ensure that the actions happen in the correct order'''
+            '''integration tests, based on test client'''
 
             # register and login
             self.runTest('user_registers') # extra
@@ -156,9 +156,12 @@ class IntegrationTests:
 
         def runTest(self, testName):
             '''run action `testName`, while printing a good informative message'''
-            print(testName.ljust(40, '.'), end='')
-            getattr(self, testName)()
-            print('OK')
+            with self.subTest(testName):
+                print(testName.ljust(40, '.'), end='')
+                getattr(self, testName)()
+
+                # if we reach this, test `testName` has passed
+                print('OK')
 
         def assertShopsEqual(self, shop_1, shop_2):
             '''check that two shops are equal (equality check is not good enough, tags may be in different order'''
@@ -295,8 +298,10 @@ class IntegrationTests:
             )
             self.assertEqual(r.status_code, 200)
 
+            # check that shop is withdrawn
             r = requests.get(self.live_server_url + urls['shops'] + '2')
-            self.assertEqual(r.status_code, 404)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['withdrawn'], True)
 
 
         ########################################################################
@@ -367,5 +372,7 @@ class IntegrationTests:
             )
             self.assertEqual(r.status_code, 200)
 
+            # check that product is withdrawn
             r = requests.get(self.live_server_url + urls['products'] + '2')
-            self.assertEqual(r.status_code, 404)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['withdrawn'], True)
