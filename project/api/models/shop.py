@@ -19,11 +19,6 @@ class ShopTag(models.Model):
         return self.tag
 
 
-class BaseShopManager(models.Manager):
-    def get_queryset(self):
-        '''Omit withdrawn shops from results by default'''
-        return super().get_queryset().filter(withdrawn=False)
-
 class ShopQuerySet(models.QuerySet):
     def within_distance_from(self, lat, lng, **distance):
         '''Find shops within given distance from given point.
@@ -72,7 +67,7 @@ class ShopQuerySet(models.QuerySet):
 #
 # Adapted from:
 # https://docs.djangoproject.com/en/2.1/topics/db/managers/#from-queryset
-ShopManager = BaseShopManager.from_queryset(ShopQuerySet)
+ShopManager = models.Manager.from_queryset(ShopQuerySet)
 
 
 class Shop(models.Model):
@@ -100,7 +95,7 @@ class Shop(models.Model):
     objects = ShopManager()
 
     def __str__(self):
-        return self.name
+        return self.name + (' (withdrawn)' if self.withdrawn else '')
 
     def __serialize__(self):
         return {
