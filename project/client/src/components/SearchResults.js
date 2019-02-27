@@ -8,29 +8,20 @@ class SearchResults extends Component {
     super(props)
     this.store = this.props.store
   }
-  //Needs to be updated automatically with action?
-  runQuery = () =>{
+  
+  componentWillReceiveProps() {
     // Execute API call that will update the store state
     let params = new URLSearchParams();
     let tags = this.props.query.split(" ")
     tags.forEach(tag => (params.append("tags", tag)))
     //console.log(params.keys())
+    console.log(this.props.query)
     this.store.priceStore.getPrices(params)
-  }
-
-  shopName = (id) => {
-    this.store.shopStore.getShop(id)
-    return this.store.shopStore.shop.name
-  }
-
-  productName = (id) => {
-    this.store.productStore.getShop(id)
-    return this.store.productStore.product.name
   }
   
   render() {
     let priceItems = this.store.priceStore.prices.map(price => (
-      <li>{ this.productName(price.productId) }, { this.shopName(price.shopId) }, { price.price }</li>))
+      <li>{ price.productName }, { price.shopName }, { price.price }</li>))
     return (
       <StateHandler state={ this.store.priceStore.state }>
       {() => (
