@@ -16,6 +16,7 @@ VENV_FOLDER=".venv"
 VENV="$DIR/.venv"
 PIP="$VENV/bin/pip"
 PYTHON="$VENV/bin/python"
+VIRTUALENV_EXE="~/.local/bin/virtualenv"
 
 # 100% secure
 # CAREFUL: will destroy previous db and user with this name
@@ -97,10 +98,16 @@ if [ "x$SKIP_SETUP_VENV" != "xyes" ]; then
     echo "Setting up python virtual environment in $VENV"
     [ -e "$VENV" ] && rm -rf "$VENV" # trust me
     mkdir -p "$VENV"
-    ~/.local/bin/virtualenv "$VENV" > /dev/null
+
+    if [ ! -e $VIRTUALENV_EXE ]; then
+        VIRTUALENV_EXE=`which virtualenv`
+    fi
+
+    echo "Using virtualenv executable: '$VIRTUALENV_EXE'"
+    "$VIRTUALENV_EXE" "$VENV" > /dev/null
 
     echo "Installing django and other dependencies"
-    cd "$DIR" && $PIP install -e .[dev] > /dev/null
+    cd "$DIR" && "$PIP" install -e .[dev] > /dev/null
 fi
 
 echo -n "Updating environment file "
