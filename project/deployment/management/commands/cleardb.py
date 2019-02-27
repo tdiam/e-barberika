@@ -8,7 +8,7 @@ class Command(BaseCommand):
     requires_system_checks = True
 
     def add_arguments(self, parser):
-        parser.add_argument('count', default=50, type=int)
+        pass
 
     def handle(self, *args, **options):
         models.Shop.objects.all().delete()

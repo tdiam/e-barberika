@@ -1,6 +1,6 @@
 # price model
 
-from datetime import datetime
+from datetime import datetime, date
 
 from django.db import models, IntegrityError
 from django.core.exceptions import ValidationError
@@ -21,6 +21,9 @@ class Price(models.Model):
 
     date_from = models.DateField(null=False, blank=False, default=datetime.now)
     date_to = models.DateField(null=True, default=None)
+
+    def __str__(self):
+        return f'Price[shop="{self.shop}", product="{self.product}", price="{self.price}", date_from="{self.date_from}", date_to="{self.date_to}"]' + (' -- old' if self.date_to < datetime.now().date() else '')
 
     @staticmethod
     def parse_date(date_str: str):
