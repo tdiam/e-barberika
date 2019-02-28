@@ -25,10 +25,10 @@ urls = {
 # test product data
 products_data = {
     1: {
-        'name':         'FirstProduct',
-        'description':  'FirstDescription',
-        'category':     'FirstCategory',
-        'tags':         ['Tags', 'of', 'first', 'Product'],
+        'name':         'Προϊόν Στα Ελληνικά',
+        'description':  'περιγραφή με κείμενο και αλλα',
+        'category':     'κατηγορια',
+        'tags':         ['Tags', 'of', 'first', 'ελληνικα', 'ταγκς'],
         'withdrawn':    False
     },
     2: {
@@ -195,7 +195,7 @@ class IntegrationTests:
                 'password': user['password'],
             })
 
-            self.assertEqual(r.status_code, 201)
+            self.assertEqual(r.status_code, 200)
 
         def user_logs_in(self):
             '''user logs in after registering'''
@@ -244,7 +244,7 @@ class IntegrationTests:
                     data=shop_data,
                     headers=headers
                 )
-                self.assertEqual(r.status_code, 201)
+                self.assertEqual(r.status_code, 200)
 
                 # get the newly created shop
                 r = requests.get(self.live_server_url + urls['shops'] + str(shop))
@@ -318,7 +318,7 @@ class IntegrationTests:
                     data=product_data,
                     headers=headers
                 )
-                self.assertEqual(r.status_code, 201)
+                self.assertEqual(r.status_code, 200)
 
                 # get the newly created product
                 r = requests.get(self.live_server_url + urls['products'] + str(product))

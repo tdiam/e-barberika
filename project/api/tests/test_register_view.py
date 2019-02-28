@@ -59,7 +59,7 @@ class TokenAuthRegisterViewTestCase(TestCase):
 
         response = self.view(request)
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
         user = User.objects.filter(username='mattmurdock')
         self.assertTrue(user.exists())

@@ -1,0 +1,27 @@
+	
+Η διαδικασία της εκτέλεσης των αυτοματοποιημένων σεναρίων ελέγχου ("ρομποτικά" tests) κατά την εξέταση των εργασιών θα έχει ως εξής.
+
+Προαπαιτούμενα:
+
+Στο laptop που θα έχετε μαζί σας για την εξέταση θα φροντίσετε ώστε να έχετε κάνει εκ των προτέρων checkout το repository του rest client (https://github.com/saikos/softeng18b-rest-api-client).
+
+Διαδικασία: 
+
+Στα τελευταία 5' θα εκτελεστούν τα σενάρια ελέγχου με χρήση του client, ακολουθώντας τα εξής βήματα:
+
+1. Κλείσιμο του back-end server της εφαρμογής.
+
+2. "Καθάρισμα" της βάσης της εφαρμογής (με κάποιον αυτόματο τρόπο, που είναι δική σας ευθύνη να υλοποιήσετε, π.χ. με χρήση κάποιου script, με έτοιμο "άδειο" σχήμα και αλλαγή κάποιου configuration file, κλπ).
+
+3. Εκκίνηση του back-end server της εφαρμογής.
+
+4. Εκτέλεση του client με τις ακόλουθες παραμέτρους (αφού κάνουμε cd στο directory του client repo):
+./gradlew test --tests gr.ntua.ece.softeng18b.client.ObservatoryAPIFunctionalTest -Dusername=<admin user> -Dpassword=<admin pass> -Dprotocol=https -DIGNORE_SSL_ERRORS=true -Dhost=localhost -Dport=8765 -Dtest.json=<path to json file with test scenarios>
+
+Για τη διευκόλυνσή σας, όπως είχαμε πει και στο μάθημα, έχει αναρτηθεί νέα (και τελική) έκδοση του client, την οποία μπορείτε να χρησιμοποιήσετε (όπως περιγράφεται στα παραπάνω βήματα) για να επιβεβαιώσετε την ορθή λειτουργία της εφαρμογής -σε ότι αφορά τον client και το REST API- εγκαίρως. Στη διαδικασία αυτή μπορείτε να χρησιμοποιήσετε το αρχείο test-data.json (test data set) που βρίσκεται ήδη στο client repository (https://github.com/saikos/softeng18b-rest-api-client/blob/master/test-data.json).
+
+-------------------------------
+
+Working curl POST
+
+curl -H 'X-Observatory-Auth: a75379c0-ce71-4e2c-bc26-4476054ab69b' -H 'content-type: application/x-www-form-urlencoded;charset=UTF-8' -X POST https://asoures.gr:8443/observatory/api/products/ -d "name=όνομα&description=περιγραφή&category=κατ" --insecure

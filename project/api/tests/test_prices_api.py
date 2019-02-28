@@ -69,8 +69,15 @@ class PricePostTestCase(TestCase):
 
         response = self._get_response(self.request)
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(prev_count + 1, Price.objects.count())
+
+        # returned price object
+        returned = json.loads(response.content)
+
+        # price object in db
+        for x in self.request:
+            self.assertEqual(returned[x], self.request[x])
 
     def test_post_prices_without_user(self):
         ''' bad user --> 403 forbidden '''
@@ -112,12 +119,12 @@ class PricePostTestCase(TestCase):
             date_from=Price.parse_date('2018-10-30')
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(Price.objects.count(), 1)
         self.assertEqual(old_price.date_to, datetime.date(Price.parse_date('2018-11-30')))
 
         response = self._get_response(self.request_away)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(Price.objects.count(), 2)
 
         req = dict(self.request)
@@ -127,7 +134,7 @@ class PricePostTestCase(TestCase):
         response = self._get_response(req)
 
         # check if request was ok
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
         # check if new price was added ok
         old_price = Price.objects.get(

@@ -48,6 +48,9 @@ class Price(models.Model):
 
         return date
 
+    def convert_to_str(date: date):
+        return datetime.strftime(date, '%Y-%m-%d')
+
     @staticmethod
     def check_dates(date_from, date_to):
         '''
@@ -81,7 +84,7 @@ class Price(models.Model):
             p = Price(**kwargs)
             p.clean()
         except (TypeError, ValueError, ValidationError):
-            return False
+            return None
 
         has_unsolvable_conflicts = Price.objects.filter(
             date_from__gte=p.date_from,
@@ -90,7 +93,7 @@ class Price(models.Model):
             product__id=p.product.id).exists()
 
         if has_unsolvable_conflicts:
-            return False
+            return None
 
         # in case of conflict, update `date_to` of old price.
         conflicting_qs = Price.objects.filter(
@@ -109,6 +112,6 @@ class Price(models.Model):
         # save price
         try:
             p.save()
-            return True
+            return p
         except IntegrityError:
-            return False
+            return None

@@ -75,4 +75,4 @@ class RegisterView(View):
         group, _ = Group.objects.get_or_create(name='Volunteer')
         user.groups.add(group)
 
-        return ApiMessage('OK', status=201)
+        return ApiMessage('OK', status=200)

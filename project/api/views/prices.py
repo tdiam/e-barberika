@@ -251,7 +251,7 @@ class PricesView(View):
 
             result['prices'].append(dict(
                 price=float(price.price),
-                date=price.date_from.strftime('%Y-%m-%d'),
+                date=Price.convert_to_str(price.date_from),
                 productName=price.product.name,
                 productId=price.product.id,
                 productTags=[str(x) for x in price.product.tags.all()],
@@ -306,9 +306,18 @@ class PricesView(View):
             return ApiMessage400(f'Μη έγκυρη μορφή ημερομηνίας: {date_to}')
 
         # try creating new price
-        if not Price.add_price(**args):
+        p = Price.add_price(**args)
+
+        if p is None:
             return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         # all ok
-        # return 201, resource created
-        return HttpResponse(status=201)
+        # return 200, resource created
+        return ApiResponse({
+            'id': p.id,
+            'dateFrom': Price.convert_to_str(p.date_from),
+            'dateTo': Price.convert_to_str(p.date_to),
+            'productId': p.product.id,
+            'shopId': p.shop.id,
+            'price': p.price
+        }, status=200)
