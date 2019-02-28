@@ -9,8 +9,29 @@ def coordinates_validator(point):
     if not(-180 <= point.x <= 180 and -90 <= point.y <= 90):
         raise ValidationError('Latitude must be between -90 and 90 degrees and longitude between -180 and 180 degrees')
 
+
+class ShopTagManager(models.Manager):
+    def bulk_get_or_create(self, tags):
+        '''
+        Gets a list of strings and creates tags for those that don't exist
+        while fetching those that do.
+
+        Returns:
+        - List of ShopTag instances.
+        '''
+        # Omit repetitions
+        tags = set(tags)
+        tag_objs = []
+        for tag in tags:
+            tobj, _ = self.get_or_create(tag=tag)
+            tag_objs.append(tobj)
+        return tag_objs
+
+
 class ShopTag(models.Model):
     tag = models.CharField(primary_key=True, max_length=255)
+
+    objects = ShopTagManager()
 
     def __str__(self):
         return self.tag

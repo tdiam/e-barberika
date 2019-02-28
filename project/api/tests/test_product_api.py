@@ -209,9 +209,7 @@ class ProductItemTestCase(TestCase):
             category=fake.word(ext_word_list=None),
         )
         self.product.save()
-        tag_objs = [ProductTag(tag=t) for t in fake.bs().split()]
-        for t in tag_objs:
-            t.save()
+        tag_objs = ProductTag.objects.bulk_get_or_create(fake.bs().split())
 
         self.product.tags.set(tag_objs)
 

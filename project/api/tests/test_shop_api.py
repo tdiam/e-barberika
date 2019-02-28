@@ -226,9 +226,7 @@ class ShopItemTestCase(TestCase):
             coordinates=Point(lng, lat),
         )
         self.shop.save()
-        tag_objs = [ShopTag(tag=t) for t in fake.bs().split()]
-        for t in tag_objs:
-            t.save()
+        tag_objs = ShopTag.objects.bulk_get_or_create(fake.bs().split())
 
         self.shop.tags.set(tag_objs)
 

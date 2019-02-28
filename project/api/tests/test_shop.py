@@ -108,3 +108,17 @@ class ShopTestCase(TestCase):
         # Search for red tags. None should appear.
         red = Shop.objects.with_tags(['red'])
         self.assertEqual(len(red), 0)
+    
+    def test_shoptag_bulk_get_or_create(self):
+        '''Tests the bulk_get_or_create table-level method'''
+        # List of initial tags
+        tags = 'one two three'.split()
+
+        _ = ShopTag.objects.bulk_get_or_create(tags)
+
+        # Now repeat for all plus one new 'four' tag
+        tags.append('four')
+        _ = ShopTag.objects.bulk_get_or_create(tags + ['four'])
+
+        # First 3 must not be reinserted while the 4th must
+        self.assertEqual(ShopTag.objects.count(), 4)

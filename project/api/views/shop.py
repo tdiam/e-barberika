@@ -129,11 +129,9 @@ class ShopsView(View):
         except (ValidationError, IntegrityError):
             return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
 
-        tag_objs = [ShopTag(tag=tag) for tag in tags]
-        for t in tag_objs:
-            t.save()
-
+        tag_objs = ShopTag.objects.bulk_get_or_create(tags)
         shop.tags.set(tag_objs)
+
         return ApiResponse(shop, status=201)
 
 
@@ -187,11 +185,9 @@ class ShopView(View):
         except (ValidationError, IntegrityError):
             return ApiMessage('Η μορφή των δεδομένων δεν είναι έγκυρη', status=400)
 
-        tag_objs = [ShopTag(tag=tag) for tag in tags]
-        for t in tag_objs:
-            t.save()
-
+        tag_objs = ShopTag.objects.bulk_get_or_create(tags)
         shop.tags.set(tag_objs)
+
         return ApiResponse(shop)
 
     @method_decorator(volunteer_required)
@@ -235,10 +231,7 @@ class ShopView(View):
                 shop.coordinates = Point(shop.coordinates.x, lat)
 
         if tags:
-            tag_objs = [ShopTag(tag=tag) for tag in tags]
-            for t in tag_objs:
-                t.save()
-
+            tag_objs = ShopTag.objects.bulk_get_or_create(tags)
             shop.tags.set(tag_objs)
 
         try:

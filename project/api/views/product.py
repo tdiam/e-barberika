@@ -108,9 +108,7 @@ class ProductsView(View):
         except (ValidationError, IntegrityError):
             return ApiMessage('Μη έγκυρα δεδομένα', status=400)
 
-        tag_objs = [ProductTag(tag=tag) for tag in tags]
-        for t in tag_objs:
-            t.save()
+        tag_objs = ProductTag.objects.bulk_get_or_create(tags)
         product.tags.set(tag_objs)
         return ApiResponse(product, status=201)
 
@@ -154,11 +152,9 @@ class ProductView(View):
         except (ValidationError, IntegrityError):
             return ApiMessage('Μη έγκυρα δεδομένα', status=400)
 
-        tag_objs = [ProductTag(tag=tag) for tag in tags]
-        for t in tag_objs:
-            t.save()
-
+        tag_objs = ProductTag.objects.bulk_get_or_create(tags)
         product.tags.set(tag_objs)
+
         return ApiResponse(product)
 
     @method_decorator(volunteer_required)
@@ -187,10 +183,7 @@ class ProductView(View):
             product.category = category
 
         if tags:
-            tag_objs = [ProductTag(tag=tag) for tag in tags]
-            for t in tag_objs:
-                t.save()
-
+            tag_objs = ProductTag.objects.bulk_get_or_create(tags)
             product.tags.set(tag_objs)
 
         try:
