@@ -1,12 +1,10 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
-import { getCurrentDate } from '../utils/getCurrentDate';
+import { getCurrentDate } from '../utils/getCurrentDate'
 import { action, decorate, observable } from 'mobx'
 
-
 class SearchFilters extends Component {
-
   state = observable({
     dateFrom: getCurrentDate(),
     dateTo: '',
@@ -19,19 +17,19 @@ class SearchFilters extends Component {
 
   changeHandler = (e) => {
     this.setState({
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
     console.log(this.state.dateFrom)
     console.log(this.state.dateTo)
   }
-  
-  render() {
+
+  render () {
     const today = getCurrentDate()
-    let filters = 
-      <React.Fragment>
+    let filters =
+      <>
         <form onSubmit={ this.submitHandler }>
-          <label htmlFor="dateFrom">Από</label> 
-          <input 
+          <label htmlFor="dateFrom">Από</label>
+          <input
             type="date"
             name="dateFrom"
             defaultValue={ today }
@@ -39,17 +37,17 @@ class SearchFilters extends Component {
             onChange={ this.changeHandler }>
           </input>
           <br></br>
-          <label htmlFor="dateFrom">Μέχρι</label> 
-          <input 
+          <label htmlFor="dateFrom">Μέχρι</label>
+          <input
             type="date"
             name="dateΤο"
             min={ this.state.dateFrom }
-            onChange={ this.changeHandler }>    
+            onChange={ this.changeHandler }>
           </input>
         </form>
-      </React.Fragment>
+      </>
     let comp = (this.props.display) ? (filters) : (undefined)
-    return(
+    return (
       <div>
         { comp }
       </div>
