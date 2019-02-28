@@ -1,15 +1,16 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
+import { decorate, observable, action } from 'mobx'
 import { getCurrentDate } from '../utils/getCurrentDate'
 
 class SearchFilters extends Component {
 
   state = {
     dateFrom: getCurrentDate(),
-    dateTo: ''
+    dateTo: '',
+    sort: '',
   }
-
 
   submitHandler = (e) => {
     e.preventDefault()
@@ -22,8 +23,47 @@ class SearchFilters extends Component {
     })
   }
 
+  sortFieldEnabled = (i) => {
+    return (
+      i===1 || (
+      this.sortFieldEnabled(i-1) &&
+      this.state[`sort${i-1}-attr`] !== "none" && 
+      this.state[`sort${i-1}-type`] !== "none" &&
+      this.state[`sort${i-1}-attr`] &&
+      this.state[`sort${i-1}-type`]
+      )
+    )
+  }
+
   render () {
     const today = getCurrentDate()
+    let sortFilters =  
+      [1,2,3].map(i => (
+        <React.Fragment key={i}>
+          <label htmlFor={ `sort${i}` }>{ `${i}ο Κριτήριο Ταξινόμησης` }</label>
+              <select
+                disabled={ !this.sortFieldEnabled(i) } 
+                name={ `sort${i}-attr` }
+                onChange={ this.changeHandler }
+                defaultValue="none">
+                <option value="none"> -- </option>
+                <option value="geoDist"> Απόσταση </option>
+                <option value="price"> Τιμή </option>
+                <option value="date"> Ημερομηνία </option>
+              </select>
+              <select 
+                disabled={ !this.sortFieldEnabled(i) }
+                name={ `sort${i}-type` }
+                onChange={ this.changeHandler }
+                defaultValue="none"  
+              >
+                <option value="none"> -- </option>
+                <option name="asc">Αύξουσα</option>
+                <option name="desc">Φθίνουσα</option>
+              </select>
+              <br></br>
+        </React.Fragment>
+        ))
     let filters =
       <>
         <form onSubmit={ this.submitHandler }>
@@ -45,6 +85,9 @@ class SearchFilters extends Component {
             min={ this.state.dateFrom }
             onChange={ this.changeHandler }>    
           </input>
+          <br></br>
+          { sortFilters }
+
         </form>
       </>
     let comp = (this.props.display) ? (filters) : (undefined)
@@ -60,5 +103,10 @@ SearchFilters.propTypes = {
   display: PropTypes.bool.isRequired,
   setFilters: PropTypes.func.isRequired,
 }
+
+
+decorate(SearchFilters, {
+  changeHandler: action,
+})
 
 export default inject('store')(observer(SearchFilters))
