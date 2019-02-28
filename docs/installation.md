@@ -4,7 +4,46 @@
 
 Οι οδηγίες για την εγκατάσταση και ρύθμιση της PostgreSQL έχουν βασιστεί σε [αυτό το άρθρο](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postg$).
 
-## Οδηγίες
+## Αυτόματη εγκατάσταση
+
+Άνοιγμα του αρχείου `deploy.sh` για να οριστούν οι απαραίτητες παράμετροι:
+
+```
+# Set to "yes" to setup for development server
+# Any other value sets up for release
+DEBUG="yes"
+
+# Virtual environment folder
+VENV_FOLDER=".venv"
+VENV="$DIR/.venv"
+PIP="$VENV/bin/pip"
+PYTHON="$VENV/bin/python"
+
+# 100% secure
+# CAREFUL: will destroy previous db and user with this name
+# Don't change if you dont know what you are doing
+DB_NAME="asoures"
+DB_PASS="asoures"
+
+# default backend superuser
+SU_USER="asoures"
+SU_EMAIL="asoures@asoures.gr"
+SU_PASS="asoures"
+```
+
+Και κάνε την εγκατάσταση:
+
+```
+$ ./deploy.sh                       # εγκατάσταση
+
+$ source .venv/bin/activate         # ενεργοποίηση python environment
+$ python manage.py populatedb 30    # εισαγωγή 30 τυχαίων προϊόντων και καταστημάτων στη βάση
+
+```
+
+Το `./deploy.sh` φροντίζει αυτόματα για την εγκατάσταση όλων των απαραίτητων πακέτων, καθώς και το στήσιμο της βάσης και του environment. Για την έναρξη του server, βλέπε [Χρήση](usage.md).
+
+## Χειροκίνητα
 
 1. Εγκατάσταση των απαραίτητων requirements (για Ubuntu):  
    ```
@@ -76,3 +115,10 @@
    ```
    $ python manage.py migrate
    ```
+
+1. Ενημέρωσε τα hosts
+
+    ```
+    # ρυθμιση του hostfile, δεν χρειαζεται καθε φορα
+    sudo sh -- sh -c "echo '127.0.0.1 asoures.gr' >> /etc/hosts"
+    ```

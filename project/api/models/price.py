@@ -33,6 +33,9 @@ class Price(models.Model):
     date_from = models.DateField(null=False, blank=False, default=datetime_now)
     date_to = models.DateField(null=False, default=datetime_oneyearfromnow)
 
+    def __str__(self):
+        return f'Price[shop="{self.shop}", product="{self.product}", price="{self.price}", date_from="{self.date_from}", date_to="{self.date_to}"]' + (' -- old' if self.date_to < datetime.now().date() else '')
+
     @staticmethod
     def parse_date(date_str: str):
         '''

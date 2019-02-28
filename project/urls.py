@@ -14,9 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 '''
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.shortcuts import redirect
+
+from project.deployment.views import ReactAppView
 
 urlpatterns = [
+    # admin interface
+    path('admin', lambda r : redirect('admin/')),
     path('admin/', admin.site.urls),
+
+    # backend API
     path('observatory/api/', include('project.api.urls')),
+
+    # send all other paths to React
+    re_path(r'^(?!observatory/api).*$', ReactAppView.as_view()),
 ]

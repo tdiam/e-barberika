@@ -1,6 +1,11 @@
 import axios from 'axios'
 import qs from 'qs'
 
+require('dotenv').config()
+
+if (process.env.MODE !== 'production')
+    console.log('API BASE URL: ' + process.env.REACT_APP_API_URL)
+
 const instance = axios.create({
     // This is read from the .env file in the package root-level directory
     baseURL: process.env.REACT_APP_API_URL,
