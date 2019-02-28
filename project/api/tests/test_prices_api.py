@@ -74,10 +74,17 @@ class PricePostTestCase(TestCase):
 
         # returned price object
         returned = json.loads(response.content)
+        between = Price.dates_between(
+            Price.parse_date(self.request['dateFrom']),
+            Price.parse_date(self.request['dateTo'])
+        )
 
         # price object in db
-        for x in self.request:
-            self.assertEqual(returned[x], self.request[x])
+        for price in returned['prices']:
+            self.assertIn(price['date'], between)
+
+            for x in ['shopId', 'productId', 'price']:
+                self.assertEqual(price[x], self.request[x])
 
     def test_post_prices_without_user(self):
         ''' bad user --> 403 forbidden '''
