@@ -23,6 +23,7 @@ class SearchResults extends Component {
         { price.productName }, { price.shopName }, { price.price }
       </li>
     ))
+    // NOTE: enters twice
     return (
       <StateHandler state={ this.store.priceStore.state } ifPending={ <></> }>
         {() => (
