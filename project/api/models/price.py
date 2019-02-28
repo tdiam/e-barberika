@@ -1,6 +1,6 @@
 # price model
 
-import datetime
+from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
 from django.core.exceptions import ValidationError
@@ -14,11 +14,11 @@ from project.api.helpers import user_is_volunteer
 
 def datetime_now():
     '''default value for `date_from` field'''
-    return datetime.datetime.now()
+    return datetime.now()
 
 def datetime_oneyearfromnow():
     '''default value for `date_to` field`'''
-    return datetime.datetime.now() + datetime.timedelta(days=365)
+    return datetime.now() + timedelta(days=365)
 
 #########################
 
