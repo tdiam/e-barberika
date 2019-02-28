@@ -56,7 +56,7 @@ class SearchFilters extends Component {
       (sort1_type === constSortType && sort1_attr !== constSortAttr)
 
     /* specs: both or neither dates */
-    if (dateNeedsSync) this.setState({dateTo: dateFrom})
+    if (dateNeedsSync) await this.setState({dateTo: dateFrom})
     
     /* specs: all three all none of them */
     if (geoDist !== constGeoDist && geoLat === constGeoLat)
@@ -85,7 +85,7 @@ class SearchFilters extends Component {
       if (geoFilter)
         this.props.setFilters({
           dateFrom,
-          dateTo,
+          dateTo: this.state.dateTo,
           geoDist,
           geoLat,
           geoLng,
@@ -94,7 +94,7 @@ class SearchFilters extends Component {
       else 
         this.props.setFilters({
           dateFrom,
-          dateTo,
+          dateTo: this.state.dateTo,
           sort: this.state.sort
         })
 
