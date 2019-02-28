@@ -48,7 +48,7 @@ class Price(models.Model):
 
         return date
 
-    def convert_to_str(date: date):
+    def convert_to_str(date):
         return datetime.strftime(date, '%Y-%m-%d')
 
     @staticmethod
