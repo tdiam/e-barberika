@@ -27,7 +27,6 @@ class LoginForm extends Component {
          redirect
          src: https://gist.github.com/elitan/5e4cab413dc201e0598ee05287ee4338
          */
-        // console.log(this.store.rootStore.user)
         if (this.store.rootStore.user.username) this.props.history.push('/')
         else this.setState({password: '', message: 'Incorrect username or password!'})
     }

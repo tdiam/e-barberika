@@ -31,7 +31,7 @@ class Home extends Component {
                 <div>Welcome to Asoures!</div>
                 <SearchBar setQuery={ this.setQuery } />
                 <SearchFilters
-                    display={ /* this.showFilters() */ false }
+                    display={ this.showFilters() }
                     setFilters={ this.setFilters } 
                 />
                 <SearchResults  
