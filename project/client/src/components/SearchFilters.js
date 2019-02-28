@@ -7,22 +7,18 @@ import { action, decorate, observable } from 'mobx'
 
 class SearchFilters extends Component {
 
-  state = observable({
+  filters = observable({
     dateFrom: getCurrentDate(),
-    dateTo: '',
+    dateTo: ''
   })
 
   submitHandler = (e) => {
     e.preventDefault()
-    this.props.setFilters(this.state.filters)
+    this.props.setFilters(this.filters)
   }
 
   changeHandler = (e) => {
-    this.setState({
-      [e.target.name]: e.target.value
-    })
-    console.log(this.state.dateFrom)
-    console.log(this.state.dateTo)
+    this.filters[e.target.name] = e.target.value
   }
   
   render() {
@@ -35,15 +31,17 @@ class SearchFilters extends Component {
             type="date"
             name="dateFrom"
             defaultValue={ today }
-            max={ (this.state.dateTo !== '') ? ((this.state.dateTo > today) ? today : this.state.dateTo) : today }
+            /* do not allow dates after today's date or the selected dateTo, if it's earlier */
+            max={ (this.filters.dateTo !== '') ? ((this.filters.dateTo > today) ? today : this.filters.dateTo) : today }
             onChange={ this.changeHandler }>
           </input>
           <br></br>
-          <label htmlFor="dateFrom">Μέχρι</label> 
+          <label htmlFor="dateTo">Μέχρι</label> 
           <input 
             type="date"
-            name="dateΤο"
-            min={ this.state.dateFrom }
+            name="dateTo"
+            /* do not allow dates prior to dateFrom */
+            min={ this.filters.dateFrom }
             onChange={ this.changeHandler }>    
           </input>
         </form>
