@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
-import { decorate, observable, action } from 'mobx'
 import { getCurrentDate } from '../utils/getCurrentDate'
 
 class SearchFilters extends Component {
@@ -63,7 +62,7 @@ class SearchFilters extends Component {
               </select>
               <br></br>
         </React.Fragment>
-        ))
+      ))
     let filters =
       <>
         <form onSubmit={ this.submitHandler }>
@@ -103,10 +102,5 @@ SearchFilters.propTypes = {
   display: PropTypes.bool.isRequired,
   setFilters: PropTypes.func.isRequired,
 }
-
-
-decorate(SearchFilters, {
-  changeHandler: action,
-})
 
 export default inject('store')(observer(SearchFilters))
