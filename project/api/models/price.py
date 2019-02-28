@@ -1,6 +1,6 @@
 # price model
 
-from datetime import datetime, date
+from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
 from django.core.exceptions import ValidationError
@@ -8,6 +8,17 @@ from django.contrib.auth import get_user_model
 
 from project.api.models import Shop, Product
 from project.api.helpers import user_is_volunteer
+
+#########################
+
+
+def datetime_now():
+    '''default value for `date_from` field'''
+    return datetime.now()
+
+def datetime_oneyearfromnow():
+    '''default value for `date_to` field`'''
+    return datetime.now() + timedelta(days=365)
 
 #########################
 
@@ -19,8 +30,8 @@ class Price(models.Model):
 
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
-    date_from = models.DateField(null=False, blank=False, default=datetime.now)
-    date_to = models.DateField(null=True, default=None)
+    date_from = models.DateField(null=False, blank=False, default=datetime_now)
+    date_to = models.DateField(null=False, default=datetime_oneyearfromnow)
 
     def __str__(self):
         return f'Price[shop="{self.shop}", product="{self.product}", price="{self.price}", date_from="{self.date_from}", date_to="{self.date_to}"]' + (' -- old' if self.date_to < datetime.now().date() else '')
@@ -48,6 +59,9 @@ class Price(models.Model):
         '''
         checks that a Price object is valid. raises `ValidationError` otherwise
         '''
+        if (self.date_from or self.date_to) is None:
+            raise ValidationError('dates cannot be NULL')
+
         if self.price <= 0:
             raise ValidationError('price must be positive')
 
