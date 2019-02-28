@@ -1,12 +1,17 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
-import MaterialTable from 'material-table'
+import MaterialTable  from 'material-table'
+import Popup from 'reactjs-popup';
 
 class ShopListing extends Component {
     constructor(props) {
         super(props)
         this.root = this.props.store
         this.store = this.props.store.shopStore
+
+        this.state = {
+            modalOpen : false
+        }
 
         this.columns = [{
             title: 'Όνομα καταστήματος',
@@ -21,11 +26,12 @@ class ShopListing extends Component {
         }]
 
         this.actions = [{
-            icon: 'delete',
-            orig: this,
-            tooltip: 'Διαγραφή Καταστήματος',
-            onClick: this.called
+            this: this,
+            onClick: this.editOnClick,
+            icon: 'edit',
+            name: 'Επεξεργασία καταστήματος'
         }]
+
     }
 
     async loadShops() {
@@ -39,24 +45,35 @@ class ShopListing extends Component {
         await this.loadShops()
     }
 
-    async called(e, row) {
-        console.log(this)
-        console.log("Clicked on", row.name)
+    async editOnClick(e, rowData) {
+        this.this.store.getShop(rowData.id)
+        this.this.openModal()
+    }
 
-        await this.orig.store.deleteShop(row.id)
-        await this.orig.loadShops()
+    openModal() {
+        this.setState({
+            modalOpen: true
+        })
+    }
+
+    closeModal() {
+        this.setState({
+            modalOpen: false
+        })
     }
 
     render() {
-        if (! this.root.isLoggedIn) {
-            return (
-                <div>
-                    You must log in
-                </div>
-            )
-        }
+        //DEBUG
+        // if (! this.root.isLoggedIn) {
+        //     return (
+        //         <div>
+        //             You must log in
+        //         </div>
+        //     )
+        // }
         if (this.store.state === 'done') {
             return (
+                <>
                 <MaterialTable 
                     data={this.store.shops}
                     columns={this.columns}
@@ -67,6 +84,17 @@ class ShopListing extends Component {
                         pageSize: 10
                     }}
                 />
+                <Popup
+                    open={this.state.modalOpen}
+                    onClose={() => this.closeModal()} >
+                    
+                    <div>{this.store.shop.id}</div>
+                    <div>{this.store.shop.name}</div> 
+                    <div>{this.store.shop.address}</div>
+                    <div>{this.store.shop.tags}</div>
+
+                </Popup>
+                </>
             )
         }
         return (
