@@ -15,6 +15,11 @@ const constDateFrom = getCurrentDate(),
 
 class SearchFilters extends Component {
 
+
+  /**
+   * @var {String} sort1_attr: name of html sort attribute (values: 'geoDist' / 'date' / 'price'),
+   *  1 in name is legacy from multiple sorting filters
+   */
   state = {
     dateFrom: constDateFrom,
     dateTo: constDateTo,
@@ -28,47 +33,73 @@ class SearchFilters extends Component {
 
   err_msg = ''
 
+  /**
+   * Handle filter-form submission
+   * 
+   * @param {Event} e
+   * @returns Nothing
+   */
   submitHandler = async (e) => {
     e.preventDefault()
 
-    const { 
+    let { 
       dateFrom, dateTo, geoDist, geoLng, geoLat, sort1_type, sort1_attr 
     } = this.state
 
-    // assumes simult set of geo{Lat,Lng}
+    // assumes simultaneous set of geo{Lat,Lng}
     const geoFilter = geoDist !== constGeoDist && geoLat !== constGeoLat,
-    dateNeedsSync = dateTo === '',
-    sortFilter = sort1_type !== 'none' && sort1_attr !== 'none',
-    halfSortFilter = (sort1_type !== 'none' && sort1_attr === 'none') || (sort1_type === 'none' && sort1_attr !== 'none')
+    dateNeedsSync = dateTo === constDateTo,
+    sortFilter = sort1_type !== constSortType && sort1_attr !== constSortAttr,
+    halfSortFilter = 
+      (sort1_type !== constSortType && sort1_attr === constSortAttr) 
+      || 
+      (sort1_type === constSortType && sort1_attr !== constSortAttr)
 
+    /* specs: both or neither dates */
     if (dateNeedsSync) this.setState({dateTo: dateFrom})
-    if (geoDist !== -1 && geoLat === -1) 
+    
+    /* specs: all three all none of them */
+    if (geoDist !== constGeoDist && geoLat === constGeoLat)
       this.err_msg += "Πρέπει να συνδιάσετε το φίλτρο απόστασης με επιλογή σημείου στο χάρτη.\n"
-    if (geoDist === -1 && geoLat !== -1) 
+    if (geoDist === constGeoDist && geoLat !== constGeoLat) 
       this.err_msg += "Πρέπει να συνδιάσετε την επιλογή σημείου στο χάρτη με το φίλτρο απόστασης.\n"
+    
+    /* if sorting was "properly" selected */
     if (sortFilter) 
+      /* check if user sorts by distance without setting geoFilter */
       if (sort1_attr === 'geoDist' && !geoFilter) 
         this.err_msg += "Πρέπει να συμπληρώσετε τα φίλτρα απόστασης για να ταξινομήσετε κατά απόσταση.\n"
       else
         await this.setState({
           sort: `${sort1_attr}|${sort1_type}`
         })
-      
+    
+    /* if only one of the 2 fields was selected */
     else if (halfSortFilter)
       this.err_msg += "Πρέπει να επιλέξετε και τα δύο ή κανένα πεδίο ταξινόμησης.\n"
+    /* else sort is `Empty` as far as `Home` is concerned */
 
-    console.log(this.state)
-
+    /* if no error occured, use setFilters to notify Home */
     if (this.err_msg === '') {
-      this.props.setFilters({
-        dateFrom,
-        dateTo,
-        geoDist,
-        geoLat,
-        geoLng,
-        sort: this.state.sort
-      })
-      await this.setState({
+      
+      if (geoFilter)
+        this.props.setFilters({
+          dateFrom,
+          dateTo,
+          geoDist,
+          geoLat,
+          geoLng,
+          sort: this.state.sort
+        })
+      else 
+        this.props.setFilters({
+          dateFrom,
+          dateTo,
+          sort: this.state.sort
+        })
+
+      /* reset (for semantics) */
+      this.setState({
         dateFrom: constDateFrom,
         dateTo: constDateTo,
         sort: constSort,
@@ -78,9 +109,10 @@ class SearchFilters extends Component {
         geoLat: constGeoLat,
         geoLng: constGeoLng,
       })
-    } else {
+
+    } else { /* if a semantic error occured, notify and leave state as is */
       window.alert(this.err_msg)
-      this.err_msg = '' 
+      this.err_msg = '' // otherwise it will accumulate 
     }
   }
 
@@ -90,6 +122,13 @@ class SearchFilters extends Component {
     })
   }
 
+  /**
+   * If multiple sort filters can be used, restrict change on sorting filters
+   * with lower prio from the highest prio unset filter
+   * 
+   * @param {integer} i
+   * @returns `true` if all filters with prio  <`i` have been `properly` (no semantics) set  
+   */
   sortFieldEnabled = (i) => {
     return (
       i===1 || (
@@ -103,9 +142,12 @@ class SearchFilters extends Component {
   }
 
   constructSortFilters = () => {
+    const numOfSortingFilters = 1 
+    let possibleSortingFilters = Array.apply(null, Array(numOfSortingFilters))
+    possibleSortingFilters = possibleSortingFilters.map((x, i) => (i+1))
     return (
       /* simplified filter (neoaggelos suggestion) */
-        [1].map(i => (
+        possibleSortingFilters.map(i => (
           <React.Fragment key={i}>
             <label htmlFor={ `sort${i}` }>{ "Ταξινόμηση" }</label>
                 <select
@@ -166,7 +208,7 @@ class SearchFilters extends Component {
       <>
         <p>Map goes here</p>
         <label htmlFor="geoDist">Απόσταση</label> 
-        <input type="number" name="geoDist"></input>
+        <input type="number" step="1" min="1" name="geoDist"></input>
       </>
     )
   }
