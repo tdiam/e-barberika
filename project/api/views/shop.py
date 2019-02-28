@@ -134,7 +134,7 @@ class ShopsView(View):
             t.save()
 
         shop.tags.set(tag_objs)
-        return ApiResponse(shop, status=201)
+        return ApiResponse(shop, status=200)
 
 
 class ShopView(View):

@@ -41,6 +41,7 @@ def ParseUrlEncodedParametersMiddleware(get_response):
             return get_response(request, *args, **kwargs)
 
         request.data = QueryDict(request.body, mutable=True)
+        # print('Middleware:', request._body, request.data)
 
         # Make GET parameters available in request.data too
         if request.method == 'GET':

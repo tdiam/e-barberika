@@ -168,12 +168,12 @@ class ShopsPostTestCase(TestCase):
         self.assertEqual(res.status_code, 401)
 
     def test_create_with_good_data(self):
-        '''Check with normal data to see if 201 is returned and the entry is created'''
+        '''Check with normal data to see if 200 is returned and the entry is created'''
         req = self.factory.post(self.url, self.data)
         req.user = self.volunteer
         res = self.view(req)
 
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.status_code, 200)
         self.assertTrue(Shop.objects.filter(name=self.data['name']).exists())
         for tag in self.data['tags']:
             self.assertTrue(ShopTag.objects.filter(shop__name=self.data['name'], tag=tag).exists())

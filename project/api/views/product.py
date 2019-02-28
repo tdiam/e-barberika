@@ -94,6 +94,8 @@ class ProductsView(View):
         category = request.data.get('category')
         tags = request.data.getlist('tags')
 
+        # print('POST data received: ', request.encoding, request.data)
+
         product = Product(
             name=name,
             description=description,
@@ -112,7 +114,7 @@ class ProductsView(View):
         for t in tag_objs:
             t.save()
         product.tags.set(tag_objs)
-        return ApiResponse(product, status=201)
+        return ApiResponse(product, status=200)
 
 class ProductView(View):
     def get(self, request, pk=None):
