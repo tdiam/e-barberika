@@ -2,13 +2,12 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
 import { getCurrentDate } from '../utils/getCurrentDate'
-import { action, decorate, observable } from 'mobx'
 
 class SearchFilters extends Component {
-  state = observable({
+  state = {
     dateFrom: getCurrentDate(),
     dateTo: '',
-  })
+  }
 
   submitHandler = (e) => {
     e.preventDefault()
@@ -59,9 +58,5 @@ SearchFilters.propTypes = {
   display: PropTypes.bool.isRequired,
   setFilters: PropTypes.func.isRequired,
 }
-
-decorate(SearchFilters, {
-  changeHandler: action,
-})
 
 export default inject('store')(observer(SearchFilters))
