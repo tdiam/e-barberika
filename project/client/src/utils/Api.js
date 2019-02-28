@@ -7,40 +7,40 @@ if (process.env.MODE !== 'production')
     console.log('API BASE URL: ' + process.env.REACT_APP_API_URL)
 
 const instance = axios.create({
-    // This is read from the .env file in the package root-level directory
-    baseURL: process.env.REACT_APP_API_URL,
-    headers: {
-        common: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    }
+  // This is read from the .env file in the package root-level directory
+  baseURL: process.env.REACT_APP_API_URL,
+  headers: {
+    common: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  },
 })
 
 const qsConfig = {
-    indices: false
+  indices: false,
 }
 
 /**
  * API helper.
- * 
+ *
  * @param {Object} args Supported parameters: { token }
  */
 export default (args = {}) => {
-    // If token is given as an argument, include it in the X-OBSERVATORY-AUTH header
-    const { token } = args
-    const reqConfig = token ? {
-        headers: {
-            'X-OBSERVATORY-AUTH': token
-        }
-    } : {}
+  // If token is given as an argument, include it in the X-OBSERVATORY-AUTH header
+  const { token } = args
+  const reqConfig = token ? {
+    headers: {
+      'X-OBSERVATORY-AUTH': token,
+    },
+  } : {}
 
-    // Axios by default supports only JSON requests
-    // We use qs.stringify() to encode Javascript objects into URLEncoded form 'a=b&c=d'
-    return {
-        get: (url, params) => instance.get(url, { params, ...reqConfig }),
-        post: (url, data) => instance.post(url, qs.stringify(data, qsConfig), reqConfig),
-        put: (url, data) => instance.put(url, qs.stringify(data, qsConfig), reqConfig),
-        patch: (url, data) => instance.patch(url, qs.stringify(data, qsConfig), reqConfig),
-        delete: (url) => instance.delete(url, reqConfig),
-    }
+  // Axios by default supports only JSON requests
+  // We use qs.stringify() to encode Javascript objects into URLEncoded form 'a=b&c=d'
+  return {
+    get: (url, params) => instance.get(url, { params, ...reqConfig }),
+    post: (url, data) => instance.post(url, qs.stringify(data, qsConfig), reqConfig),
+    put: (url, data) => instance.put(url, qs.stringify(data, qsConfig), reqConfig),
+    patch: (url, data) => instance.patch(url, qs.stringify(data, qsConfig), reqConfig),
+    delete: (url) => instance.delete(url, reqConfig),
+  }
 }

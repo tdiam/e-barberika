@@ -6,13 +6,13 @@ import { inject, observer } from 'mobx-react'
  *
  * Form-based component, see AddShop.js for an explanation on how we build and use them.
  */
-class LoginForm extends Component {
+class SignupForm extends Component {
   constructor (props) {
     super(props)
     this.store = this.props.store.authStore
   }
 
-  state = { username: '', password: '', message: '' }
+  state = { username: '', password: '', email: '' }
 
   handleChange = (e) => {
     this.setState({
@@ -20,15 +20,9 @@ class LoginForm extends Component {
     })
   }
 
-  handleSubmit = async (e) => {
+  handleSubmit = (e) => {
     e.preventDefault()
-    await this.store.authenticate(this.state.username, this.state.password)
-    /**
-     * redirect
-     * src: https://gist.github.com/elitan/5e4cab413dc201e0598ee05287ee4338
-     */
-    if (this.store.rootStore.user.username) this.props.history.push('/')
-    else this.setState({ password: '', message: 'Incorrect username or password!' })
+    this.store.authenticate(this.state.username, this.state.password, this.state.email)
   }
 
   render () {
@@ -44,11 +38,15 @@ class LoginForm extends Component {
           <input name="password" id="password" type="password" required
             value={ this.state.password } onChange={ this.handleChange }></input>
         </div>
-        <p style={{ color: '#ff0000' }}>{ this.state.message }</p>
-        <button>Log in</button>
+        <div>
+          <label htmlFor="email">E-mail:</label>
+          <input name="email" id="email" type="email" required
+            value={ this.state.email } onChange={ this.handleChange }></input>
+        </div>
+        <button>Sign up</button>
       </form>
     )
   }
 }
 
-export default inject('store')(observer(LoginForm))
+export default inject('store')(observer(SignupForm))
