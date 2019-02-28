@@ -9,11 +9,35 @@ class SearchResults extends Component {
     this.store = this.props.store
   }
 
+  applyQueryLogic = (urlps, query) => {
+    const tags = query.split(' ')
+    tags.forEach(tag => (urlps.append('tags', tag)))
+  }
+
+  applyFilterLogic = (urlps, filters) => {
+    const { dateFrom, dateTo, geoDist, geoLat, geoLng, sort } = filters
+    const geoFilter = (geoDist !== undefined)
+    const dateFilter = (dateFrom !== undefined)
+    const sortingFilter = (sort !== undefined)
+    
+    if (dateFilter) {
+      urlps.append("dateFrom", dateFrom)
+      urlps.append("dateTo", dateTo)
+    }
+    if (geoFilter) {
+      urlps.append("geoDist", geoDist)
+      urlps.append("geoLat", geoLat)
+      urlps.append("geoLng", geoLng)
+    }
+    if (sortingFilter)
+      urlps.append("sort", sort)
+  }
+
   componentWillReceiveProps (nextProps) {
     // Execute API call that will update the store state
     let params = new URLSearchParams()
-    let tags = nextProps.query.split(' ')
-    tags.forEach(tag => (params.append('tags', tag)))
+    this.applyQueryLogic(params, nextProps.query) // by reference
+    this.applyFilterLogic(params, nextProps.filters) 
     this.store.priceStore.getPrices(params)
   }
 

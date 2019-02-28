@@ -5,7 +5,7 @@ import { getCurrentDate } from '../utils/getCurrentDate'
 
 const constDateFrom = getCurrentDate(),
  constDateTo = '',
- constSort = '',
+ constSort = undefined,
  constSortAttr = 'none',
  constSortType = 'none',
  constGeoDist = -1,
@@ -77,7 +77,7 @@ class SearchFilters extends Component {
     /* if only one of the 2 fields was selected */
     else if (halfSortFilter)
       this.err_msg += "Πρέπει να επιλέξετε και τα δύο ή κανένα πεδίο ταξινόμησης.\n"
-    /* else sort is `Empty` as far as `Home` is concerned */
+    /* else sort is `Empty` as far as `SearchResults` is concerned */
 
     /* if no error occured, use setFilters to notify Home */
     if (this.err_msg === '') {
