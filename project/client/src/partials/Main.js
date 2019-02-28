@@ -11,20 +11,20 @@ import SignupForm from '../pages/SignupForm'
 import Page404 from '../pages/Page404'
 
 class Main extends Component {
-    render() {
-        return (
-            <Switch>
-                <Route exact path="/" component={ Home } />
-                <Route exact path="/login" component={ LoginForm } />
-                <Route exact path="/shops" component={ ShopListing } />
-                <Route path="/shops/:id" component={ Shop } />
-                <Route exact path="/shops/add" component={ AddShop } />
-                <Route exact path="/map" component={ MapDemo } />
-                <Route exact path="/signup" component={ SignupForm } />
-                <Route component={ Page404 } />
-            </Switch>
-        )
-    }
+  render () {
+    return (
+      <Switch>
+        <Route exact path='/' component={Home} />
+        <Route exact path='/login' component={LoginForm} />
+        <Route exact path='/shops' component={ShopListing} />
+        <Route path='/shops/:id' component={Shop} />
+        <Route exact path='/shops/add' component={AddShop} />
+        <Route exact path='/map' component={MapDemo} />
+        <Route exact path='/signup' component={SignupForm} />
+        <Route component={ Page404 } />
+      </Switch>
+    )
+  }
 }
 
 export default Main

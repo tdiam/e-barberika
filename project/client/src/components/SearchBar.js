@@ -1,15 +1,14 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 
-export default class SearchBar extends Component {  
-  
+export default class SearchBar extends Component {
   state = {
-      searchbar: '',
+    searchbar: '',
   }
 
   handleChange = (e) => {
     this.setState({
-        [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
   }
 
@@ -18,18 +17,18 @@ export default class SearchBar extends Component {
     this.props.setQuery(this.state.searchbar)
   }
 
-  render() {
+  render () {
     return (
       <div>
-        <form onSubmit={ this.submitHandler }>  
-            <input 
-                type="text" 
-                name="searchbar" 
-                id="searchbar"
-                onChange={ this.handleChange }
-                text={ this.state.searchbar }
-            />
-            <button type="submit">-></button>
+        <form onSubmit={ this.submitHandler }>
+          <input
+            type="text"
+            name="searchbar"
+            id="searchbar"
+            onChange={ this.handleChange }
+            text={ this.state.searchbar }
+          />
+          <button type="submit">-></button>
         </form>
       </div>
     )
@@ -37,5 +36,5 @@ export default class SearchBar extends Component {
 }
 
 SearchBar.propTypes = {
-    setQuery: PropTypes.func.isRequired,
+  setQuery: PropTypes.func.isRequired,
 }

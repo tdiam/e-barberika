@@ -1,38 +1,39 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
-import { getCurrentDate } from '../utils/getCurrentDate';
-import { action, decorate, observable } from 'mobx'
-
+import { getCurrentDate } from '../utils/getCurrentDate'
 
 class SearchFilters extends Component {
 
-  filters = observable({
+  state = {
     dateFrom: getCurrentDate(),
     dateTo: ''
-  })
+  }
+
 
   submitHandler = (e) => {
     e.preventDefault()
-    this.props.setFilters(this.filters)
+    this.props.setFilters(this.state)
   }
 
   changeHandler = (e) => {
-    this.filters[e.target.name] = e.target.value
+    this.setState(
+      {[e.target.name]: e.target.value
+    })
   }
-  
-  render() {
+
+  render () {
     const today = getCurrentDate()
-    let filters = 
-      <React.Fragment>
+    let filters =
+      <>
         <form onSubmit={ this.submitHandler }>
-          <label htmlFor="dateFrom">Από</label> 
-          <input 
+          <label htmlFor="dateFrom">Από</label>
+          <input
             type="date"
             name="dateFrom"
             defaultValue={ today }
             /* do not allow dates after today's date or the selected dateTo, if it's earlier */
-            max={ (this.filters.dateTo !== '') ? ((this.filters.dateTo > today) ? today : this.filters.dateTo) : today }
+            max={ (this.state.dateTo !== '') ? ((this.state.dateTo > today) ? today : this.state.dateTo) : today }
             onChange={ this.changeHandler }>
           </input>
           <br></br>
@@ -41,13 +42,13 @@ class SearchFilters extends Component {
             type="date"
             name="dateTo"
             /* do not allow dates prior to dateFrom */
-            min={ this.filters.dateFrom }
+            min={ this.state.dateFrom }
             onChange={ this.changeHandler }>    
           </input>
         </form>
-      </React.Fragment>
+      </>
     let comp = (this.props.display) ? (filters) : (undefined)
-    return(
+    return (
       <div>
         { comp }
       </div>
@@ -59,9 +60,5 @@ SearchFilters.propTypes = {
   display: PropTypes.bool.isRequired,
   setFilters: PropTypes.func.isRequired,
 }
-
-decorate(SearchFilters, {
-  changeHandler: action,
-})
 
 export default inject('store')(observer(SearchFilters))
