@@ -198,7 +198,7 @@ class PricesView(View):
         prices = []
         for p in prices_db:
             # only keep dates within our range
-            good = [goodone for goodone in p.explode()
+            good = [goodone for goodone in p.explode(date_from_str, date_to_str)
                         if date_from_str <= goodone['date'] <= date_to_str]
             prices += good
 
@@ -293,6 +293,6 @@ class PricesView(View):
             return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         # all ok
-        objects = p.explode()
+        objects = p.explode(Price.convert_to_str(p.date_from), Price.convert_to_str(p.date_to))
         res = dict(start=0, count=len(objects), total=len(objects), prices=objects)
         return ApiResponse(res, status=200)
