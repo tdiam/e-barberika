@@ -45,8 +45,7 @@ class Price(models.Model):
             raise ValueError('expecting YYYY-MM-DD format')
 
         date = datetime.strptime(date_str, '%Y-%m-%d')
-
-        return date
+        return date.date()
 
     def convert_to_str(date):
         return datetime.strftime(date, '%Y-%m-%d')
@@ -116,9 +115,20 @@ class Price(models.Model):
         except IntegrityError:
             return None
 
+    def dates_between(self, date_from, date_to):
+        '''return an iteratable of dates from @date_from until @date_to (inclusive)'''
+        result = []
+        dt = max(date_from, self.date_from)
+        date_to = min(date_to, self.date_to)
+        while dt <= date_to:
+            result.append(dt)
+            dt += timedelta(days=1)
+
+        return result
+
     @staticmethod
-    def dates_between(date_from, date_to):
-        '''return an iteratable of dates from @date_from until @date_to (non inclusive)'''
+    def static_dates_between(date_from, date_to):
+        '''return an iteratable of dates from @date_from until @date_to (inclusive)'''
         result = []
         dt = date_from
         while dt <= date_to:
@@ -127,19 +137,22 @@ class Price(models.Model):
 
         return result
 
-    def explode(self):
+    def explode(self, date_from_str, date_to_str):
         '''given a price object, return a list of its data for all days'''
         result = []
 
-        for date in Price.dates_between(self.date_from, self.date_to):
+        productTags =  [tag.tag for tag in self.product.tags.all()]
+        shopTags = [tag.tag for tag in self.shop.tags.all()]
+
+        for date in self.dates_between(Price.parse_date(date_from_str), Price.parse_date(date_to_str)):
             o = {
                 'date': Price.convert_to_str(date),
                 'productId': self.product.id,
                 'productName': self.product.name,
-                'productTags': [tag.tag for tag in self.product.tags.all()],
+                'productTags': productTags,
                 'shopName': self.shop.name,
                 'shopAddress': self.shop.address,
-                'shopTags': [tag.tag for tag in self.shop.tags.all()],
+                'shopTags': shopTags,
                 'shopId': self.shop.id,
                 'price': float(self.price)
             }
