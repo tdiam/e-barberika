@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.http import HttpResponse
 from django.views import View
@@ -48,8 +48,8 @@ class PricesView(View):
         geo_lng = request.data.get('geoLng', None)
         geo_lat = request.data.get('geoLat', None)
 
-        date_from = request.data.get('dateFrom', None)
-        date_to = request.data.get('dateTo', None)
+        date_from_str = request.data.get('dateFrom', None)
+        date_to_str = request.data.get('dateTo', None)
 
         shops = request.data.getlist('shops', None)
         products = request.data.getlist('products', None)
@@ -122,16 +122,17 @@ class PricesView(View):
             geo_filter = True
 
         # date checks
-        if (date_from or date_to) is None:
+        if (date_from_str or date_to_str) is None:
             date_from = datetime.now()
-            date_to = date_from
+            date_to = date_from + timedelta(days=1)
+            date_from_str = date_to_str = Price.convert_to_str(date_from)
         else:
-            if (date_from and date_to) is None:
+            if (date_from_str and date_to_str) is None:
                 return ApiMessage400('Τα `dateFrom` και `dateTo` πρεπει να οριζονται μαζι')
 
             try:
-                date_from = Price.parse_date(date_from)
-                date_to = Price.parse_date(date_to)
+                date_from = Price.parse_date(date_from_str)
+                date_to = Price.parse_date(date_to_str)
 
                 if not Price.check_dates(date_from, date_to):
                     return ApiMessage400('Το `dateFrom` πρεπει να ειναι παλαιοτερο του `dateTo`')
@@ -165,41 +166,47 @@ class PricesView(View):
         ########################################################################
         ## querying
         ########################################################################
-        prices = Price.objects.all()
+        prices_db = Price.objects.all()
 
         if shop_ids_filter:
-            prices = prices.filter(shop__id__in=shops)
+            prices_db = prices_db.filter(shop__id__in=shops)
 
         if product_ids_filter:
-            prices = prices.filter(product__id__in=products)
+            prices_db = prices_db.filter(product__id__in=products)
 
         if tags_filter:
             shops_with_tags = Shop.objects.with_tags(tags)
             products_with_tags = Product.objects.with_tags(tags)
 
             # this could be a model method :)
-            prices = prices.filter(
+            prices_db = prices_db.filter(
                 Q(shop__in=shops_with_tags)
                 | Q(product__in=products_with_tags))
 
         if date_filter:
             # this could be a model method :)
-            prices = prices.filter(
+            prices_db = prices_db.filter(
                 Q(date_to__gte=date_from, date_to__lte=date_to)
                 | Q(date_from__gte=date_from, date_from__lte=date_to)
                 | Q(date_from__lte=date_from, date_to__gte=date_to))
 
         if geo_filter:
             shops_within_distance = Shop.objects.within_distance_from(geo_lat, geo_lng, km=geo_dist)
-            prices = prices.filter(shop__in=shops_within_distance)
-            prices = prices.annotate(geoDist=Distance('shop__coordinates', geo_point))
+            prices_db = prices_db.filter(shop__in=shops_within_distance)
+            prices_db = prices_db.annotate(geoDist=Distance('shop__coordinates', geo_point))
+
+        prices = []
+        for p in prices_db:
+            # only keep dates within our range
+            good = [goodone for goodone in p.explode()
+                        if date_from_str <= goodone['date'] <= date_to_str]
+            prices += good
 
         ########################################################################
         ## sorting
         ########################################################################
-        sort_fields = []
-        # sort = [str(x) for x in sort]
 
+        sort_fields = []
         order_by_args = []
         for x in sort:
             try:
@@ -216,55 +223,29 @@ class PricesView(View):
 
                 sort_fields.append(sort_field)
 
-                if sort_field == 'date':
-                    sort_field = 'date_from'
-                if sort_type == 'DESC':
-                    sort_field = f'-{sort_field}'
+                if sort_field == 'geoDist':
+                    sort_field = 'shopDist'
 
-                order_by_args.append(sort_field)
+                order_by_args.append((sort_field, sort_type))
             except ValueError:
                 ApiMessage400(f'Μη εγκυρο κριτηριο ταξινομησης {x}')
 
         # do the actual sorting
-        prices = prices.order_by(*order_by_args)
+        if prices and order_by_args:
+            Price.sort_objects(prices, order_by_args)
 
         ########################################################################
         ## paging
         ## NOTE: django pagination does not allow arbitrary `start` and `count`
         ## Just slice the objects properly
         ########################################################################
-        total = prices.count()
+        total = len(prices)
         prices = prices[start:(start+count)]
 
         ########################################################################
-        ## bake json
+        ## bake json and return it
         ########################################################################
-
-        # structure
-        result = dict(start=start, count=count, total=total, prices=[])
-
-        # items
-        for price in prices:
-            shop_distance = None
-            if geo_filter:
-                shop_distance = price.geoDist.km
-
-            result['prices'].append(dict(
-                price=float(price.price),
-                date=Price.convert_to_str(price.date_from),
-                productName=price.product.name,
-                productId=price.product.id,
-                productTags=[str(x) for x in price.product.tags.all()],
-                shopId=price.shop.id,
-                shopName=price.shop.name,
-                shopTags=[str(x) for x in price.shop.tags.all()],
-                shopAddress=price.shop.address,
-                shopDist=shop_distance
-            ))
-
-        ########################################################################
-        ## its over, its done
-        ########################################################################
+        result = dict(start=start, count=count, total=total, prices=prices)
         return ApiResponse(result)
 
 
@@ -312,12 +293,6 @@ class PricesView(View):
             return ApiMessage400('Ήταν αδύνατη η πρόσθεση της πληροφορίας στο σύστημα')
 
         # all ok
-        # return 200, resource created
-        return ApiResponse({
-            'id': p.id,
-            'dateFrom': Price.convert_to_str(p.date_from),
-            'dateTo': Price.convert_to_str(p.date_to),
-            'productId': p.product.id,
-            'shopId': p.shop.id,
-            'price': p.price
-        }, status=200)
+        objects = p.explode()
+        res = dict(start=0, count=len(objects), total=len(objects), prices=objects)
+        return ApiResponse(res, status=200)

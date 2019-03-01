@@ -56,13 +56,13 @@ class Price(models.Model):
         '''
         Ensure consistency
         '''
-        return (date_from or date_to) is None or date_from <= date_to
+        return (date_from is not None) and (date_to is not None) and date_from <= date_to
 
     def clean(self):
         '''
         checks that a Price object is valid. raises `ValidationError` otherwise
         '''
-        if (self.date_from or self.date_to) is None:
+        if (self.date_from is None) or (self.date_to is None):
             raise ValidationError('dates cannot be NULL')
 
         if self.price <= 0:
@@ -115,3 +115,50 @@ class Price(models.Model):
             return p
         except IntegrityError:
             return None
+
+    @staticmethod
+    def dates_between(date_from, date_to):
+        '''return an iteratable of dates from @date_from until @date_to (non inclusive)'''
+        result = []
+        dt = date_from
+        while dt <= date_to:
+            result.append(dt)
+            dt += timedelta(days=1)
+
+        return result
+
+    def explode(self):
+        '''given a price object, return a list of its data for all days'''
+        result = []
+
+        for date in Price.dates_between(self.date_from, self.date_to):
+            o = {
+                'date': Price.convert_to_str(date),
+                'productId': self.product.id,
+                'productName': self.product.name,
+                'productTags': [tag.tag for tag in self.product.tags.all()],
+                'shopName': self.shop.name,
+                'shopAddress': self.shop.address,
+                'shopTags': [tag.tag for tag in self.shop.tags.all()],
+                'shopId': self.shop.id,
+                'price': float(self.price)
+            }
+
+            try:
+                o['shopDist'] = self.geoDist.km
+            except AttributeError:
+                o['shopDist'] = 0
+
+            result.append(o)
+
+        return result
+
+    @staticmethod
+    def sort_objects(objects, criteria):
+        # sort by each criterion in reverse order
+        if not criteria or not objects:
+            return
+
+        criteria.reverse()
+        for (sort_field, sort_type) in criteria:
+            objects.sort(key=lambda o: o[sort_field], reverse=(sort_type=='DESC'))
