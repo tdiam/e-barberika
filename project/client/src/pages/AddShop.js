@@ -1,3 +1,8 @@
+/**
+ * NOTE: UNUSED, kept only as reference.
+ * Delete if deemed appropriate
+ */
+
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 

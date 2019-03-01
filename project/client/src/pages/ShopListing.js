@@ -4,6 +4,7 @@ import MaterialTable  from 'material-table'
 import Popup from 'reactjs-popup'
 import tableOptions from '../utils/tableOptions';
 
+import ShopModal from '../components/ShopModal'
 
 class ShopListing extends Component {
     constructor(props) {
@@ -12,7 +13,8 @@ class ShopListing extends Component {
         this.store = this.props.store.shopStore
 
         this.state = {
-            modalOpen : false
+            modalOpen : false,
+            modalMode : null
         }
 
         this.columns = [{
@@ -49,12 +51,13 @@ class ShopListing extends Component {
 
     async editOnClick(e, rowData) {
         this.this.store.getShop(rowData.id)
-        this.this.openModal()
+        this.this.openModal('edit')
     }
 
-    openModal() {
+    openModal(mode = 'edit') {
         this.setState({
-            modalOpen: true
+            modalOpen: true,
+            modalMode: mode
         })
     }
 
@@ -79,24 +82,23 @@ class ShopListing extends Component {
                 <MaterialTable 
                     data={this.store.shops}
                     columns={this.columns}
-                    title={"Shops"}
+                    title={"Λίστα καταστημάτων"}
                     actions={this.actions}
                     {...tableOptions}
                     options={{
                         actionsColumnIndex: -1,
-                        pageSize: 10
+                        pageSize: 10,
+                        pageSizeOptions: [10, 20, 50]
                     }}
                 />
                 <Popup
+                    closeOnDocumentClick={false}
                     open={this.state.modalOpen}
                     onClose={() => this.closeModal()} >
                     
-                    <div>{this.store.shop.id}</div>
-                    <div>{this.store.shop.name}</div> 
-                    <div>{this.store.shop.address}</div>
-                    <div>{this.store.shop.tags}</div>
-
+                    <ShopModal parent={this} mode={this.state.modalMode} />
                 </Popup>
+                <button onClick={(e) => {this.openModal('create')}}>Εισαγωγή καταστήματος</button>
                 </>
             )
         }
