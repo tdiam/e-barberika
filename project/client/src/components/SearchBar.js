@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Input, Button } from 'reactstrap'
 
 export default class SearchBar extends Component {
   state = {
@@ -19,16 +20,16 @@ export default class SearchBar extends Component {
 
   render () {
     return (
-      <div>
+      <div className="search-bar">
         <form onSubmit={ this.submitHandler }>
-          <input
+          <Input
             type="text"
             name="searchbar"
-            id="searchbar"
+            placeholder="Αναζήτηση με tags..."
             onChange={ this.handleChange }
             text={ this.state.searchbar }
           />
-          <button type="submit">-></button>
+          <Button>Go</Button>
         </form>
       </div>
     )
