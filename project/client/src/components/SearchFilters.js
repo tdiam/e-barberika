@@ -50,7 +50,8 @@ class SearchFilters extends Component {
 
     // assumes simultaneous set of geo{Lat,Lng}
     const geoFilter = geoDist !== constGeoDist && geoLat !== constGeoLat,
-    dateNeedsSync = dateTo === constDateTo,
+    dateToNeedsSync = dateTo === constDateTo,
+    dateFromNeedsSync = dateFrom === constDateTo,
     sortFilter = sort1_type !== constSortType && sort1_attr !== constSortAttr,
     halfSortFilter = 
       (sort1_type !== constSortType && sort1_attr === constSortAttr) 
@@ -58,7 +59,11 @@ class SearchFilters extends Component {
       (sort1_type === constSortType && sort1_attr !== constSortAttr)
 
     /* specs: both or neither dates */
-    if (dateNeedsSync) await this.setState({dateTo: dateFrom})
+    console.log(dateToNeedsSync, dateFromNeedsSync)
+    if (dateToNeedsSync && dateFromNeedsSync)
+      await this.setState({dateFrom: undefined})
+    else if (dateToNeedsSync) await this.setState({dateTo: dateFrom})
+    else if (dateFromNeedsSync) await this.setState({dateFrom: dateTo}) 
     
     /* specs: all three all none of them */
     if (geoDist !== constGeoDist && geoLat === constGeoLat)
@@ -86,7 +91,7 @@ class SearchFilters extends Component {
       
       if (geoFilter)
         this.props.setFilters({
-          dateFrom,
+          dateFrom: this.state.dateFrom,
           dateTo: this.state.dateTo,
           geoDist,
           geoLat,
@@ -95,7 +100,7 @@ class SearchFilters extends Component {
         })
       else 
         this.props.setFilters({
-          dateFrom,
+          dateFrom: this.state.dateFrom,
           dateTo: this.state.dateTo,
           sort: this.state.sort
         })
