@@ -19,7 +19,7 @@ class Home extends Component {
     this.setState({ filters })
   }
 
-  showFilters = () => {
+  display = () => {
     return this.state.query !== ''
   }
 
@@ -30,14 +30,18 @@ class Home extends Component {
           <h2>Αναζήτηση τιμών</h2>
           <SearchBar setQuery={ this.setQuery } />
           <SearchFilters
-            display={ this.showFilters() }
+            display={ this.display() }
             setFilters={ this.setFilters }
           />
         </div>
-        <SearchResults
-          query={ this.state.query }
-          filters={ this.state.filters }
-        />
+        {(this.display()) ? (
+          <SearchResults
+            query={ this.state.query }
+            filters={ this.state.filters }
+          />
+        ) : (
+          <></>
+        )}
       </>
     )
   }

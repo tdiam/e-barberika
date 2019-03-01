@@ -25,7 +25,7 @@ export default class SearchBar extends Component {
           <Input
             type="text"
             name="searchbar"
-            placeholder="Αναζήτηση με tags..."
+            placeholder="Αναζήτηση με ετικέτες..."
             onChange={ this.handleChange }
             text={ this.state.searchbar }
           />
