@@ -33,8 +33,16 @@ class SearchResults extends Component {
       urlps.append("sort", sort)
   }
 
+  componentDidMount () {
+    console.log(this.props.query)
+    let params = new URLSearchParams()
+    this.applyQueryLogic(params, this.props.query)
+    this.store.getPrices(params)
+  }
+
   componentWillReceiveProps (nextProps) {
     // Execute API call that will update the store state
+    console.log(nextProps.query)
     let params = new URLSearchParams()
     this.applyQueryLogic(params, nextProps.query) // by reference
     this.applyFilterLogic(params, nextProps.filters) 
