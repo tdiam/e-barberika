@@ -32,10 +32,16 @@ class Home extends Component {
           display={ this.showFilters() }
           setFilters={ this.setFilters }
         />
-        <SearchResults
-          query={ this.state.query }
-          filters={ this.state.filters }
-        />
+        {
+        (this.state.query !== '') ? ( 
+          <SearchResults
+            query={ this.state.query }
+            filters={ this.state.filters }
+          />
+        ) : (
+          <></>
+        )
+        }
       </>
     )
   }

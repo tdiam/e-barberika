@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 class SearchResults extends Component {
   constructor (props) {
     super(props)
-    this.store = this.props.store
+    this.store = this.props.store.priceStore
   }
 
   applyQueryLogic = (urlps, query) => {
@@ -38,18 +38,18 @@ class SearchResults extends Component {
     let params = new URLSearchParams()
     this.applyQueryLogic(params, nextProps.query) // by reference
     this.applyFilterLogic(params, nextProps.filters) 
-    this.store.priceStore.getPrices(params)
+    this.store.getPrices(params)
   }
 
   render () {
-    let priceItems = this.store.priceStore.prices.map(price => (
+    let priceItems = this.store.prices.map(price => (
       <li key={ `${price.shopId}:${price.productId}` }>
         { price.productName }, { price.shopName }, { price.price }, { price.date }
       </li>
     ))
     // NOTE: enters twice
     return (
-      <StateHandler state={ this.store.priceStore.state } ifPending={ <></> }>
+      <StateHandler state={ this.store.state }>
         {() => (
           (priceItems.length !== 0) ? (
             <div>
