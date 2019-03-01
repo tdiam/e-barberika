@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
+import { Form, FormGroup, Input, Label, Button, Alert } from 'reactstrap'
+
+import StateHandler from '../components/StateHandler'
 
 /**
- * Login page.
- *
- * Form-based component, see AddShop.js for an explanation on how we build and use them.
+ * Signup page.
  */
 class SignupForm extends Component {
   constructor (props) {
@@ -12,7 +13,15 @@ class SignupForm extends Component {
     this.store = this.props.store.authStore
   }
 
-  state = { username: '', password: '', email: '' }
+  state = { username: '', password: '' }
+
+  componentDidMount() {
+    this.store.resetState()
+  }
+
+  componentWillUnmount() {
+    this.store.resetState()
+  }
 
   handleChange = (e) => {
     this.setState({
@@ -22,29 +31,29 @@ class SignupForm extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault()
-    this.store.authenticate(this.state.username, this.state.password, this.state.email)
+    this.store.register(this.state.username, this.state.password)
   }
 
   render () {
     return (
-      <form onSubmit={ this.handleSubmit }>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input name="username" id="username" type="text" required
-            value={ this.state.username } onChange={ this.handleChange }></input>
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input name="password" id="password" type="password" required
-            value={ this.state.password } onChange={ this.handleChange }></input>
-        </div>
-        <div>
-          <label htmlFor="email">E-mail:</label>
-          <input name="email" id="email" type="email" required
-            value={ this.state.email } onChange={ this.handleChange }></input>
-        </div>
-        <button>Sign up</button>
-      </form>
+      <>
+        <Form className="signup-form" onSubmit={ this.handleSubmit }>
+          <FormGroup>
+            <Label htmlFor="username">Όνομα χρήστη:</Label>
+            <Input name="username" id="username" type="text" required
+              value={ this.state.username } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="password">Κωδικός πρόσβασης:</Label>
+            <Input name="password" id="password" type="password" required
+              value={ this.state.password } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <Button className="mt-3">Εγγραφή</Button>
+          <StateHandler state={ this.store.state } ifPending="">
+            <Alert color="secondary">Ο λογαριασμός δημιουργήθηκε και μπορείτε πλέον να συνδεθείτε.</Alert>
+          </StateHandler>
+        </Form>
+      </>
     )
   }
 }

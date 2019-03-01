@@ -24,14 +24,34 @@
 
 main {
   background-color: $body-bg;
-  padding-top: $grid-gutter-width / 2;
+  padding-top: 5vh;
   flex: 1;
   text-align: center;
+}
+
+form {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 40rem;
+}
+
+.alert {
+  max-width: 40rem;
+}
+
+form .alert {
+  margin-top: 2rem;
 }
 
 input, select {
   box-shadow: 0 0 0 .2rem rgba($primary, .25);
   font-size: $font-size-lg;
+}
+
+input.form-control {
+  &:focus {
+    background-color: darken($body-bg, 5%);
+  }
   &::placeholder {
     font-style: italic;
   }
@@ -43,7 +63,7 @@ input, select {
 
 /* Hero search */
 .hero-search {
-  margin: 5vh auto 0;
+  margin: 0 auto;
   max-width: 40rem;
   h2 {
     font-size: 4rem;
