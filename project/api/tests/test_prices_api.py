@@ -74,10 +74,17 @@ class PricePostTestCase(TestCase):
 
         # returned price object
         returned = json.loads(response.content)
+        between = Price.dates_between(
+            Price.parse_date(self.request['dateFrom']),
+            Price.parse_date(self.request['dateTo'])
+        )
 
         # price object in db
-        for x in self.request:
-            self.assertEqual(returned[x], self.request[x])
+        for price in returned['prices']:
+            self.assertIn(Price.parse_date(price['date']), between)
+
+            for x in ['shopId', 'productId', 'price']:
+                self.assertEqual(price[x], self.request[x])
 
     def test_post_prices_without_user(self):
         ''' bad user --> 403 forbidden '''
@@ -347,39 +354,39 @@ class PriceGetTestCase(TestCase):
     # Below this, some things are hardcoded, but who cares
 
     def test_sort_by_price_works(self):
-        res = self._request('?sort=price|ASC&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=price|ASC&dateFrom=2018-10-18&dateTo=2018-10-18')
 
         j = json.loads(res.content.decode())
         self.assertEqual(j['prices'][0]['price'], 10)
         self.assertEqual(j['prices'][2]['price'], 20)
 
-        res = self._request('?sort=price|ASC&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=price|ASC&dateFrom=2018-10-18&dateTo=2018-10-18')
         j = json.loads(res.content.decode())
         self.assertEqual(j['prices'][2]['price'], 20)
         self.assertEqual(j['prices'][0]['price'], 10)
 
     def test_sort_by_dist_works(self):
-        res = self._request('?sort=geoDist|DESC&geoLng=38&geoLat=27&geoDist=10000&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=geoDist|DESC&geoLng=38&geoLat=27&geoDist=10000&dateFrom=2018-10-18&dateTo=2018-10-18')
         j = json.loads(res.content.decode())
         self.assertGreaterEqual(j['prices'][0]['shopDist'], j['prices'][2]['shopDist'])
 
-        res = self._request('?sort=geoDist|ASC&geoLng=38&geoLat=27&geoDist=10000&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=geoDist|ASC&geoLng=38&geoLat=27&geoDist=10000&dateFrom=2018-10-18&dateTo=2018-10-18')
         j = json.loads(res.content.decode())
         self.assertGreaterEqual(j['prices'][2]['shopDist'], j['prices'][0]['shopDist'])
 
         #  print(json.dumps(j, indent=4, ensure_ascii=False))
 
     def test_sort_by_date_works(self):
-        res = self._request('?sort=date|DESC&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=date|DESC&dateFrom=2018-10-18&dateTo=2018-10-18')
         j = json.loads(res.content.decode())
         self.assertGreaterEqual(j['prices'][0]['date'], j['prices'][2]['date'])
 
-        res = self._request('?sort=date|ASC&dateFrom=2015-01-01&dateTo=2030-01-01')
+        res = self._request('?sort=date|ASC&dateFrom=2018-10-18&dateTo=2018-10-18')
         j = json.loads(res.content.decode())
         self.assertGreaterEqual(j['prices'][2]['date'], j['prices'][0]['date'])
 
     def test_sort_with_secondary_works(self):
-        res = self._request('?dateFrom=2015-01-01&dateTo=2030-01-01&geoLng=38&geoLat=27&geoDist=10000&sort=geoDist|DESC&sort=price|ASC')
+        res = self._request('?dateFrom=2018-10-18&dateTo=2018-10-18&geoLng=38&geoLat=27&geoDist=10000&sort=geoDist|DESC&sort=price|ASC')
         j = json.loads(res.content.decode())
 
         # check (price, shop_id) pairs
@@ -387,7 +394,7 @@ class PriceGetTestCase(TestCase):
         self.assertEqual((j['prices'][1]['price'], j['prices'][1]['shopId']), (10, 10))
         self.assertEqual((j['prices'][2]['price'], j['prices'][2]['shopId']), (20, 10))
 
-        res = self._request('?dateFrom=2015-01-01&dateTo=2030-01-01&geoLng=38&geoLat=27&geoDist=10000&sort=geoDist|DESC&sort=price|DESC')
+        res = self._request('?dateFrom=2018-10-18&dateTo=2018-10-18&geoLng=38&geoLat=27&geoDist=10000&sort=geoDist|DESC&sort=price|DESC')
         j = json.loads(res.content.decode())
 
         # check (price, shop_id) pairs
@@ -434,15 +441,15 @@ class PriceGetTestCase(TestCase):
 
         # check that `price_3` and `price_2` are returned, in that order
         # (because we sort by date ascending, and 2018-10-10 < 2018-10-16)
-        res = self._request('?dateFrom=2018-10-21&dateTo=2030-10-01&sort=date|ASC')
+        res = self._request('?dateFrom=2018-10-18&dateTo=2018-10-19&sort=date|ASC')
         j = json.loads(res.content.decode())
 
         # print(j)
-        p3 = j['prices'][0]
-        p2 = j['prices'][1]
-        self.assertEqual(j['total'], 2)
-        self.assertEqual((p3['price'], p3['shopId'], p3['productId']), (20, 10, 21))
-        self.assertEqual((p2['price'], p2['shopId'], p2['productId']), (20, 11, 20))
+        prev = j['prices'][0]['date']
+        for p in j['prices']:
+            self.assertGreaterEqual(p['date'], prev)
+            prev = p['date']
+
 
 
     def test_checking_distance_works(self):
@@ -458,7 +465,7 @@ class PriceGetTestCase(TestCase):
     def test_checking_tags_works(self):
 
         # check with tag of product
-        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=producttag')
+        res = self._request(f'?dateFrom=2018-10-18&dateTo=2018-10-18&tags=producttag')
         j = json.loads(res.content.decode())
 
         # assert all returned prices have that product/shop tag
@@ -474,7 +481,7 @@ class PriceGetTestCase(TestCase):
         self.assertIn(21, product_ids)
 
         # check with tag of shop
-        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=shoptag')
+        res = self._request(f'?dateFrom=2018-10-18&dateTo=2018-10-18&tags=shoptag')
         j = json.loads(res.content.decode())
 
         shop_ids = []
@@ -489,7 +496,7 @@ class PriceGetTestCase(TestCase):
         self.assertIn(10, shop_ids)
 
         # check with shared tag
-        res = self._request(f'?dateFrom=2015-01-01&dateTo=2028-10-10&tags=commontag')
+        res = self._request(f'?dateFrom=2018-10-18&dateTo=2018-10-18&tags=commontag')
         j = json.loads(res.content.decode())
 
         shop_ids = []
