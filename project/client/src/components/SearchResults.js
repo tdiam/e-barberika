@@ -44,7 +44,7 @@ class SearchResults extends Component {
   render () {
     let priceItems = this.store.priceStore.prices.map(price => (
       <li key={ `${price.shopId}:${price.productId}` }>
-        { price.productName }, { price.shopName }, { price.price }
+        { price.productName }, { price.shopName }, { price.price }, { price.date }
       </li>
     ))
     // NOTE: enters twice
