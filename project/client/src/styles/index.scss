@@ -1,0 +1,74 @@
+@import '~bootswatch/dist/lux/variables';
+@import 'variables';
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~bootswatch/dist/lux/bootswatch';
+
+// Override lux's uppercasing
+.navbar, .btn, h1, h2, h3, h4, h5, h6, th {
+  text-transform: none;
+}
+
+// Override lux's font-size-sm
+.navbar, .btn, th, .dropdown-menu {
+  font-size: inherit;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Alegreya Sans', sans-serif;
+  font-size: 1.25rem;
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
+main {
+  background-color: $body-bg;
+  padding-top: $grid-gutter-width / 2;
+  flex: 1;
+  text-align: center;
+}
+
+input, select {
+  box-shadow: 0 0 0 .2rem rgba($primary, .25);
+  font-size: $font-size-lg;
+  &::placeholder {
+    font-style: italic;
+  }
+}
+
+.nav-item:last-child {
+  margin-right: 0;
+}
+
+/* Hero search */
+.hero-search {
+  margin: 5vh auto 0;
+  max-width: 40rem;
+  h2 {
+    font-size: 4rem;
+    font-weight: 300;
+  }
+  .search-bar {
+    form {
+      display: flex;
+      margin-top: 1rem;
+    }
+    input {
+      margin-right: 1rem;
+    }
+    .btn {
+      background-color: rgba($secondary, .75);
+      transition: background-color .5s ease-in;
+    }
+    input:focus + .btn, .btn:hover {
+      background-color: $secondary;
+    }
+  }
+  .search-filters {
+    margin-top: .5rem;
+    .form-group {
+      margin: 1rem 0;
+    }
+  }
+}
