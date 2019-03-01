@@ -1,19 +1,28 @@
 import React, { Component } from 'react'
+import { Alert } from 'reactstrap'
 
 const defaultPending = (
   <>Φόρτωση...</>
 )
 
 const defaultError = (
-  <div className='error'>Κάτι πήγε στραβά!</div>
+  <Alert color="danger">Κάτι πήγε στραβά!</Alert>
 )
 
 const defaultUnauthorized = defaultError
 
-const componentOrFunction = (cf) => {
+const getComponent = (cf) => {
   // If is React element return it as is
   if (React.isValidElement(cf)) {
     return cf
+  }
+  // If is pure string, turn it into a component
+  if(typeof cf === 'string') {
+    return (<>{ cf }</>)
+  }
+  // If null, return null
+  if(cf == null) {
+    return null
   }
   // Otherwise try to call the function
   return cf()
@@ -41,10 +50,10 @@ const componentOrFunction = (cf) => {
  */
 class StateHandler extends Component {
   render () {
-    if (this.props.state === 'done') return componentOrFunction(this.props.children)
-    if (this.props.state === 'pending') return componentOrFunction(this.props.ifPending)
-    if (this.props.state === 'error') return componentOrFunction(this.props.ifError)
-    if (this.props.state === 'unauthorized') return componentOrFunction(this.props.ifUnauthorized)
+    if (this.props.state === 'done') return getComponent(this.props.children)
+    if (this.props.state === 'pending') return getComponent(this.props.ifPending)
+    if (this.props.state === 'error') return getComponent(this.props.ifError)
+    if (this.props.state === 'unauthorized') return getComponent(this.props.ifUnauthorized)
   }
 }
 StateHandler.defaultProps = {
