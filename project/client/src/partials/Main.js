@@ -8,6 +8,8 @@ import Shop from '../pages/Shop'
 import AddShop from '../pages/AddShop'
 import MapDemo from '../pages/MapDemo'
 import SignupForm from '../pages/SignupForm'
+import ProductListing from '../pages/ProductListing'
+import Product from '../pages/Product'
 import Page404 from '../pages/Page404'
 
 class Main extends Component {
@@ -18,6 +20,8 @@ class Main extends Component {
         <Route exact path='/login' component={LoginForm} />
         <Route exact path='/shops' component={ShopListing} />
         <Route path='/shops/:id' component={Shop} />
+        <Route exact path='/products' component={ProductListing} />
+        <Route path='/products/:id' component={Product} />
         <Route exact path='/shops/add' component={AddShop} />
         <Route exact path='/map' component={MapDemo} />
         <Route exact path='/signup' component={SignupForm} />
