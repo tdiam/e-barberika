@@ -22,7 +22,7 @@ class RootStore {
   }
 
   get userOrGuest () {
-    return this.isLoggedIn ? this.user.username : 'Guest'
+    return this.isLoggedIn ? this.user.username : 'Ανώνυμος'
   }
 
   setUser ({ username, token }) {
