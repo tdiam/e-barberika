@@ -29,10 +29,13 @@ class Home extends Component {
         <div className="hero-search">
           <h2>Αναζήτηση τιμών</h2>
           <SearchBar setQuery={ this.setQuery } />
+        {(this.display()) ? (  
           <SearchFilters
-            display={ this.display() }
             setFilters={ this.setFilters }
           />
+        ) : (
+          <></>
+        )}
         </div>
         {(this.display()) ? (
           <SearchResults

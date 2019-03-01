@@ -10,9 +10,9 @@ const constDateFrom = getCurrentDate(),
  constSort = undefined,
  constSortAttr = 'none',
  constSortType = 'none',
- constGeoDist = -1,
- constGeoLat = -1,
- constGeoLng = -1
+ constGeoDist = '',
+ constGeoLat = '',
+ constGeoLng = ''
 
 
 class SearchFilters extends Component {
@@ -66,6 +66,7 @@ class SearchFilters extends Component {
     else if (dateFromNeedsSync) await this.setState({dateFrom: dateTo}) 
     
     /* specs: all three all none of them */
+    console.log(geoDist)
     if (geoDist !== constGeoDist && geoLat === constGeoLat)
       this.err_msg += "Πρέπει να συνδιάσετε το φίλτρο απόστασης με επιλογή σημείου στο χάρτη.\n"
     if (geoDist === constGeoDist && geoLat !== constGeoLat) 
@@ -227,7 +228,12 @@ class SearchFilters extends Component {
       <FormGroup>
         <p>Map goes here</p>
         <Label htmlFor="geoDist">Απόσταση</Label> 
-        <Input type="number" step="1" min="1" name="geoDist"></Input>
+        <Input 
+          type="number" step="1" min="1" 
+          name="geoDist"
+          onChange={ this.changeHandler }
+        >
+        </Input>
       </FormGroup>
     )
   }
@@ -246,17 +252,15 @@ class SearchFilters extends Component {
         </Form>
       </>
     )
-    let comp = (this.props.display) ? (filters) : (undefined)
     return (
       <div className="search-filters">
-        { comp }
+        { filters }
       </div>
     )
   }
 }
 
 SearchFilters.propTypes = {
-  display: PropTypes.bool.isRequired,
   setFilters: PropTypes.func.isRequired,
 }
  
