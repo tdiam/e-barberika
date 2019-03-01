@@ -6,13 +6,13 @@ import { Button, Input, Form, FormGroup, Label, Row, Col } from 'reactstrap'
 import { getCurrentDate } from '../utils/getCurrentDate'
 
 const constDateFrom = getCurrentDate(),
- constDateTo = '',
- constSort = undefined,
- constSortAttr = 'none',
- constSortType = 'none',
- constGeoDist = '',
- constGeoLat = '',
- constGeoLng = ''
+ defaultDateTo = '',
+ defaultSort = undefined,
+ defaultSortAttr = 'none',
+ defaultSortType = 'none',
+ defaultGeoDist = '',
+ defaultGeoLat = '',
+ defaultGeoLng = ''
 
 
 class SearchFilters extends Component {
@@ -24,13 +24,13 @@ class SearchFilters extends Component {
    */
   state = {
     dateFrom: constDateFrom,
-    dateTo: constDateTo,
-    sort: constSort,
-    sort1_attr: constSortAttr,
-    sort1_type: constSortType,
-    geoDist: constGeoDist,
-    geoLat: constGeoLat,
-    geoLng: constGeoLng,
+    dateTo: defaultDateTo,
+    sort: defaultSort,
+    sort1_attr: defaultSortAttr,
+    sort1_type: defaultSortType,
+    geoDist: defaultGeoDist,
+    geoLat: defaultGeoLat,
+    geoLng: defaultGeoLng,
   }
 
   err_msg = ''
@@ -49,14 +49,14 @@ class SearchFilters extends Component {
     } = this.state
 
     // assumes simultaneous set of geo{Lat,Lng}
-    const geoFilter = geoDist !== constGeoDist && geoLat !== constGeoLat,
-    dateToNeedsSync = dateTo === constDateTo,
-    dateFromNeedsSync = dateFrom === constDateTo,
-    sortFilter = sort1_type !== constSortType && sort1_attr !== constSortAttr,
+    const geoFilter = geoDist !== defaultGeoDist && geoLat !== defaultGeoLat,
+    dateToNeedsSync = dateTo === defaultDateTo,
+    dateFromNeedsSync = dateFrom === defaultDateTo,
+    sortFilter = sort1_type !== defaultSortType && sort1_attr !== defaultSortAttr,
     halfSortFilter = 
-      (sort1_type !== constSortType && sort1_attr === constSortAttr) 
+      (sort1_type !== defaultSortType && sort1_attr === defaultSortAttr) 
       || 
-      (sort1_type === constSortType && sort1_attr !== constSortAttr)
+      (sort1_type === defaultSortType && sort1_attr !== defaultSortAttr)
 
     /* specs: both or neither dates */
     console.log(dateToNeedsSync, dateFromNeedsSync)
@@ -67,9 +67,9 @@ class SearchFilters extends Component {
     
     /* specs: all three all none of them */
     console.log(geoDist)
-    if (geoDist !== constGeoDist && geoLat === constGeoLat)
+    if (geoDist !== defaultGeoDist && geoLat === defaultGeoLat)
       this.err_msg += "Πρέπει να συνδιάσετε το φίλτρο απόστασης με επιλογή σημείου στο χάρτη.\n"
-    if (geoDist === constGeoDist && geoLat !== constGeoLat) 
+    if (geoDist === defaultGeoDist && geoLat !== defaultGeoLat) 
       this.err_msg += "Πρέπει να συνδιάσετε την επιλογή σημείου στο χάρτη με το φίλτρο απόστασης.\n"
     
     /* if sorting was "properly" selected */
@@ -109,13 +109,13 @@ class SearchFilters extends Component {
       /* reset (for semantics) */
       this.setState({
         dateFrom: constDateFrom,
-        dateTo: constDateTo,
-        sort: constSort,
-        sort1_attr: constSortAttr,
-        sort1_type: constSortType,
-        geoDist: constGeoDist,
-        geoLat: constGeoLat,
-        geoLng: constGeoLng,
+        dateTo: defaultDateTo,
+        sort: defaultSort,
+        sort1_attr: defaultSortAttr,
+        sort1_type: defaultSortType,
+        geoDist: defaultGeoDist,
+        geoLat: defaultGeoLat,
+        geoLng: defaultGeoLng,
       })
 
     } else { /* if a semantic error occured, notify and leave state as is */
