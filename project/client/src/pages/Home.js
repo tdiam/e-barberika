@@ -26,22 +26,18 @@ class Home extends Component {
   render () {
     return (
       <>
-        <div>Welcome to Asoures!</div>
-        <SearchBar setQuery={ this.setQuery } />
-        <SearchFilters
-          display={ this.showFilters() }
-          setFilters={ this.setFilters }
-        />
-        {
-        (this.state.query !== '') ? ( 
-          <SearchResults
-            query={ this.state.query }
-            filters={ this.state.filters }
+        <div className="hero-search">
+          <h2>Αναζήτηση τιμών</h2>
+          <SearchBar setQuery={ this.setQuery } />
+          <SearchFilters
+            display={ this.showFilters() }
+            setFilters={ this.setFilters }
           />
-        ) : (
-          <></>
-        )
-        }
+        </div>
+        <SearchResults
+          query={ this.state.query }
+          filters={ this.state.filters }
+        />
       </>
     )
   }

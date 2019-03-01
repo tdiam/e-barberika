@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { inject, observer } from 'mobx-react'
+import { Button, Input, Form, FormGroup, Label, Row, Col } from 'reactstrap'
+
 import { getCurrentDate } from '../utils/getCurrentDate'
 
 const constDateFrom = getCurrentDate(),
@@ -147,69 +149,81 @@ class SearchFilters extends Component {
     possibleSortingFilters = possibleSortingFilters.map((x, i) => (i+1))
     return (
       /* simplified filter (neoaggelos suggestion) */
-        possibleSortingFilters.map(i => (
-          <React.Fragment key={i}>
-            <label htmlFor={ `sort${i}` }>{ "Ταξινόμηση" }</label>
-                <select
-                  disabled={ !this.sortFieldEnabled(i) } 
-                  name={ `sort${i}_attr` }
-                  onChange={ this.changeHandler }
-                  value={ this.state.sort1_attr }>
-                  <option value="none"> -- </option>
-                  <option value="geoDist"> Απόσταση </option>
-                  <option value="price"> Τιμή </option>
-                  <option value="date"> Ημερομηνία </option>
-                </select>
-                <select 
-                  disabled={ !this.sortFieldEnabled(i) }
-                  name={ `sort${i}_type` }
-                  onChange={ this.changeHandler }
-                  value={ this.state.sort1_type }
-                >
-                  <option value="none"> -- </option>
-                  <option value="ASC">Αύξουσα</option>
-                  <option value="DESC">Φθίνουσα</option>
-                </select>
-                <br></br>
-          </React.Fragment>
-        ))
-      )
+      possibleSortingFilters.map(i => (
+        <FormGroup key={i}>
+          <Label htmlFor={ `sort${i}` }>{ "Ταξινόμηση" }</Label>
+          <Row form>
+            <Col md={ 6 }>
+              <Input type="select"
+                disabled={ !this.sortFieldEnabled(i) } 
+                name={ `sort${i}_attr` }
+                onChange={ this.changeHandler }
+                value={ this.state.sort1_attr }>
+                <option value="none"> -- </option>
+                <option value="geoDist"> Απόσταση </option>
+                <option value="price"> Τιμή </option>
+                <option value="date"> Ημερομηνία </option>
+              </Input>
+            </Col>
+            <Col md={ 6 }>
+              <Input type="select" 
+                disabled={ !this.sortFieldEnabled(i) }
+                name={ `sort${i}_type` }
+                onChange={ this.changeHandler }
+                value={ this.state.sort1_type }
+              >
+                <option value="none"> -- </option>
+                <option value="ASC">Αύξουσα</option>
+                <option value="DESC">Φθίνουσα</option>
+              </Input>
+            </Col>
+          </Row>
+        </FormGroup>
+      ))
+    )
   }
 
   constructDateFilters = () => {
     const today = getCurrentDate()
     return (
-      <>  
-        <label htmlFor="dateFrom">Από</label>
-        <input
-          type="date"
-          name="dateFrom"
-          value={ this.state.dateFrom }
-          /* do not allow dates after today's date or the selected dateTo, if it's earlier */
-          max={ (this.state.dateTo !== '') ? ((this.state.dateTo > today) ? today : this.state.dateTo) : today }
-          onChange={ this.changeHandler }>
-        </input>
-        <br></br>
-        <label htmlFor="dateTo">Μέχρι</label> 
-        <input
-          type="date"
-          name="dateTo"
-          value={ this.state.dateTo }
-          /* do not allow dates prior to dateFrom */
-          min={ this.state.dateFrom }
-          onChange={ this.changeHandler }>    
-        </input>
-      </>
+      <Row form>
+        <Col md={ 6 }>
+          <FormGroup>
+            <Label htmlFor="dateFrom">Από</Label>
+            <Input
+              type="date"
+              name="dateFrom"
+              value={ this.state.dateFrom }
+              /* do not allow dates after today's date or the selected dateTo, if it's earlier */
+              max={ (this.state.dateTo !== '') ? ((this.state.dateTo > today) ? today : this.state.dateTo) : today }
+              onChange={ this.changeHandler }>
+            </Input>
+          </FormGroup>
+        </Col>
+        <Col md={ 6 }>
+          <FormGroup>
+            <Label htmlFor="dateTo">Μέχρι</Label> 
+            <Input
+              type="date"
+              name="dateTo"
+              value={ this.state.dateTo }
+              /* do not allow dates prior to dateFrom */
+              min={ this.state.dateFrom }
+              onChange={ this.changeHandler }>    
+            </Input>
+          </FormGroup>
+        </Col>
+      </Row>
     )
   }
 
   constructMapFilters = () => {
     return (
-      <>
+      <FormGroup>
         <p>Map goes here</p>
-        <label htmlFor="geoDist">Απόσταση</label> 
-        <input type="number" step="1" min="1" name="geoDist"></input>
-      </>
+        <Label htmlFor="geoDist">Απόσταση</Label> 
+        <Input type="number" step="1" min="1" name="geoDist"></Input>
+      </FormGroup>
     )
   }
 
@@ -219,19 +233,17 @@ class SearchFilters extends Component {
     let mapFilters = this.constructMapFilters()
     let filters = (
       <>
-        <form onSubmit={ this.submitHandler }>
+        <Form onSubmit={ this.submitHandler }>
           { dateFilters }
-          <br></br>
           { sortFilters }
-          { /* sortFilters ends in <br> */ }
           { mapFilters }
-          <button type="submit">Υποβολή</button>
-        </form>
+          <Button>Υποβολή</Button>
+        </Form>
       </>
     )
     let comp = (this.props.display) ? (filters) : (undefined)
     return (
-      <div>
+      <div className="search-filters">
         { comp }
       </div>
     )
