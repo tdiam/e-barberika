@@ -28,7 +28,7 @@ class UserActions extends Component {
         ) : (
           <DropdownMenu right>
             <DropdownItem tag={ Link } to="/login">Σύνδεση</DropdownItem>
-            <DropdownItem tag={ Link } to="/register">Εγγραφή</DropdownItem>
+            <DropdownItem tag={ Link } to="/signup">Εγγραφή</DropdownItem>
           </DropdownMenu>
         )}
       </UncontrolledDropdown>
