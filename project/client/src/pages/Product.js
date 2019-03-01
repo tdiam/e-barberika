@@ -4,7 +4,7 @@ import { inject, observer } from 'mobx-react'
 import ProductInfo from '../components/ProductInfo'
 import StateHandler from '../components/StateHandler'
 
-class Shop extends Component {
+class Product extends Component {
   constructor (props) {
     super(props)
     this.store = props.store.productStore
@@ -27,4 +27,4 @@ class Shop extends Component {
   }
 }
 
-export default inject('store')(observer(Shop))
+export default inject('store')(observer(Product))

@@ -4,17 +4,20 @@ import { inject, observer } from 'mobx-react'
 
 class ProductInfo extends Component {
 
-  render() {
+  render () {
     let product = this.props.product
     const tagList = product.tags.map(tag => (
-        <li>{ tag }</li>
+        <li key={ tag }>{ tag }</li>
     ))
     return (
       <div>
-        <h2></h2>
-        <h3>{ product.name }</h3>
-        <h5> Κατηγορία: { product.category }</h5>
-        <p style={{borderStyle: 'inset'}}> Περιγραφή: { product.description }</p>
+        <h2>Προϊόν</h2>
+        <dl>
+        <dt><h3>{ product.name }</h3></dt>
+        <dd><h5> Κατηγορία: { product.category }</h5></dd>
+        </dl>
+        <p style={{borderStyle: 'inset'}}>Περιγραφή: { product.description }</p>
+        <p> Ετικέτες </p>
         <ul className='taglist'>
         { tagList }
         </ul>
