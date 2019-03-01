@@ -74,7 +74,7 @@ class PricePostTestCase(TestCase):
 
         # returned price object
         returned = json.loads(response.content)
-        between = Price.dates_between(
+        between = Price.static_dates_between(
             Price.parse_date(self.request['dateFrom']),
             Price.parse_date(self.request['dateTo'])
         )
@@ -128,7 +128,7 @@ class PricePostTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Price.objects.count(), 1)
-        self.assertEqual(old_price.date_to, datetime.date(Price.parse_date('2018-11-30')))
+        self.assertEqual(old_price.date_to, Price.parse_date('2018-11-30'))
 
         response = self._get_response(self.request_away)
         self.assertEqual(response.status_code, 200)
@@ -161,10 +161,10 @@ class PricePostTestCase(TestCase):
         self.assertEqual(old_price.date_to, new_price.date_from)
 
         # check if new `dateTo` is ok
-        self.assertEqual(new_price.date_to, datetime.date(Price.parse_date(req['dateTo'])))
+        self.assertEqual(new_price.date_to, Price.parse_date(req['dateTo']))
 
         # check if price at other shop remained unaffected
-        self.assertEqual(unaffected_price.date_to, datetime.date(Price.parse_date(self.request_away['dateTo'])))
+        self.assertEqual(unaffected_price.date_to, Price.parse_date(self.request_away['dateTo']))
 
 
 
