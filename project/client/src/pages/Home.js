@@ -32,10 +32,16 @@ class Home extends Component {
     }
   }
 
+  applyPaginationLogic = async (urlps) => {
+    // this is a very big number
+    urlps.append('count', 1000000000000)
+  }
+
   fetchPrices () {
     let params = new URLSearchParams()
     this.applyQueryLogic(params, this.state.query)
     this.applyFilterLogic(params, this.state.filters)
+    this.applyPaginationLogic(params)
     console.debug(params.toString())
     this.store.getPrices(params)
   }
