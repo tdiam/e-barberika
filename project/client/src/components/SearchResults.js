@@ -2,11 +2,31 @@ import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import StateHandler from './StateHandler'
 import PropTypes from 'prop-types'
+import MaterialTable from 'material-table'
 
 class SearchResults extends Component {
   constructor (props) {
     super(props)
+    this.root = this.props.store
     this.store = this.props.store.priceStore
+
+    this.state = {
+      modalOpen : false
+    }
+
+    this.columns = [{
+        title: 'Όνομα προϊόντος',
+        field: 'productName',
+    }, {
+        title: 'Όνομα καταστήματος',
+        field: 'shopName',
+    }, {
+        title: 'Τιμή',
+        field: 'price',
+    }, {
+      title: 'Ημερομηνία',
+      field: 'date',
+    }]
   }
 
   applyQueryLogic = (urlps, query) => {
@@ -33,6 +53,10 @@ class SearchResults extends Component {
       urlps.append("sort", sort)
   }
 
+  applyPaginationLogic = (urlps) => {
+    urlps.append("count", this.store.pagination.total)
+  }
+
   componentDidMount () {
     console.log(this.props.query)
     let params = new URLSearchParams()
@@ -46,22 +70,33 @@ class SearchResults extends Component {
     let params = new URLSearchParams()
     this.applyQueryLogic(params, nextProps.query) // by reference
     this.applyFilterLogic(params, nextProps.filters) 
+    this.applyPaginationLogic(params)
     this.store.getPrices(params)
   }
 
   render () {
-    let priceItems = this.store.prices.map(price => (
-      <li key={ `${price.shopId}:${price.productId}` }>
-        { price.productName }, { price.shopName }, { price.price }, { price.date }
-      </li>
-    ))
+    let priceItems = (
+      <>
+        <MaterialTable 
+            data={this.store.prices}
+            columns={this.columns}
+            title={"Products"}
+            actions={this.actions}
+            options={{
+                actionsColumnIndex: -1,
+                pageSize: 10,
+                pageSizeOptions: [5, 10, 50]
+            }}
+        />
+      </>
+    )
+    
     // NOTE: enters twice
     return (
       <StateHandler state={ this.store.state }>
         {() => (
           (priceItems.length !== 0) ? (
             <div>
-              <h2>Product, Shop, Price:</h2>
               <ul>
                 { priceItems }
               </ul>
