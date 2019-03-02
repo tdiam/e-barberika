@@ -239,14 +239,14 @@ class SearchFilters extends Component {
   }
 
   render () {
-    let sortFilters = this.constructSortFilters()
+    /* let sortFilters = this.constructSortFilters() */
     let dateFilters = this.constructDateFilters()
     let mapFilters = this.constructMapFilters()
     let filters = (
       <>
         <Form onSubmit={ this.submitHandler }>
           { dateFilters }
-          { sortFilters }
+          {/* sortFilters */}
           { mapFilters }
           <Button>Υποβολή</Button>
         </Form>
