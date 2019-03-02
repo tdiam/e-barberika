@@ -160,7 +160,7 @@ class Price(models.Model):
             try:
                 o['shopDist'] = self.geoDist.km
             except AttributeError:
-                o['shopDist'] = 0
+                pass
 
             result.append(o)
 
