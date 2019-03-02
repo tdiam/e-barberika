@@ -49,7 +49,12 @@ class SearchResults extends Component {
 
   render () {
     const prices = this.store.prices
-
+    if(prices.length > 0 && typeof prices[0].shopDist !== "undefined"){
+      this.columns[this.columns.length - 1].hidden = false
+      console.log(typeof prices[0].shopDist)
+    } else {
+      this.columns[this.columns.length - 1].hidden = true
+    }
     // NOTE: enters twice
     return (
       <StateHandler state={ this.store.state }>

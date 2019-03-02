@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import MaterialTable  from 'material-table'
-import Popup from 'reactjs-popup';
+import Popup from 'reactjs-popup'
+import tableOptions from '../utils/tableOptions';
+
 
 class ShopListing extends Component {
     constructor(props) {
@@ -79,6 +81,7 @@ class ShopListing extends Component {
                     columns={this.columns}
                     title={"Shops"}
                     actions={this.actions}
+                    {...tableOptions}
                     options={{
                         actionsColumnIndex: -1,
                         pageSize: 10
