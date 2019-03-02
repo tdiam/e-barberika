@@ -10,6 +10,7 @@
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",
     "node-sass": "^4.11.0",
+    "pigeon-draggable": "^0.1.1",
     "pigeon-maps": "^0.11.10",
     "pigeon-marker": "^0.3.4",
     "pigeon-overlay": "^0.2.3",
