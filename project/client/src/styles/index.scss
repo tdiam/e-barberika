@@ -70,10 +70,8 @@ input.form-control {
     font-weight: 300;
   }
   .search-bar {
-    form {
-      display: flex;
-      margin-top: 1rem;
-    }
+    display: flex;
+    margin-top: 1rem;
     input {
       margin-right: 1rem;
     }
@@ -81,7 +79,7 @@ input.form-control {
       background-color: rgba($secondary, .75);
       transition: background-color .5s ease-in;
     }
-    input:focus + .btn, .btn:hover {
+    .btn:hover {
       background-color: $secondary;
     }
   }
@@ -91,4 +89,9 @@ input.form-control {
       margin: 1rem 0;
     }
   }
+}
+
+.search-results {
+  margin: 2rem auto;
+  max-width: 1366px;
 }
