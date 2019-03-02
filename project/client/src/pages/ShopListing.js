@@ -1,113 +1,131 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
-import MaterialTable  from 'material-table'
+import MaterialTable from 'material-table'
 import Popup from 'reactjs-popup'
 import tableOptions from '../utils/tableOptions';
 
 import ShopModal from '../components/ShopModal'
 
 class ShopListing extends Component {
-    constructor(props) {
-        super(props)
-        this.root = this.props.store
-        this.store = this.props.store.shopStore
+  constructor(props) {
+    super(props)
+    this.root = this.props.store
+    this.store = this.props.store.shopStore
 
-        this.state = {
-            modalOpen : false,
-            modalMode : null
-        }
-
-        this.columns = [{
-            title: 'Όνομα καταστήματος',
-            field: 'name',
-        }, {
-            title: 'Διεύθυνση',
-            field: 'address',
-        }, {
-            title: 'Κρυμμένο',
-            field: 'withdrawn',
-            type: 'boolean'
-        }]
-
-        this.actions = [{
-            this: this,
-            onClick: this.editOnClick,
-            icon: 'edit',
-            name: 'Επεξεργασία καταστήματος'
-        }]
-
+    this.state = {
+      modalOpen: false,
+      modalMode: null
     }
 
-    async loadShops() {
-        // Execute API call that will update the store state
-        // NOTE: not too good if we have too many shops
-        await this.store.getShops({count:0})
-        await this.store.getShops({count:this.store.pagination.total, status: 'ALL'})
+    this.columns = [{
+      title: 'Όνομα καταστήματος',
+      field: 'name',
+    }, {
+      title: 'Διεύθυνση',
+      field: 'address',
+    }, {
+      title: 'Κρυμμένο',
+      field: 'withdrawn',
+      type: 'boolean'
+    }]
+
+    if (this.root.isLoggedIn) {
+      this.actions = [{
+        this: this,
+        onClick: async function (e, rowData) {
+          /* `this`: action object */
+          /* `this.this`: ShopListing object */
+          this.this.store.getShop(rowData.id)
+          this.this.openModal('edit')
+        },
+        icon: 'edit',
+        name: 'Επεξεργασία καταστήματος'
+      }, {
+        this: this,
+        onClick: async function (e, rowData) {
+          await this.this.store.deleteShop(rowData.id)
+          await this.this.loadShops()
+        },
+        icon: 'delete',
+        name: 'Διαγραφή καταστήματος'
+      }]
+    } else {
+      this.actions = []
     }
 
-    async componentDidMount() {
-        await this.loadShops()
-    }
+  }
 
-    async editOnClick(e, rowData) {
-        this.this.store.getShop(rowData.id)
-        this.this.openModal('edit')
-    }
+  async loadShops() {
+    // Execute API call that will update the store state
+    // NOTE: not too good if we have too many shops
+    await this.store.getShops({ count: 0 })
+    await this.store.getShops({ count: this.store.pagination.total, status: 'ALL' })
+  }
 
-    openModal(mode = 'edit') {
-        this.setState({
-            modalOpen: true,
-            modalMode: mode
-        })
-    }
+  async componentDidMount() {
+    await this.loadShops()
+  }
 
-    closeModal() {
-        this.setState({
-            modalOpen: false
-        })
-    }
+  openModal(mode = 'edit') {
+    this.setState({
+      modalOpen: true,
+      modalMode: mode
+    })
+  }
 
-    render() {
-        //DEBUG
-        // if (! this.root.isLoggedIn) {
-        //     return (
-        //         <div>
-        //             You must log in
-        //         </div>
-        //     )
-        // }
-        if (this.store.state === 'done') {
-            return (
-                <>
-                <MaterialTable 
-                    data={this.store.shops}
-                    columns={this.columns}
-                    title={"Λίστα καταστημάτων"}
-                    actions={this.actions}
-                    {...tableOptions}
-                    options={{
-                        actionsColumnIndex: -1,
-                        pageSize: 10,
-                        pageSizeOptions: [10, 20, 50]
-                    }}
-                />
-                <Popup
-                    closeOnDocumentClick={false}
-                    open={this.state.modalOpen}
-                    onClose={() => this.closeModal()} >
-                    
-                    <ShopModal parent={this} mode={this.state.modalMode} />
-                </Popup>
-                <button onClick={(e) => {this.openModal('create')}}>Εισαγωγή καταστήματος</button>
-                </>
+  closeModal() {
+    this.setState({
+      modalOpen: false,
+      modalMode: null
+    })
+  }
+
+  render() {
+    //DEBUG
+    // if (! this.root.isLoggedIn) {
+    //     return (
+    //         <div>
+    //             You must log in
+    //         </div>
+    //     )
+    // }
+    if (this.store.state === 'done') {
+      return (
+        <>
+          {
+            this.root.isLoggedIn && (
+              <button onClick={(e) => { this.openModal('create') }}>Εισαγωγή καταστήματος</button>
             )
-        }
-        return (
-            <div>
-                <p>pending</p>
-            </div>
-        )
+          }
+          <MaterialTable
+            data={this.store.shops}
+            columns={this.columns}
+            title={"Λίστα καταστημάτων"}
+            {...tableOptions}
+            actions={this.actions}
+            options={{
+              actionsColumnIndex: -1,
+              pageSize: 10,
+              pageSizeOptions: [10, 20, 50]
+            }}
+          />
+          <Popup
+            closeOnDocumentClick={false}
+            closeOnEscape={false}
+            open={this.state.modalOpen}
+          >
+
+            <ShopModal parent={this} mode={this.state.modalMode} />
+          </Popup>
+        </>
+      )
     }
+    return (
+      <div>
+        <p>pending</p>
+      </div>
+    )
+  }
 }
 
 export default inject('store')(observer(ShopListing))
