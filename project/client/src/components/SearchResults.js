@@ -4,6 +4,7 @@ import MaterialTable from 'material-table'
 import { Link } from 'react-router-dom'
 
 import StateHandler from './StateHandler'
+import tableOptions from '../utils/tableOptions'
 
 class SearchResults extends Component {
   constructor (props) {
@@ -18,21 +19,31 @@ class SearchResults extends Component {
     this.columns = [{
       title: 'Όνομα προϊόντος',
       field: 'productName',
-      render: ({ productId, productName }) => (
-        <Link to="/products/" params={{ id: productId }}>{ productName }</Link>
-      ),
+      render: rowData => {
+        return (
+          <Link to={`/products/${rowData.productId}`}>{rowData.productName}</Link>
+        )
+      },
     }, {
       title: 'Όνομα καταστήματος',
       field: 'shopName',
-      render: ({ shopId, shopName }) => (
-        <Link to="/shops/" params={{ id: shopId }}>{ shopName }</Link>
-      ),
+      render: rowData => {
+        return (
+          <Link to={`/shops/${rowData.shopId}`}>{rowData.shopName}</Link>
+        )
+      },
     }, {
       title: 'Τιμή',
       field: 'price',
     }, {
       title: 'Ημερομηνία',
       field: 'date',
+    }, {
+      title: 'Απόσταση (km)',
+      field: 'shopDist',
+      render: rowData => {
+        return Math.round(rowData.shopDist)
+      },
     }]
   }
 
@@ -49,10 +60,11 @@ class SearchResults extends Component {
               columns={ this.columns }
               title="Αποτελέσματα"
               actions={ this.actions }
+              {...tableOptions}
               options={{
                 actionsColumnIndex: -1,
                 pageSize: 10,
-                pageSizeOptions: [5, 10, 50],
+                pageSizeOptions: [5, 10, 20, 50],
               }} />
           </div>
         ) : (
