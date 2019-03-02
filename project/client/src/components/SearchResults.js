@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import MaterialTable from 'material-table'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 import StateHandler from './StateHandler'
 
@@ -12,25 +12,21 @@ class SearchResults extends Component {
     this.store = this.props.store.priceStore
 
     this.state = {
-      modalOpen : false,
+      modalOpen: false,
     }
 
     this.columns = [{
-        title: 'Όνομα προϊόντος',
-        field: 'productName',
-        render: rowData => {
-          return (
-            <Link to={`/product/${rowData.productId}`}>{rowData.productName}</Link>
-          )
-        }
+      title: 'Όνομα προϊόντος',
+      field: 'productName',
+      render: ({ productId, productName }) => (
+        <Link to="/products/" params={{ id: productId }}>{ productName }</Link>
+      ),
     }, {
-        title: 'Όνομα καταστήματος',
-        field: 'shopName',
-        render: rowData => {
-          return (
-            <Link to={`/shop/${rowData.shopId}`}>{rowData.shopName}</Link>
-          )
-        }
+      title: 'Όνομα καταστήματος',
+      field: 'shopName',
+      render: ({ shopId, shopName }) => (
+        <Link to="/shops/" params={{ id: shopId }}>{ shopName }</Link>
+      ),
     }, {
       title: 'Τιμή',
       field: 'price',
@@ -42,7 +38,7 @@ class SearchResults extends Component {
 
   render () {
     const prices = this.store.prices
-    
+
     // NOTE: enters twice
     return (
       <StateHandler state={ this.store.state }>
@@ -54,9 +50,9 @@ class SearchResults extends Component {
               title="Αποτελέσματα"
               actions={ this.actions }
               options={{
-                  actionsColumnIndex: -1,
-                  pageSize: 10,
-                  pageSizeOptions: [5, 10, 50]
+                actionsColumnIndex: -1,
+                pageSize: 10,
+                pageSizeOptions: [5, 10, 50],
               }} />
           </div>
         ) : (
