@@ -80,7 +80,7 @@ class ShopInfo extends Component {
             <Overlay anchor={coords}>{shop.name}</Overlay>
           </Map>
         </div>
-        <button onClick={(e) => this.openModal()}>Καταχώριση Τιμής</button>
+        <button onClick={(e) => this.openModal()}>Καταχώρηση Τιμής</button>
         <MaterialTable
           data={this.priceStore.prices}
           columns={this.columns}

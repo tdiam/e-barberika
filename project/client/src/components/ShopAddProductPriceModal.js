@@ -31,12 +31,16 @@ class ShopAddProductPriceModal extends Component {
    * Changes to a field with name `<field>` will be applied to `state.<field>`.
    * (e.g. `address` -> `state.address`).
    */
-  handleChange = (e) => {
+  handleChange = async (e) => {
     console.log('Changed: ', e.target.name, e.target.value)
 
-    this.setState({
+    console.log(this.state)
+
+    await this.setState({
       [e.target.name]: e.target.value,
     })
+
+    console.log(this.state)
   }
 
   handleSubmit = async (e) => {
@@ -74,8 +78,8 @@ class ShopAddProductPriceModal extends Component {
       <form onSubmit={this.handleSubmit}>
         <h3>Προσθήκη προϊόντος στο κατάστημα</h3>
         <div>
-          <label htmlFor="name">Προϊόν:</label>
-          <select name="name" id="name" type="text" required
+          <label htmlFor="productId">Προϊόν:</label>
+          <select name="productId" id="productId" type="text" required
             value={this.state.productId} onChange={this.handleChange}>
             {
               this.root.productStore.products.map(p => (
@@ -91,12 +95,12 @@ class ShopAddProductPriceModal extends Component {
         <div>
           <label htmlFor="dateFrom">Ημερομηνία από:</label>
           <input name="dateFrom" id="dateFrom" type="text" required
-            value={this.state.lat} onChange={this.handleChange}></input>
+            value={this.state.dateFrom} onChange={this.handleChange}></input>
         </div>
         <div>
           <label htmlFor="dateTo">Ημερομηνία έως:</label>
           <input name="dateTo" id="dateTo" type="text" required
-            value={this.state.lat} onChange={this.handleChange}></input>
+            value={this.state.dateTo} onChange={this.handleChange}></input>
         </div>
         <div style={{float: 'left'}}>
           <button style={{marginRight: '20px'}}>Εισαγωγή</button>
