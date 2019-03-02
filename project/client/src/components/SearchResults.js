@@ -3,6 +3,7 @@ import { inject, observer } from 'mobx-react'
 import StateHandler from './StateHandler'
 import PropTypes from 'prop-types'
 import MaterialTable from 'material-table'
+import { Link } from 'react-router-dom';
 
 class SearchResults extends Component {
   constructor (props) {
@@ -11,15 +12,25 @@ class SearchResults extends Component {
     this.store = this.props.store.priceStore
 
     this.state = {
-      modalOpen : false
+      modalOpen : false,
     }
 
     this.columns = [{
         title: 'Όνομα προϊόντος',
         field: 'productName',
+        render: rowData => {
+          return (
+            <Link to={`/product/${rowData.productId}`}>{rowData.productName}</Link>
+          )
+        }
     }, {
         title: 'Όνομα καταστήματος',
         field: 'shopName',
+        render: rowData => {
+          return (
+            <Link to={`/shop/${rowData.shopId}`}>{rowData.shopName}</Link>
+          )
+        }
     }, {
         title: 'Τιμή',
         field: 'price',
