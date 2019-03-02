@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 
+import { tagsToText, textToTags } from '../utils/tags'
+
 /**
  * Modal window for editing/creating shops
  * Based on AddShop.original.js
@@ -21,6 +23,7 @@ class ShopModal extends Component {
         lng: this.store.shop.lng,
         lat: this.store.shop.lat,
         tags: this.store.shop.tags,
+        tags_text: tagsToText(this.store.shop.tags),
         withdrawn: this.store.shop.withdrawn
       }
 
@@ -35,6 +38,7 @@ class ShopModal extends Component {
     lng: 0,
     lat: 0,
     tags: [],
+    tags_text: "",
     withdrawn: false
   }
 
@@ -46,7 +50,12 @@ class ShopModal extends Component {
   handleChange = (e) => {
     console.log('Changed: ', e.target.name, e.target.value)
     if (e.target.name === 'tags') {
-      console.log('ignoring tags')
+      // special handling for tags
+      // console.log(e.target.value, typeof(e.target.value), textToTags(e.target.value))
+      this.setState({
+        tags_text: e.target.value,
+        tags: textToTags(e.target.value)
+      })
     } else {
       this.setState({
         [e.target.name]: e.target.value,
@@ -68,7 +77,8 @@ class ShopModal extends Component {
       name: this.state.name,
       address: this.state.address,
       lat: this.state.lat,
-      lng: this.state.lng
+      lng: this.state.lng,
+      tags: this.state.tags
     }
 
     if (this.mode === 'create') {
@@ -88,8 +98,8 @@ class ShopModal extends Component {
     this.setState({ error: '' })
     console.log("Clicked cancel")
     this.parent.closeModal()
-
   }
+
 
   render() {
     return (
@@ -114,6 +124,11 @@ class ShopModal extends Component {
           <label htmlFor="lng">Longitude:</label>
           <input name="lng" id="lng" type="number" step="any" min="-180" max="180" required
             value={this.state.lng} onChange={this.handleChange}></input>
+        </div>
+        <div>
+          <label htmlFor="tags">Ετικέτες:</label>
+          <input name="tags" id="tags" type="text"
+            value={this.state.tags_text} onChange={this.handleChange}></input>
         </div>
         <div style={{float: 'left'}}>
           <button style={{marginRight: '20px'}}>{this.mode}</button>

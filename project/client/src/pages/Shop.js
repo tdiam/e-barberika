@@ -8,7 +8,8 @@ import ShopInfo from '../components/ShopInfo';
 class Shop extends Component {
   constructor (props) {
     super(props)
-    this.store = props.store.shopStore
+    this.root = this.props.store
+    this.store = this.props.store.shopStore
   }
   
   componentDidMount () {

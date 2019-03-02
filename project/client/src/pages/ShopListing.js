@@ -1,10 +1,13 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import { inject, observer } from 'mobx-react'
+
 import MaterialTable from 'material-table'
 import Popup from 'reactjs-popup'
 import tableOptions from '../utils/tableOptions';
 
 import ShopModal from '../components/ShopModal'
+import { tagsToText } from '../utils/tags'
 
 class ShopListing extends Component {
   constructor(props) {
@@ -20,13 +23,18 @@ class ShopListing extends Component {
     this.columns = [{
       title: 'Όνομα καταστήματος',
       field: 'name',
+      render: rowData => (<Link to={"/shops/" + rowData.id}>{rowData.name}</Link>)
     }, {
       title: 'Διεύθυνση',
       field: 'address',
     }, {
-      title: 'Κρυμμένο',
+      title: 'Αποσυρμένο',
       field: 'withdrawn',
       type: 'boolean'
+    }, {
+      title: 'Ετικέτες',
+      field: 'tags',
+      render: rowData => (tagsToText(rowData.tags))
     }]
 
     if (this.root.isLoggedIn) {
