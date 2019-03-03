@@ -45,7 +45,7 @@ class Command(BaseCommand):
             s = models.Shop(
                 name=fake.first_name(),
                 address=fake.address(),
-                coordinates=Point(float(fake.longitude()), float(fake.latitude()))
+                coordinates=Point(float(fake.local_longitude()), float(fake.local_latitude()))
             )
             s.save()
             for t in pick_max_count(tags, 2):
