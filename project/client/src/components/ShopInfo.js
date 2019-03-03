@@ -46,8 +46,10 @@ class ShopInfo extends Component {
   }
 
   async loadProductsForShop() {
-    await this.priceStore.getPrices({ shops: this.shop.id, count: 0 })
-    await this.priceStore.getPrices({ shops: this.shop.id, count: this.priceStore.pagination.total })
+    if (this.shop.id !== undefined) {
+      await this.priceStore.getPrices({ shops: this.shop.id, count: 0 })
+      await this.priceStore.getPrices({ shops: this.shop.id, count: this.priceStore.pagination.total })
+    }
   }
 
   openModal() {
@@ -80,7 +82,7 @@ class ShopInfo extends Component {
             <Overlay anchor={coords}>{shop.name}</Overlay>
           </Map>
         </div>
-        <button onClick={(e) => this.openModal()}>Καταχώρηση Τιμής</button>
+        {this.root.isLoggedIn && (<button onClick={(e) => this.openModal()}>Καταχώρηση Τιμής</button>)}
         <MaterialTable
           data={this.priceStore.prices}
           columns={this.columns}
