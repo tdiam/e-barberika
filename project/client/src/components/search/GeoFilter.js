@@ -50,12 +50,13 @@ class GeoFilter extends Component {
     const { geoLat, geoLng, geoDist } = this.state 
     return (
       <FormGroup>
-        <Map center={[0, 0]} zoom={3} width={600} height={400}>
+        <Map center={[38.008928, 23.747025]} zoom={ 4 } width={ 600 } height={ 400 }>
           <Draggable
             anchor={[geoLat, geoLng]}
+            offset={[16, 32]}
             onDragEnd={ ([lat, lng]) => this.setState({ geoLat: lat, geoLng: lng }) }
           >
-            <img src="img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
+            <img src="/img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
           </Draggable>
         </Map>
         <Label htmlFor="geoDist">Απόσταση</Label>
