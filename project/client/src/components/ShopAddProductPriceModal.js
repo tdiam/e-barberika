@@ -1,29 +1,30 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
+import { Form, FormGroup, Input, Label, Button } from 'reactstrap'
 
-import PriceStore from '../stores/PriceStore'
+import DateFilter from './search/DateFilter'
+
 
 /**
- * Modal window for editing/creating shops
- * Based on AddShop.original.js
- * <ShopModal parent={parent_component} mode="edit" />
+ * Modal window for adding a product's price to a shop
  */
 class ShopAddProductPriceModal extends Component {
   constructor(props) {
     super(props)
-    this.parent = this.props.parent
-    this.root = this.props.store
-
-    // using RootStore.PriceStore would break parent's table
-    this.store = new PriceStore(this.root)
+    this.store = this.props.store.productStore
 
     this.state = {
-      shopId: this.props.shopId,
-      price: null,
-      productId: null,
-      dateFrom: null,
-      dateTo: null
+      productId: '',
+      price: '',
+      dateFrom: '',
+      dateTo: '',
     }
+  }
+  
+  async componentDidMount() {
+    // get all shops for dropdown selection
+    await this.store.getProducts({ count: 0 })
+    await this.store.getProducts({ count: this.store.pagination.total })
   }
 
   /**
@@ -31,82 +32,51 @@ class ShopAddProductPriceModal extends Component {
    * Changes to a field with name `<field>` will be applied to `state.<field>`.
    * (e.g. `address` -> `state.address`).
    */
-  handleChange = async (e) => {
-    console.log('Changed: ', e.target.name, e.target.value)
-
-    console.log(this.state)
-
-    await this.setState({
+  handleChange = (e) => {
+    this.setState({
       [e.target.name]: e.target.value,
     })
-
-    console.log(this.state)
   }
 
-  handleSubmit = async (e) => {
-    // Prevent actual submission of the form
+  preparedHandler = (data) => this.setState(data)
+
+  handleSubmit = (e) => {
     e.preventDefault()
-    // Clear errors
-    console.log("Clicked submit, state is ", this.state)
-
-    // Submit request
-    // TODO: show notification on error/success
-    await this.store.addPrice(this.state)
-
-    // will reload shops
-    this.parent.closeModal()
+    const { productId, price, dateFrom, dateTo } = this.state
+    this.props.onSubmit({ productId, price, dateFrom, dateTo })
   }
 
-  handleCancel = async (e) => {
+  handleCancel = (e) => {
     e.preventDefault()
-    console.log("Clicked cancel")
-    this.parent.closeModal()
-  }
-  
-  async componentDidMount() {
-    // get all shops for dropdown selection
-    await this.root.productStore.getProducts({'count': 0})
-    await this.root.productStore.getProducts({'count': this.root.productStore.pagination.total})
-
-    this.setState({
-      productId: this.root.productStore.products[0].id
-    })
+    this.props.onCancel()
   }
 
   render() {
+    const { productId, price } = this.state
     return (
-      <form onSubmit={this.handleSubmit}>
+      <Form onSubmit={ this.handleSubmit }>
         <h3>Προσθήκη προϊόντος στο κατάστημα</h3>
-        <div>
-          <label htmlFor="productId">Προϊόν:</label>
-          <select name="productId" id="productId" type="text" required
-            value={this.state.productId} onChange={this.handleChange}>
-            {
-              this.root.productStore.products.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))
-            }</select>
-        </div>
-        <div>
-          <label htmlFor="price">Τιμή (σε ευρώ):</label>
-          <input name="price" id="price" type="number" required
-            value={this.state.price} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="dateFrom">Ημερομηνία από:</label>
-          <input name="dateFrom" id="dateFrom" type="text" required
-            value={this.state.dateFrom} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="dateTo">Ημερομηνία έως:</label>
-          <input name="dateTo" id="dateTo" type="text" required
-            value={this.state.dateTo} onChange={this.handleChange}></input>
-        </div>
-        <div style={{float: 'left'}}>
-          <button style={{marginRight: '20px'}}>Εισαγωγή</button>
-          <button onClick={this.handleCancel}>Ακύρωση</button>
-        </div>
-      </form>
+        <FormGroup>
+          <Label htmlFor="productId">Προϊόν:</Label>
+          <Input type="select" name="productId" id="productId" required
+            value={ productId } onChange={ this.handleChange }>
+            <option value="" disabled hidden>Επιλογή προϊόντος</option>
+            { this.store.products.map(({ id, name }) => (
+              <option key={ id } value={ id }>{ name }</option>
+            ))}
+          </Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="price">Τιμή (σε ευρώ):</Label>
+          <Input name="price" id="price" type="number" min="0.01" step="0.01" required
+            value={ price } onChange={ this.handleChange } />
+        </FormGroup>
+        <DateFilter onPrepared={ this.preparedHandler } />
+        <FormGroup>
+          <Button>Εισαγωγή</Button>
+          <Button onClick={ this.handleCancel }>Ακύρωση</Button>
+        </FormGroup>
+      </Form>
     )
   }
 }

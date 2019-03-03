@@ -1,13 +1,15 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { inject, observer } from 'mobx-react'
-
 import MaterialTable from 'material-table'
 import Popup from 'reactjs-popup'
-import tableOptions from '../utils/tableOptions';
+import { Button } from 'reactstrap'
 
 import ShopModal from '../components/ShopModal'
+import StateHandler from '../components/StateHandler'
 import { tagsToText } from '../utils/tags'
+import tableOptions from '../utils/tableOptions'
+
 
 class ShopListing extends Component {
   constructor(props) {
@@ -16,14 +18,15 @@ class ShopListing extends Component {
     this.store = this.props.store.shopStore
 
     this.state = {
-      modalOpen: false,
       modalMode: null
     }
 
     this.columns = [{
       title: 'Όνομα καταστήματος',
       field: 'name',
-      render: rowData => (<Link to={"/shops/" + rowData.id}>{rowData.name}</Link>)
+      render: ({ id, name }) => (
+        <Link to={ `/shops/${id}` }>{ name }</Link>
+      ),
     }, {
       title: 'Διεύθυνση',
       field: 'address',
@@ -34,25 +37,21 @@ class ShopListing extends Component {
     }, {
       title: 'Ετικέτες',
       field: 'tags',
-      render: rowData => (tagsToText(rowData.tags))
+      render: ({ tags }) => tagsToText(tags),
     }]
 
     if (this.root.isLoggedIn) {
       this.actions = [{
-        this: this,
-        onClick: async function (e, rowData) {
-          /* `this`: action object */
-          /* `this.this`: ShopListing object */
-          this.this.store.getShop(rowData.id)
-          this.this.openModal('edit')
+        onClick: async (e, { id }) => {
+          this.store.getShop(id)
+          this.openModal('edit')
         },
         icon: 'edit',
         name: 'Επεξεργασία καταστήματος'
       }, {
-        this: this,
-        onClick: async function (e, rowData) {
-          await this.this.store.deleteShop(rowData.id)
-          await this.this.loadShops()
+        onClick: async (e, { id }) => {
+          await this.store.deleteShop(id)
+          this.loadShops()
         },
         icon: 'delete',
         name: 'Διαγραφή καταστήματος'
@@ -70,68 +69,71 @@ class ShopListing extends Component {
     await this.store.getShops({ count: this.store.pagination.total, status: 'ALL' })
   }
 
-  async componentDidMount() {
-    await this.loadShops()
+  componentDidMount() {
+    this.loadShops()
   }
 
-  openModal(mode = 'edit') {
+  openModal = (mode) => {
     this.setState({
-      modalOpen: true,
       modalMode: mode
     })
   }
 
-  closeModal() {
+  closeModal = () => {
     this.setState({
-      modalOpen: false,
       modalMode: null
     })
   }
 
-  render() {
-    //DEBUG
-    // if (! this.root.isLoggedIn) {
-    //     return (
-    //         <div>
-    //             You must log in
-    //         </div>
-    //     )
-    // }
-    if (this.store.state === 'done') {
-      return (
-        <>
-          {
-            this.root.isLoggedIn && (
-              <button onClick={(e) => { this.openModal('create') }}>Εισαγωγή καταστήματος</button>
-            )
-          }
-          <MaterialTable
-            data={this.store.shops}
-            columns={this.columns}
-            title={"Λίστα καταστημάτων"}
-            {...tableOptions}
-            actions={this.actions}
-            options={{
-              actionsColumnIndex: -1,
-              pageSize: 10,
-              pageSizeOptions: [10, 20, 50]
-            }}
-          />
-          <Popup
-            closeOnDocumentClick={false}
-            closeOnEscape={false}
-            open={this.state.modalOpen}
-          >
-
-            <ShopModal parent={this} mode={this.state.modalMode} />
-          </Popup>
-        </>
-      )
+  /**
+   * Returns a submit handler function for the given mode.
+   * @param {String} mode One of 'create', 'edit'.
+   */
+  makeSubmitHandler (mode) {
+    if (mode === 'create') {
+      return (_id, data) => {
+        this.store.addShop(data)
+        this.closeModal()
+        this.loadShops()
+      }
+    } else if (mode === 'edit') {
+      return (id, data) => {
+        this.store.editShop(id, data)
+        this.closeModal()
+        this.loadShops()
+      }
     }
+  }
+
+  render() {
+    const { state, shops } = this.store
+    const { modalMode } = this.state
+
     return (
-      <div>
-        <p>pending</p>
-      </div>
+      <StateHandler state={ state }>
+        { this.root.isLoggedIn && (
+          <Button onClick={ () => this.openModal('create') }>Εισαγωγή καταστήματος</Button>
+        )}
+        <MaterialTable
+          data={ shops }
+          columns={ this.columns }
+          title="Λίστα καταστημάτων"
+          { ...tableOptions }
+          actions={ this.actions }
+          options={{
+            actionsColumnIndex: -1,
+            pageSize: 10,
+            pageSizeOptions: [10, 20, 50]
+          }}
+        />
+        <Popup open={ modalMode != null } onClose={ this.closeModal }>
+          <ShopModal
+            mode={ modalMode }
+            onSubmit={ this.makeSubmitHandler(modalMode) }
+            onCancel={ this.closeModal }
+          />
+        </Popup>
+      </StateHandler>
     )
   }
 }

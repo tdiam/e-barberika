@@ -12,20 +12,20 @@ const defaultError = (
 const defaultUnauthorized = defaultError
 
 const getComponent = (cf) => {
-  // If is React element return it as is
-  if (React.isValidElement(cf)) {
-    return cf
-  }
   // If is pure string, turn it into a component
-  if(typeof cf === 'string') {
+  if (typeof cf === 'string') {
     return (<>{ cf }</>)
   }
-  // If null, return null
-  if(cf == null) {
+  // If it is a function, call it and return results
+  if (typeof cf === 'function') {
+    return cf()
+  }
+  // If nully, return null
+  if (cf == null) {
     return null
   }
-  // Otherwise try to call the function
-  return cf()
+  // Otherwise return as is
+  return cf
 }
 
 /**

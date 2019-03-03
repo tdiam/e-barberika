@@ -1,45 +1,32 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
+import { Form, FormGroup, Input, Button, Label } from 'reactstrap'
 
-import { tagsToText, textToTags } from '../utils/tags'
+import TagInput from './TagInput'
+
 
 /**
  * Modal window for editing/creating shops
- * Based on AddShop.original.js
- * <ShopModal parent={parent_component} mode="edit" />
  */
 class ShopModal extends Component {
   constructor(props) {
     super(props)
-    this.parent = this.props.parent
-    this.store = this.props.parent.store
-    this.mode = this.props.mode
+    this.store = this.props.store.shopStore
 
-    if (this.mode === 'edit') {
+    if (this.props.mode === 'edit') {
+      const { id, name, address, lng, lat, tags, withdrawn } = this.store.shop
+      this.state = { id, name, address, lng, lat, tags, withdrawn }
+    } else {
       this.state = {
-        id: this.store.shop.id,
-        name: this.store.shop.name,
-        address: this.store.shop.address,
-        lng: this.store.shop.lng,
-        lat: this.store.shop.lat,
-        tags: this.store.shop.tags,
-        tags_text: tagsToText(this.store.shop.tags),
-        withdrawn: this.store.shop.withdrawn
+        id: null,
+        name: '',
+        address: '',
+        lng: '',
+        lat: '',
+        tags: [],
+        withdrawn: false,
       }
-
-      // console.log(this.state)
     }
-  }
-
-  state = {
-    id: null,
-    name: '',
-    address: '',
-    lng: 0,
-    lat: 0,
-    tags: [],
-    tags_text: "",
-    withdrawn: false
   }
 
   /**
@@ -48,93 +35,63 @@ class ShopModal extends Component {
    * (e.g. `address` -> `state.address`).
    */
   handleChange = (e) => {
-    console.log('Changed: ', e.target.name, e.target.value)
-    if (e.target.name === 'tags') {
-      // special handling for tags
-      // console.log(e.target.value, typeof(e.target.value), textToTags(e.target.value))
-      this.setState({
-        tags_text: e.target.value,
-        tags: textToTags(e.target.value)
-      })
-    } else {
-      this.setState({
-        [e.target.name]: e.target.value,
-      })
-    }
+    this.setState({
+      [e.target.name]: e.target.value,
+    })
   }
 
-  handleSubmit = async (e) => {
+  handleTagsChange = (tags) => this.setState({ tags })
+
+  handleSubmit = (e) => {
     // Prevent actual submission of the form
     e.preventDefault()
-    // Clear errors
-    console.log("Clicked submit, mode is ", this.mode)
 
-    // Submit request
-    // TODO: show notification on error/success
-
-    let shop = {
-      id: this.state.id,
-      name: this.state.name,
-      address: this.state.address,
-      lat: this.state.lat,
-      lng: this.state.lng,
-      tags: this.state.tags
-    }
-
-    if (this.mode === 'create') {
-      console.log('Creating shop', shop)
-      await this.store.addShop(shop)
-    } else if (this.mode === 'edit') {
-      console.log('Editing shop', shop)
-      await this.store.editShop(shop.id, shop)
-    }
-
-    await this.parent.loadShops()
-    this.parent.closeModal()
+    const { id, name, address, lng, lat, tags } = this.state
+    // id is null if mode === 'create'
+    // parent component should ignore it
+    this.props.onSubmit(id, { name, address, lng, lat, tags })
   }
 
-  handleCancel = async (e) => {
+  handleCancel = (e) => {
     e.preventDefault()
-    this.setState({ error: '' })
-    console.log("Clicked cancel")
-    this.parent.closeModal()
+    this.props.onCancel()
   }
-
 
   render() {
+    const { name, address, lat, lng, tags } = this.state
     return (
-      <form onSubmit={this.handleSubmit}>
-        <h3>{this.mode === 'edit' ? 'Επεξεργασία Στοιχείων' : 'Δημιουργία'} Καταστήματος</h3>
-        <div>
-          <label htmlFor="name">Name:</label>
-          <input name="name" id="name" type="text" required
-            value={this.state.name} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="address">Address:</label>
-          <input name="address" id="address" type="text" required
-            value={this.state.address} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="lat">Latitude:</label>
-          <input name="lat" id="lat" type="number" step="any" min="-90" max="90" required
-            value={this.state.lat} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="lng">Longitude:</label>
-          <input name="lng" id="lng" type="number" step="any" min="-180" max="180" required
-            value={this.state.lng} onChange={this.handleChange}></input>
-        </div>
-        <div>
-          <label htmlFor="tags">Ετικέτες:</label>
-          <input name="tags" id="tags" type="text"
-            value={this.state.tags_text} onChange={this.handleChange}></input>
-        </div>
-        <div style={{float: 'left'}}>
-          <button style={{marginRight: '20px'}}>{this.mode}</button>
-          <button onClick={this.handleCancel}>Cancel</button>
-        </div>
-      </form>
+      <Form onSubmit={ this.handleSubmit }>
+        <h3>{ this.props.mode === 'edit' ? 'Επεξεργασία Στοιχείων' : 'Δημιουργία' } Καταστήματος</h3>
+        <FormGroup>
+          <Label htmlFor="name">Όνομα:</Label>
+          <Input name="name" id="name" type="text" required
+            value={ name } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="address">Διεύθυνση:</Label>
+          <Input name="address" id="address" type="text" required
+            value={ address } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="lat">Latitude:</Label>
+          <Input name="lat" id="lat" type="number" step="any" min="-90" max="90" required
+            value={ lat } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="lng">Longitude:</Label>
+          <Input name="lng" id="lng" type="number" step="any" min="-180" max="180" required
+            value={ lng } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="tags">Ετικέτες:</Label>
+          <TagInput tag={ Input } name="tags" id="tags"
+            value={ tags } onChange={ this.handleTagsChange }></TagInput>
+        </FormGroup>
+        <FormGroup>
+          <Button>Αποθήκευση</Button>
+          <Button onClick={ this.handleCancel }>Ακύρωση</Button>
+        </FormGroup>
+      </Form>
     )
   }
 }
