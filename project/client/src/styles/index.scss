@@ -3,8 +3,15 @@
 @import '~bootstrap/scss/bootstrap.scss';
 @import '~bootswatch/dist/lux/bootswatch';
 
+html, body {
+  font-family: 'Alegreya Sans', sans-serif;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
 // Override lux's uppercasing
 .navbar, .btn, h1, h2, h3, h4, h5, h6, th {
+  letter-spacing: normal;
   text-transform: none;
 }
 
@@ -16,8 +23,6 @@
 .App {
   display: flex;
   flex-direction: column;
-  font-family: 'Alegreya Sans', sans-serif;
-  font-size: 1.25rem;
   min-height: 100vh;
   min-width: 100vw;
 }

@@ -2,14 +2,12 @@ import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import { Link } from 'react-router-dom'
 import MaterialTable from 'material-table'
-import Popup from 'reactjs-popup'
-import { Button } from 'reactstrap'
+import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
 import StateHandler from '../components/StateHandler'
 import ShopAddProductPriceModal from '../components/ShopAddProductPriceModal'
 import Map from '../components/Map'
 import Marker from '../components/MapMarker'
-import Overlay from '../components/MapOverlay'
 
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
@@ -57,20 +55,12 @@ class Shop extends Component {
     }
   }
 
-  openModal = () => {
-    this.setState({
-      modalOpen: true
-    })
-  }
-
-  closeModal = () => {
-    this.setState({
-      modalOpen: false
-    })
-  }
+  toggleModal = () => this.setState(prevState => ({
+    modalOpen: !prevState.modalOpen,
+  }))
 
   handleSubmit = async (data) => {
-    this.closeModal()
+    this.toggleModal()
     await this.priceStore.addPrice({
       shopId: this.store.shop.id,
       ...data,
@@ -95,11 +85,10 @@ class Shop extends Component {
               <Map center={ coords }
                 zoom={ 11 }
                 width={ 600 } height={ 400 }>
-                <Marker anchor={ coords } />
-                <Overlay anchor={ coords }>{ shop.name }</Overlay>
+                <Marker anchor={ coords } text={ shop.name } />
               </Map>
             </div>
-            <Button onClick={ this.openModal }>Καταχώρηση Τιμής</Button>
+            <Button onClick={ this.toggleModal }>Καταχώρηση Τιμής</Button>
             <MaterialTable
               { ...tableOptions }
               data={ prices }
@@ -110,12 +99,17 @@ class Shop extends Component {
                 pageSizeOptions: [10, 20, 50]
               }}
             />
-            <Popup open={ modalOpen } onClose={ this.closeModal }>
-              <ShopAddProductPriceModal
-                onSubmit={ this.handleSubmit }
-                onCancel={ this.closeModal }
-              />
-            </Popup>
+            <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
+              <ModalHeader toggle={ this.toggleModal }>
+                Καταχώρηση τιμής στο κατάστημα { shop.name }
+              </ModalHeader>
+              <ModalBody>
+                <ShopAddProductPriceModal
+                  onSubmit={ this.handleSubmit }
+                  onCancel={ this.toggleModal }
+                />
+              </ModalBody>
+            </Modal>
           </div>
         )}
       </StateHandler>

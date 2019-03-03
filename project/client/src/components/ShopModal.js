@@ -3,6 +3,8 @@ import { inject, observer } from 'mobx-react'
 import { Form, FormGroup, Input, Button, Label } from 'reactstrap'
 
 import TagInput from './TagInput'
+import Map from './Map'
+import Draggable from './MapDraggable'
 
 
 /**
@@ -59,9 +61,10 @@ class ShopModal extends Component {
 
   render() {
     const { name, address, lat, lng, tags } = this.state
+    // Region level view when editing, country view when creating
+    const zoomLevel = this.props.mode === 'edit' ? 11 : 4
     return (
       <Form onSubmit={ this.handleSubmit }>
-        <h3>{ this.props.mode === 'edit' ? 'Επεξεργασία Στοιχείων' : 'Δημιουργία' } Καταστήματος</h3>
         <FormGroup>
           <Label htmlFor="name">Όνομα:</Label>
           <Input name="name" id="name" type="text" required
@@ -72,16 +75,15 @@ class ShopModal extends Component {
           <Input name="address" id="address" type="text" required
             value={ address } onChange={ this.handleChange }></Input>
         </FormGroup>
-        <FormGroup>
-          <Label htmlFor="lat">Latitude:</Label>
-          <Input name="lat" id="lat" type="number" step="any" min="-90" max="90" required
-            value={ lat } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <FormGroup>
-          <Label htmlFor="lng">Longitude:</Label>
-          <Input name="lng" id="lng" type="number" step="any" min="-180" max="180" required
-            value={ lng } onChange={ this.handleChange }></Input>
-        </FormGroup>
+        <Map center={[38.008928, 23.747025]} zoom={ zoomLevel } width={ 600 } height={ 400 }>
+          <Draggable
+            anchor={[lat, lng]}
+            offset={[16, 32]}
+            onDragEnd={ ([lat, lng]) => this.setState({ lat, lng }) }
+          >
+            <img src="img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
+          </Draggable>
+        </Map>
         <FormGroup>
           <Label htmlFor="tags">Ετικέτες:</Label>
           <TagInput tag={ Input } name="tags" id="tags"

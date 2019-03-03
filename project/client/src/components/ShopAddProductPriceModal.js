@@ -55,7 +55,6 @@ class ShopAddProductPriceModal extends Component {
     const { productId, price } = this.state
     return (
       <Form onSubmit={ this.handleSubmit }>
-        <h3>Προσθήκη προϊόντος στο κατάστημα</h3>
         <FormGroup>
           <Label htmlFor="productId">Προϊόν:</Label>
           <Input type="select" name="productId" id="productId" required

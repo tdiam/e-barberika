@@ -2,8 +2,7 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { inject, observer } from 'mobx-react'
 import MaterialTable from 'material-table'
-import Popup from 'reactjs-popup'
-import { Button } from 'reactstrap'
+import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
 import ShopModal from '../components/ShopModal'
 import StateHandler from '../components/StateHandler'
@@ -126,13 +125,18 @@ class ShopListing extends Component {
             pageSizeOptions: [10, 20, 50]
           }}
         />
-        <Popup open={ modalMode != null } onClose={ this.closeModal }>
-          <ShopModal
-            mode={ modalMode }
-            onSubmit={ this.makeSubmitHandler(modalMode) }
-            onCancel={ this.closeModal }
-          />
-        </Popup>
+        <Modal size="lg" isOpen={ modalMode != null } toggle={ this.closeModal }>
+          <ModalHeader toggle={ this.closeModal }>
+            { modalMode === 'edit' ? 'Επεξεργασία στοιχείων' : 'Δημιουργία' } καταστήματος
+          </ModalHeader>
+          <ModalBody>
+            <ShopModal
+              mode={ modalMode }
+              onSubmit={ this.makeSubmitHandler(modalMode) }
+              onCancel={ this.closeModal }
+            />
+          </ModalBody>
+        </Modal>
       </StateHandler>
     )
   }
