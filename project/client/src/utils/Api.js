@@ -20,6 +20,8 @@ const qsConfig = {
   indices: false,
 }
 
+const paramsSerializer = (params) => qs.stringify(params, qsConfig)
+
 /**
  * API helper.
  *
@@ -37,7 +39,7 @@ export default (args = {}) => {
   // Axios by default supports only JSON requests
   // We use qs.stringify() to encode Javascript objects into URLEncoded form 'a=b&c=d'
   return {
-    get: (url, params) => instance.get(url, { params, ...reqConfig }),
+    get: (url, params) => instance.get(url, { params, paramsSerializer, ...reqConfig }),
     post: (url, data) => instance.post(url, qs.stringify(data, qsConfig), reqConfig),
     put: (url, data) => instance.put(url, qs.stringify(data, qsConfig), reqConfig),
     patch: (url, data) => instance.patch(url, qs.stringify(data, qsConfig), reqConfig),
