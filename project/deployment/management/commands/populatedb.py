@@ -1,19 +1,21 @@
 import random
 
-import datetime
 from faker import Faker
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 
-from project.api import models
+from project.api.models import (
+    Product, ProductTag,
+    Shop, ShopTag,
+    Price,
+)
 
-NUM_CATEGORIES = 5
-NUM_TAGS = 10
+NUM_CATEGORIES = 10
+NUM_TAGS = 25
 
 def pick_max_count(collection, count):
-    picks = [random.randint(0, len(collection)-1) for _ in range(count)]
-
+    picks = random.choices(collection, k=count)
     return set(picks)
 
 class Command(BaseCommand):
@@ -26,65 +28,77 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         fake = Faker('el_GR')
+        lorem = fake.provider('faker.providers.lorem')
+        name_provider = fake.provider('faker.providers.person')
+        uncommon_words = lorem.word_list[2 * len(lorem.common_words):]
+        company_names = uncommon_words + name_provider.last_names
 
         # categories
-        categories = [fake.word(ext_word_list=None) for _ in range(NUM_CATEGORIES)]
+        categories = fake.words(NUM_CATEGORIES, ext_word_list=uncommon_words)
 
         # shop and product tags
-        tags = list(set([fake.word(ext_word_list=None) for _ in range(NUM_TAGS)]))
+        product_tags = fake.words(NUM_TAGS, ext_word_list=uncommon_words, unique=True)
+        product_tags = [ProductTag(tag=x) for x in product_tags]
+        ProductTag.objects.bulk_create(product_tags)
+        product_tags = ProductTag.objects.all()
 
-        product_tags = [models.ProductTag(tag=x) for x in tags]
-        models.ProductTag.objects.bulk_create(product_tags)
-
-        shop_tags = [models.ShopTag(tag=x) for x in tags]
-        models.ShopTag.objects.bulk_create(shop_tags)
+        shop_tags = fake.words(NUM_TAGS, ext_word_list=uncommon_words, unique=True)
+        shop_tags = [ShopTag(tag=x) for x in shop_tags]
+        ShopTag.objects.bulk_create(shop_tags)
+        shop_tags = ShopTag.objects.all()
 
         # shops
         shops = []
-        for _ in range(options['count']):
-            s = models.Shop(
-                name=fake.first_name(),
+        shop_names = fake.words(options['count'], ext_word_list=company_names)
+        for name in shop_names:
+            s = Shop(
+                name=name.capitalize(),
                 address=fake.address(),
                 coordinates=Point(float(fake.local_longitude()), float(fake.local_latitude()))
             )
             s.save()
-            for t in pick_max_count(tags, 2):
-                s.tags.add(models.ShopTag.objects.get(tag=tags[t]))
-
             shops.append(s)
+
+            for t in pick_max_count(shop_tags, 2):
+                s.tags.add(t)
 
 
         # products
         products = []
-        for _ in range(options['count']):
-            p = models.Product(
-                name=fake.first_name(),
+        product_names = fake.words(options['count'], ext_word_list=uncommon_words)
+        for name in product_names:
+            p = Product(
+                name=name.capitalize(),
                 description=fake.text(max_nb_chars=200, ext_word_list=None),
-                category=categories[random.randint(0, NUM_CATEGORIES-1)]
+                category=random.choice(categories)
             )
             p.save()
-
-            for t in pick_max_count(tags, 2):
-                p.tags.add(models.ProductTag.objects.get(tag=tags[t]))
-
             products.append(p)
+
+            for t in pick_max_count(product_tags, 2):
+                p.tags.add(t)
+
 
         # user is asoures
         User = get_user_model()
         asoures_user = User.objects.get(username='asoures')
 
         # for each shop, add prices for at most `products/3` products
-        date_to = models.Price.parse_date('2022-10-10') # well into the future 
-        for s in shops:
-            prod_ids = pick_max_count(products, options['count'] // 3)
 
-            for pid in prod_ids:
-                date = fake.date_this_month()
-                models.Price(
+        prices = []
+        for s in shops:
+            prods = pick_max_count(products, options['count'] // 3)
+            for prod in prods:
+                date_from = fake.date_between('-30d', 'today')
+                date_to = fake.date_between('today', '+30d')
+                p = Price(
                     shop=s,
-                    product=products[pid],
+                    product=prod,
                     user=asoures_user,
-                    price=random.randint(10, 60),
-                    date_from=date - datetime.timedelta(weeks=5),
-                    date_to=date_to
-                ).save()
+                    price=random.randint(5, 60),
+                    date_from=date_from,
+                    date_to=date_to,
+                )
+                prices.append(p)
+
+        Price.objects.bulk_create(prices)
