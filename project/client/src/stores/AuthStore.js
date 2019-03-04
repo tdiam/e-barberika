@@ -12,6 +12,13 @@ class AuthStore {
   state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
   /**
+   * Resets state to pending
+   */
+  resetState() {
+    this.state = 'pending'
+  }
+
+  /**
    * Authenticate with given credentials and store token if successful
    *
    * @param {String} username

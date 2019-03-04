@@ -5,30 +5,28 @@ import MaterialTable from 'material-table'
 import { Container, Row, Col, Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
 import StateHandler from '../components/StateHandler'
-import ShopAddProductPriceModal from '../components/ShopAddProductPriceModal'
-import Map from '../components/Map'
-import Marker from '../components/MapMarker'
+import ProductAddShopPriceModal from '../components/ProductAddShopPriceModal'
 
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
 
 
-class Shop extends Component {
+class Product extends Component {
   constructor (props) {
     super(props)
-    this.store = this.props.store.shopStore
+    this.store = this.props.store.productStore
     this.priceStore = this.props.store.priceStore
 
     this.columns = [{
-      'title': 'Προϊόν',
-      'field': 'productName',
-      'render': ({ productId, productName }) => (
-        <Link to={ `/products/${productId}` }>{ productName }</Link>
+      'title': 'Κατάστημα',
+      'field': 'shopName',
+      'render': ({ shopId, shopName }) => (
+        <Link to={ `/shops/${shopId}` }>{ shopName }</Link>
       ),
     }, {
-      'title': 'Ετικέτες Προϊόντος',
-      'field': 'productTags',
-      'render': ({ productTags }) => tagsToText(productTags),
+      'title': 'Ετικέτες Καταστήματος',
+      'field': 'shopTags',
+      'render': ({ shopTags }) => tagsToText(shopTags),
     }, {
       'title': 'Τιμή',
       'field': 'price',
@@ -42,16 +40,16 @@ class Shop extends Component {
   }
 
   async componentDidMount () {
-    // Fetch shop with given ID
-    await this.store.getShop(this.props.match.params.id)
-    await this.loadProductsForShop()
+    // Fetch product with given ID
+    await this.store.getProduct(this.props.match.params.id)
+    await this.loadShopsForProduct()
   }
 
-  async loadProductsForShop() {
+  async loadShopsForProduct() {
     if (this.store.state === 'done') {
-      const ids = [this.store.shop.id]
-      await this.priceStore.getPrices({ shops: ids, count: 0 })
-      await this.priceStore.getPrices({ shops: ids, count: this.priceStore.pagination.total })
+      const ids = [this.store.product.id]
+      await this.priceStore.getPrices({ products: ids, count: 0 })
+      await this.priceStore.getPrices({ products: ids, count: this.priceStore.pagination.total })
     }
   }
 
@@ -62,34 +60,31 @@ class Shop extends Component {
   handleSubmit = async (data) => {
     this.toggleModal()
     await this.priceStore.addPrice({
-      shopId: this.store.shop.id,
+      productId: this.store.product.id,
       ...data,
     })
-    await this.loadProductsForShop()
+    await this.loadShopsForProduct()
   }
 
   render () {
-    const { shop, state } = this.store
-    const coords = [shop.lat, shop.lng]
+    const { product, state } = this.store
     const { prices } = this.priceStore
     const { modalOpen } = this.state
     return (
       <StateHandler state={ state }>
         {() => (
           <div>
-            <Container className="shop-info">
+            <h2 className="mb-4">Προϊόν</h2>
+            <Container className="product-info">
               <Row>
-                <Col md={ 5 } className="shop-details">
-                  <h2 className="shop-name">{ shop.name }</h2>
-                  <p>{ shop.address }</p>
-                  <p className="tags">Ετικέτες: { tagsToText(shop.tags) }</p>
+                <Col md={ 7 } className="product-details">
+                  <h2 className="product-name">{ product.name }</h2>
+                  <p>Κατηγορία: { product.category }</p>
+                  <p className="tags">Ετικέτες: { tagsToText(product.tags) }</p>
                 </Col>
-                <Col md={ 7 } className="shop-map">
-                  <Map center={ coords }
-                    zoom={ 11 }
-                    height={ 400 }>
-                    <Marker anchor={ coords } text={ shop.name } />
-                  </Map>
+                <Col md={ 5 }>
+                  <h4>Περιγραφή</h4>
+                  <p>{ product.description }</p>
                 </Col>
               </Row>
             </Container>
@@ -98,7 +93,7 @@ class Shop extends Component {
               { ...tableOptions }
               data={ prices }
               columns={ this.columns }
-              title='Διαθέσιμα Προϊόντα'
+              title='Διαθέσιμο στα Καταστήματα'
               options={{
                 pageSize: 10,
                 pageSizeOptions: [10, 20, 50]
@@ -106,10 +101,10 @@ class Shop extends Component {
             />
             <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
               <ModalHeader toggle={ this.toggleModal }>
-                Καταχώρηση τιμής στο κατάστημα { shop.name }
+                Καταχώρηση τιμής στο προϊόν { product.name }
               </ModalHeader>
               <ModalBody>
-                <ShopAddProductPriceModal
+                <ProductAddShopPriceModal
                   onSubmit={ this.handleSubmit }
                   onCancel={ this.toggleModal }
                 />
@@ -122,4 +117,4 @@ class Shop extends Component {
   }
 }
 
-export default inject('store')(observer(Shop))
+export default inject('store')(observer(Product))

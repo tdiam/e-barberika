@@ -10,6 +10,7 @@ class RootStore {
     this.shopStore = new ShopStore(this)
     this.productStore = new ProductStore(this)
     this.priceStore = new PriceStore(this)
+    this.setUserFromStorage()
   }
 
   user = {
@@ -22,15 +23,31 @@ class RootStore {
   }
 
   get userOrGuest () {
-    return this.isLoggedIn ? this.user.username : 'Guest'
+    return this.isLoggedIn ? this.user.username : 'Ανώνυμος'
+  }
+
+  /**
+   * Checks to see if credentials have been stored in localStorage.
+   * If so, "logs in" user.
+   */
+  setUserFromStorage () {
+    let username = localStorage.getItem('username'),
+        token = localStorage.getItem('token')
+    if (username != null && token != null) {
+      this.user = { username, token }
+    }
   }
 
   setUser ({ username, token }) {
     this.user = { username, token }
+    localStorage.setItem('username', username)
+    localStorage.setItem('token', token)
   }
 
   clearUser () {
     this.user = { username: '', token: '' }
+    localStorage.removeItem('username')
+    localStorage.removeItem('token')
   }
 }
 decorate(RootStore, {
@@ -38,6 +55,7 @@ decorate(RootStore, {
   isLoggedIn: computed,
   userOrGuest: computed,
   setUser: action,
+  setUserFromStorage: action,
   clearUser: action,
 })
 

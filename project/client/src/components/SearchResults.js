@@ -1,75 +1,85 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
+import MaterialTable from 'material-table'
+import { Link } from 'react-router-dom'
+
 import StateHandler from './StateHandler'
-import PropTypes from 'prop-types'
+import tableOptions from '../utils/tableOptions'
 
 class SearchResults extends Component {
   constructor (props) {
     super(props)
-    this.store = this.props.store
-  }
+    this.root = this.props.store
+    this.store = this.props.store.priceStore
 
-  applyQueryLogic = (urlps, query) => {
-    const tags = query.split(' ')
-    tags.forEach(tag => (urlps.append('tags', tag)))
-  }
-
-  applyFilterLogic = (urlps, filters) => {
-    const { dateFrom, dateTo, geoDist, geoLat, geoLng, sort } = filters
-    const geoFilter = (geoDist !== undefined)
-    const dateFilter = (dateFrom !== undefined)
-    const sortingFilter = (sort !== undefined)
-    
-    if (dateFilter) {
-      urlps.append("dateFrom", dateFrom)
-      urlps.append("dateTo", dateTo)
+    this.state = {
+      modalOpen: false,
     }
-    if (geoFilter) {
-      urlps.append("geoDist", geoDist)
-      urlps.append("geoLat", geoLat)
-      urlps.append("geoLng", geoLng)
-    }
-    if (sortingFilter)
-      urlps.append("sort", sort)
-  }
 
-  componentWillReceiveProps (nextProps) {
-    // Execute API call that will update the store state
-    let params = new URLSearchParams()
-    this.applyQueryLogic(params, nextProps.query) // by reference
-    this.applyFilterLogic(params, nextProps.filters) 
-    this.store.priceStore.getPrices(params)
+    this.columns = [{
+      title: 'Όνομα προϊόντος',
+      field: 'productName',
+      render: rowData => {
+        return (
+          <Link to={`/products/${rowData.productId}`}>{rowData.productName}</Link>
+        )
+      },
+    }, {
+      title: 'Όνομα καταστήματος',
+      field: 'shopName',
+      render: rowData => {
+        return (
+          <Link to={`/shops/${rowData.shopId}`}>{rowData.shopName}</Link>
+        )
+      },
+    }, {
+      title: 'Τιμή',
+      field: 'price',
+    }, {
+      title: 'Ημερομηνία',
+      field: 'date',
+    }, {
+      title: 'Απόσταση (km)',
+      field: 'shopDist',
+      render: rowData => {
+        return Math.round(rowData.shopDist)
+      },
+    }]
   }
 
   render () {
-    let priceItems = this.store.priceStore.prices.map(price => (
-      <li key={ `${price.shopId}:${price.productId}` }>
-        { price.productName }, { price.shopName }, { price.price }
-      </li>
-    ))
+    const prices = this.store.prices
+    if(prices.length > 0 && typeof prices[0].shopDist !== "undefined"){
+      this.columns[this.columns.length - 1].hidden = false
+      console.log(typeof prices[0].shopDist)
+    } else {
+      this.columns[this.columns.length - 1].hidden = true
+    }
     // NOTE: enters twice
     return (
-      <StateHandler state={ this.store.priceStore.state } ifPending={ <></> }>
-        {() => (
-          (priceItems.length !== 0) ? (
-            <div>
-              <h2>Product, Shop, Price:</h2>
-              <ul>
-                { priceItems }
-              </ul>
-            </div>
-          ) : (
+      <StateHandler state={ this.store.state }>
+        {() => (prices.length > 0) ? (
+          <div className="search-results">
+            <MaterialTable
+              data={ prices }
+              columns={ this.columns }
+              title="Αποτελέσματα"
+              actions={ this.actions }
+              {...tableOptions}
+              options={{
+                actionsColumnIndex: -1,
+                pageSize: 10,
+                pageSizeOptions: [5, 10, 20, 50],
+              }} />
+          </div>
+        ) : (
+          <div className="search-results">
             <h2>Δε βρέθηκαν προϊόντα!</h2>
-          )
+          </div>
         )}
       </StateHandler>
     )
   }
-}
-
-SearchResults.propTypes = {
-  query: PropTypes.string.isRequired,
-  filters: PropTypes.object.isRequired,
 }
 
 export default inject('store')(observer(SearchResults))

@@ -1,0 +1,148 @@
+@import '~bootswatch/dist/lux/variables';
+@import 'variables';
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~bootswatch/dist/lux/bootswatch';
+@import 'material-table-hack';
+
+html, body {
+  font-family: 'Alegreya Sans', sans-serif;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+// Override lux's uppercasing
+.navbar, .btn, h1, h2, h3, h4, h5, h6, th {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+// Override lux's font-size-sm
+.navbar, .btn, th, .dropdown-menu {
+  font-size: inherit;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
+main {
+  background-color: $body-bg;
+  max-width: 1366px;
+  margin: 0 auto;
+  padding-top: 5vh;
+  padding-bottom: 5vh;
+  flex: 1;
+  text-align: center;
+}
+
+form {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 40rem;
+}
+
+.alert {
+  max-width: 40rem;
+}
+
+form .alert {
+  margin-top: 2rem;
+}
+
+input, select, textarea {
+  box-shadow: 0 0 0 .2rem rgba($primary, .25);
+  font-size: $font-size-lg;
+}
+
+input.form-control, textarea.form-control {
+  &:focus {
+    background-color: darken($body-bg, 5%);
+  }
+  &::placeholder {
+    font-style: italic;
+  }
+}
+
+.nav-item {
+  margin-right: 0;
+}
+
+.navbar-brand {
+  font-size: 1.75rem;
+  margin-right: .5rem;
+}
+
+.navbar-brand img {
+  margin-top: -.25em;
+  padding-right: .05em;
+  height: 1em;
+  width: auto;
+}
+
+/* Hero search */
+.hero-search {
+  margin: 0 auto;
+  max-width: 40rem;
+  h2 {
+    font-size: 2rem;
+    font-weight: 300;
+  }
+  .search-bar {
+    display: flex;
+    margin-top: 1rem;
+    input {
+      margin-right: 1rem;
+      min-width: 0;
+    }
+    .btn {
+      background-color: rgba($secondary, .75);
+      transition: background-color .5s ease-in;
+    }
+    .btn:hover {
+      background-color: $secondary;
+    }
+  }
+  .search-filters {
+    margin-top: .5rem;
+    .form-group {
+      margin: 1rem 0;
+    }
+  }
+}
+
+.search-results {
+  margin: 2rem auto;
+  max-width: 1366px;
+}
+
+.shop-info, .product-info {
+  text-align: left;
+  .shop-details, .product-details {
+    display: flex;
+    flex-direction: column;
+  }
+  .shop-name, .product-name {
+    font-size: 3rem;
+    font-weight: 200;
+  }
+  .tags {
+    margin-top: auto;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .hero-search {
+    h2 {
+      font-size: 4rem;
+    }
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .nav-item:not(:last-child) {
+    margin-right: 2em;
+  }
+}

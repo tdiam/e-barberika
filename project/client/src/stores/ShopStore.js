@@ -90,7 +90,7 @@ class ShopStore {
     this.shop = {}
     this.state = 'pending'
     try {
-      const res = await Api({ token: this.rootStore.user.token }).patch(`/shops/${id}/`, data)
+      const res = await Api({ token: this.rootStore.user.token }).put(`/shops/${id}/`, data)
       runInAction(() => {
         this.state = 'done'
         this.shop = res.data

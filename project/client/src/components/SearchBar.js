@@ -1,40 +1,29 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { FormGroup, Input, Button } from 'reactstrap'
 
 export default class SearchBar extends Component {
-  state = {
-    searchbar: '',
-  }
-
-  handleChange = (e) => {
-    this.setState({
-      [e.target.name]: e.target.value,
-    })
-  }
-
-  submitHandler = (e) => {
-    e.preventDefault()
-    this.props.setQuery(this.state.searchbar)
+  changeHandler = (e) => {
+    this.props.onPrepared({ query: e.target.value })
   }
 
   render () {
     return (
-      <div>
-        <form onSubmit={ this.submitHandler }>
-          <input
-            type="text"
-            name="searchbar"
-            id="searchbar"
-            onChange={ this.handleChange }
-            text={ this.state.searchbar }
-          />
-          <button type="submit">-></button>
-        </form>
-      </div>
+      <FormGroup className="search-bar">
+        <Input
+          type="text"
+          name="query"
+          placeholder="Αναζήτηση με ετικέτες..."
+          onChange={ this.changeHandler }
+          text={ this.props.query }
+        />
+        <Button>Go</Button>
+      </FormGroup>
     )
   }
 }
 
 SearchBar.propTypes = {
-  setQuery: PropTypes.func.isRequired,
+  query: PropTypes.string,
+  onPrepared: PropTypes.func.isRequired,
 }

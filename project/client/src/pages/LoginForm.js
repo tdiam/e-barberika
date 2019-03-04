@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
+import { Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap'
+
+import StateHandler from '../components/StateHandler'
 
 /**
  * Login page.
@@ -12,7 +15,18 @@ class LoginForm extends Component {
     this.store = this.props.store.authStore
   }
 
-  state = { username: '', password: '', message: '' }
+  state = { username: '', password: '' }
+
+  componentDidMount() {
+    if (this.store.rootStore.isLoggedIn) {
+      this.props.history.push('/')
+    }
+    this.store.resetState()
+  }
+
+  componentWillUnmount() {
+    this.store.resetState()
+  }
 
   handleChange = (e) => {
     this.setState({
@@ -23,30 +37,37 @@ class LoginForm extends Component {
   handleSubmit = async (e) => {
     e.preventDefault()
     await this.store.authenticate(this.state.username, this.state.password)
-    /**
-     * redirect
-     * src: https://gist.github.com/elitan/5e4cab413dc201e0598ee05287ee4338
-     */
-    if (this.store.rootStore.user.username) this.props.history.push('/')
-    else this.setState({ password: '', message: 'Incorrect username or password!' })
+    if (this.store.rootStore.isLoggedIn) {
+      this.props.history.push('/')
+    } else {
+      this.setState({ username: '', password: '' })
+    }
   }
 
   render () {
+    if (this.store.rootStore.isLoggedIn) {
+      return null
+    }
+
+    const UnauthorizedAlert = (
+      <Alert color="danger">Το όνομα χρήστη ή ο κωδικός πρόσβασης είναι λανθασμένα!</Alert>
+    )
+
     return (
-      <form onSubmit={ this.handleSubmit }>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input name="username" id="username" type="text" required
-            value={ this.state.username } onChange={ this.handleChange }></input>
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input name="password" id="password" type="password" required
-            value={ this.state.password } onChange={ this.handleChange }></input>
-        </div>
-        <p style={{ color: '#ff0000' }}>{ this.state.message }</p>
-        <button>Log in</button>
-      </form>
+      <Form className="login-form" onSubmit={ this.handleSubmit }>
+        <FormGroup>
+          <Label htmlFor="username">Όνομα χρήστη:</Label>
+          <Input name="username" id="username" type="text" required
+            value={ this.state.username } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="password">Κωδικός πρόσβασης:</Label>
+          <Input name="password" id="password" type="password" required
+            value={ this.state.password } onChange={ this.handleChange }></Input>
+        </FormGroup>
+        <Button className="mt-3">Σύνδεση</Button>
+        <StateHandler state={ this.store.state } ifUnauthorized={ UnauthorizedAlert } ifPending=""></StateHandler>
+      </Form>
     )
   }
 }

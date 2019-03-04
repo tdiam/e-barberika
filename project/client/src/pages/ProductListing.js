@@ -4,31 +4,31 @@ import { inject, observer } from 'mobx-react'
 import MaterialTable from 'material-table'
 import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
-import ShopModal from '../components/ShopModal'
+import ProductModal from '../components/ProductModal'
 import StateHandler from '../components/StateHandler'
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
 
 
-class ShopListing extends Component {
+class ProductListing extends Component {
   constructor(props) {
     super(props)
     this.root = this.props.store
-    this.store = this.props.store.shopStore
+    this.store = this.props.store.productStore
 
     this.state = {
       modalMode: null
     }
 
     this.columns = [{
-      title: 'Όνομα καταστήματος',
+      title: 'Όνομα Προϊόντος',
       field: 'name',
       render: ({ id, name }) => (
-        <Link to={ `/shops/${id}` }>{ name }</Link>
+        <Link to={ `/products/${id}` }>{ name }</Link>
       ),
     }, {
-      title: 'Διεύθυνση',
-      field: 'address',
+      title: 'Κατηγορία',
+      field: 'category',
     }, {
       title: 'Αποσυρμένο',
       field: 'withdrawn',
@@ -42,18 +42,18 @@ class ShopListing extends Component {
     if (this.root.isLoggedIn) {
       this.actions = [{
         onClick: async (e, { id }) => {
-          this.store.getShop(id)
+          this.store.getProduct(id)
           this.openModal('edit')
         },
         icon: 'edit',
-        name: 'Επεξεργασία καταστήματος'
+        name: 'Επεξεργασία προϊόντος'
       }, {
         onClick: async (e, { id }) => {
-          await this.store.deleteShop(id)
-          this.loadShops()
+          await this.store.deleteProduct(id)
+          this.loadProducts()
         },
         icon: 'delete',
-        name: 'Διαγραφή καταστήματος'
+        name: 'Διαγραφή προϊόντος'
       }]
     } else {
       this.actions = []
@@ -61,15 +61,15 @@ class ShopListing extends Component {
 
   }
 
-  async loadShops() {
+  async loadProducts() {
     // Execute API call that will update the store state
-    // NOTE: not too good if we have too many shops
-    await this.store.getShops({ count: 0 })
-    await this.store.getShops({ count: this.store.pagination.total, status: 'ALL' })
+    // NOTE: not too good if we have too many products
+    await this.store.getProducts({ count: 0 })
+    await this.store.getProducts({ count: this.store.pagination.total, status: 'ALL' })
   }
 
   componentDidMount() {
-    this.loadShops()
+    this.loadProducts()
   }
 
   openModal = (mode) => {
@@ -91,34 +91,34 @@ class ShopListing extends Component {
   makeSubmitHandler (mode) {
     if (mode === 'create') {
       return (_id, data) => {
-        this.store.addShop(data)
+        this.store.addProduct(data)
         this.closeModal()
-        this.loadShops()
+        this.loadProducts()
       }
     } else if (mode === 'edit') {
       return (id, data) => {
-        this.store.editShop(id, data)
+        this.store.editProduct(id, data)
         this.closeModal()
-        this.loadShops()
+        this.loadProducts()
       }
     }
   }
 
   render() {
-    const { state, shops } = this.store
+    const { state, products } = this.store
     const { modalMode } = this.state
 
     return (
       <StateHandler state={ state }>
         { this.root.isLoggedIn && (
           <Button className="mb-4" onClick={ () => this.openModal('create') }>
-            Εισαγωγή καταστήματος
+            Εισαγωγή προϊόντος
           </Button>
         )}
         <MaterialTable
-          data={ shops }
+          data={ products }
           columns={ this.columns }
-          title="Λίστα καταστημάτων"
+          title="Λίστα προϊόντων"
           { ...tableOptions }
           actions={ this.actions }
           options={{
@@ -129,10 +129,10 @@ class ShopListing extends Component {
         />
         <Modal size="lg" isOpen={ modalMode != null } toggle={ this.closeModal }>
           <ModalHeader toggle={ this.closeModal }>
-            { modalMode === 'edit' ? 'Επεξεργασία στοιχείων' : 'Δημιουργία' } καταστήματος
+            { modalMode === 'edit' ? 'Επεξεργασία στοιχείων' : 'Δημιουργία' } προϊόντος
           </ModalHeader>
           <ModalBody>
-            <ShopModal
+            <ProductModal
               mode={ modalMode }
               onSubmit={ this.makeSubmitHandler(modalMode) }
               onCancel={ this.closeModal }
@@ -144,4 +144,4 @@ class ShopListing extends Component {
   }
 }
 
-export default inject('store')(observer(ShopListing))
+export default inject('store')(observer(ProductListing))
