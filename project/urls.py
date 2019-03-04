@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.shortcuts import redirect
 
-from project.deployment.views import ReactAppView
+# from project.deployment.views import ReactAppView
 
 urlpatterns = [
     # admin interface
@@ -28,5 +28,5 @@ urlpatterns = [
     path('observatory/api/', include('project.api.urls')),
 
     # send all other paths to React
-    re_path(r'^(?!observatory/api).*$', ReactAppView.as_view()),
+    # re_path(r'^(?!observatory/api).*$', ReactAppView.as_view()),
 ]

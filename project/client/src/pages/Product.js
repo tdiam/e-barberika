@@ -14,6 +14,7 @@ import tableOptions from '../utils/tableOptions'
 class Product extends Component {
   constructor (props) {
     super(props)
+    this.root = this.props.store
     this.store = this.props.store.productStore
     this.priceStore = this.props.store.priceStore
 
@@ -88,7 +89,11 @@ class Product extends Component {
                 </Col>
               </Row>
             </Container>
-            <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
+            {
+              this.root.isLoggedIn && (
+                <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
+              )
+            }
             <MaterialTable
               { ...tableOptions }
               data={ prices }
