@@ -91,7 +91,7 @@ class ShopModal extends Component {
         </FormGroup>
         <FormGroup>
           <Button>Αποθήκευση</Button>
-          <Button onClick={ this.handleCancel }>Ακύρωση</Button>
+          <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
         </FormGroup>
       </Form>
     )

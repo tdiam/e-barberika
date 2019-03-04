@@ -111,7 +111,9 @@ class ProductListing extends Component {
     return (
       <StateHandler state={ state }>
         { this.root.isLoggedIn && (
-          <Button onClick={ () => this.openModal('create') }>Εισαγωγή προϊόντος</Button>
+          <Button className="mb-4" onClick={ () => this.openModal('create') }>
+            Εισαγωγή προϊόντος
+          </Button>
         )}
         <MaterialTable
           data={ products }

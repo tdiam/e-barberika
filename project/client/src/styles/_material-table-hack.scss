@@ -1,0 +1,55 @@
+div[class|="MuiToolbar-root"] {
+  flex-direction: column;
+}
+
+tr[class*="MuiTableRow-footer"] {
+  height: 120px;
+}
+
+td[class*="MuiTableCell-footer"] {
+  display: block;
+  float: none !important;
+  padding-top: 12px !important;
+  width: 100%;
+}
+
+div[class|="MTablePaginationInner-root"] {
+  margin-left: 0;
+  button {
+    padding: 6px 12px;
+  }
+}
+
+div[class*="MuiTablePagination-selectRoot"] {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+@include media-breakpoint-up(md) {
+  div[class|="MuiToolbar-root"] {
+    flex-direction: row;
+  }
+
+  tr[class*="MuiTableRow-footer"] {
+    height: 56px;
+  }
+
+  td[class*="MuiTableCell-footer"] {
+    display: table-cell;
+    float: right !important;
+    padding-top: 0 !important;
+    width: auto;
+  }
+
+  div[class|="MTablePaginationInner-root"] {
+    margin-left: 20px;
+    button {
+      padding: 12px;
+    }
+  }
+
+  div[class*="MuiTablePagination-selectRoot"] {
+    margin-left: 8px;
+    margin-right: 32px;
+  }
+}

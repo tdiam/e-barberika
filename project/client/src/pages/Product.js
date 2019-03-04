@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import { Link } from 'react-router-dom'
 import MaterialTable from 'material-table'
-import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
+import { Container, Row, Col, Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
 import StateHandler from '../components/StateHandler'
 import ProductAddShopPriceModal from '../components/ProductAddShopPriceModal'
@@ -74,14 +74,21 @@ class Product extends Component {
       <StateHandler state={ state }>
         {() => (
           <div>
-            <div>
-              <h2>Προϊόν</h2>
-              <h3>Όνομα Προϊόντος: { product.name }</h3>
-              <p>Κατηγορία: { product.category }</p>
-              <p>Περιγραφή: { product.description }</p>
-              <p>Ετικέτες: { tagsToText(product.tags) }</p>
-            </div>
-            <Button onClick={ this.toggleModal }>Καταχώρηση Τιμής</Button>
+            <h2 className="mb-4">Προϊόν</h2>
+            <Container className="product-info">
+              <Row>
+                <Col md={ 7 } className="product-details">
+                  <h2 className="product-name">{ product.name }</h2>
+                  <p>Κατηγορία: { product.category }</p>
+                  <p className="tags">Ετικέτες: { tagsToText(product.tags) }</p>
+                </Col>
+                <Col md={ 5 }>
+                  <h4>Περιγραφή</h4>
+                  <p>{ product.description }</p>
+                </Col>
+              </Row>
+            </Container>
+            <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
             <MaterialTable
               { ...tableOptions }
               data={ prices }

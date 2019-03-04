@@ -22,7 +22,10 @@ class Header extends Component {
   render () {
     return (
       <Navbar color="dark" dark expand="lg">
-        <NavbarBrand href="/">Παρατηρητήριο</NavbarBrand>
+        <NavbarBrand href="/">
+          <img src="/img/wig.png" alt="Π"></img>
+          αρατηρητήριο
+        </NavbarBrand>
         <NavbarToggler onClick={ this.toggle } />
 
         <Collapse isOpen={ this.state.isOpen } navbar>

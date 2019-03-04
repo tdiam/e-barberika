@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
-import { Form, Alert } from 'reactstrap'
+import { Form, Alert, Button } from 'reactstrap'
 
 import SearchBar from '../components/SearchBar'
 import SearchResults from '../components/SearchResults'
@@ -9,6 +9,7 @@ import SearchFilters from '../components/SearchFilters'
 class Home extends Component {
   constructor (props) {
     super(props)
+    this.root = this.props.store
     this.store = this.props.store.priceStore
   }
 
@@ -21,28 +22,26 @@ class Home extends Component {
     showResults: false,
   }
 
-  applyQueryLogic = (urlps, query) => {
-    const tags = query.split(' ')
-    tags.forEach(tag => (urlps.append('tags', tag)))
+  applyQueryLogic = (params, query) => {
+    params.tags = query.split(' ')
   }
 
-  applyFilterLogic = (urlps, filters) => {
+  applyFilterLogic = (params, filters) => {
     for (const attr in filters) {
-      urlps.append(attr, filters[attr])
+      params[attr] = filters[attr]
     }
   }
 
-  applyPaginationLogic = async (urlps) => {
+  applyPaginationLogic = (params) => {
     // this is a very big number
-    urlps.append('count', 1000000000000)
+    params.count = 1000000000000
   }
 
   fetchPrices () {
-    let params = new URLSearchParams()
+    let params = {}
     this.applyQueryLogic(params, this.state.query)
     this.applyFilterLogic(params, this.state.filters)
     this.applyPaginationLogic(params)
-    console.debug(params.toString())
     this.store.getPrices(params)
   }
 
@@ -88,6 +87,11 @@ class Home extends Component {
         </Form>
         { showResults && (
           <SearchResults />
+        )}
+        { this.root.isLoggedIn && (
+          <Button className="mt-4" onClick={ () => this.props.history.push('/price/add') }>
+            Καταχώρηση τιμής
+          </Button>
         )}
       </>
     )

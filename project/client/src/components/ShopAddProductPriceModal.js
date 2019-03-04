@@ -73,7 +73,7 @@ class ShopAddProductPriceModal extends Component {
         <DateFilter onPrepared={ this.preparedHandler } />
         <FormGroup>
           <Button>Εισαγωγή</Button>
-          <Button onClick={ this.handleCancel }>Ακύρωση</Button>
+          <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
         </FormGroup>
       </Form>
     )

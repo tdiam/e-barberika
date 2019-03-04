@@ -58,8 +58,6 @@ class ProductModal extends Component {
 
   render() {
     const { name, description, category, tags } = this.state
-    // Region level view when editing, country view when creating
-    const zoomLevel = this.props.mode === 'edit' ? 11 : 4
     return (
       <Form onSubmit={ this.handleSubmit }>
         <FormGroup>
@@ -74,7 +72,7 @@ class ProductModal extends Component {
         </FormGroup>
         <FormGroup>
           <Label htmlFor="description">Περιγραφή:</Label>
-          <Input name="description" id="description" type="text" required
+          <Input name="description" id="description" type="textarea" required
             value={ description } onChange={ this.handleChange }></Input>
         </FormGroup>
         <FormGroup>
@@ -84,7 +82,7 @@ class ProductModal extends Component {
         </FormGroup>
         <FormGroup>
           <Button>Αποθήκευση</Button>
-          <Button onClick={ this.handleCancel }>Ακύρωση</Button>
+          <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
         </FormGroup>
       </Form>
     )

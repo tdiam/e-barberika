@@ -4,12 +4,12 @@ import { Container } from 'reactstrap'
 
 import Home from '../pages/Home'
 import LoginForm from '../pages/LoginForm'
+import SignupForm from '../pages/SignupForm'
 import ShopListing from '../pages/ShopListing'
 import Shop from '../pages/Shop'
-import MapDemo from '../pages/MapDemo'
-import SignupForm from '../pages/SignupForm'
 import ProductListing from '../pages/ProductListing'
 import Product from '../pages/Product'
+import PriceAdd from '../pages/PriceAdd'
 import Page404 from '../pages/Page404'
 
 class Main extends Component {
@@ -23,7 +23,7 @@ class Main extends Component {
           <Route path='/shops/:id' component={Shop} />
           <Route exact path='/products' component={ProductListing} />
           <Route path='/products/:id' component={Product} />
-          <Route exact path='/map' component={MapDemo} />
+          <Route exact path='/price/add' component={PriceAdd} />
           <Route exact path='/signup' component={SignupForm} />
           <Route component={ Page404 } />
         </Switch>

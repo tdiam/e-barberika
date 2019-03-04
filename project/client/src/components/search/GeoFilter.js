@@ -49,25 +49,29 @@ class GeoFilter extends Component {
   render() {
     const { geoLat, geoLng, geoDist } = this.state 
     return (
-      <FormGroup>
-        <Map center={[38.008928, 23.747025]} zoom={ 4 } width={ 600 } height={ 400 }>
-          <Draggable
-            anchor={[geoLat, geoLng]}
-            offset={[16, 32]}
-            onDragEnd={ ([lat, lng]) => this.setState({ geoLat: lat, geoLng: lng }) }
-          >
-            <img src="/img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
-          </Draggable>
-        </Map>
-        <Label htmlFor="geoDist">Απόσταση</Label>
-        <Input
-          type="number"
-          name="geoDist"
-          value={ geoDist }
-          onChange={ this.changeHandler }
-          step="1" min="1"
-          ></Input>
-      </FormGroup>
+      <>
+        <FormGroup>
+          <Map center={[38.008928, 23.747025]} zoom={ 4 } height={ 400 }>
+            <Draggable
+              anchor={[geoLat, geoLng]}
+              offset={[16, 32]}
+              onDragEnd={ ([lat, lng]) => this.setState({ geoLat: lat, geoLng: lng }) }
+            >
+              <img src="/img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
+            </Draggable>
+          </Map>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="geoDist">Απόσταση</Label>
+          <Input
+            type="number"
+            name="geoDist"
+            value={ geoDist }
+            onChange={ this.changeHandler }
+            step="1" min="1"
+            ></Input>
+        </FormGroup>
+      </>
     )
   }
 }
