@@ -27,8 +27,8 @@ class Command(BaseCommand):
         # os.system(f'cd project/client && echo "Building ReactJS" && npm run build > /dev/null')
 
         # create directory for static files
-        # print('Collecting static files')
-        # os.system('python manage.py collectstatic --noinput')
+        print('Collecting static files')
+        os.system('python manage.py collectstatic --noinput')
 
         # start server
         os.system(f'mod_wsgi-express start-server --log-to-terminal --startup-log --https-port {PORT} --https-only --server-name asoures.gr --ssl-certificate-file ssl/server.crt --ssl-certificate-key-file ssl/server.key --url-alias /static static --application-type module project.wsgi')

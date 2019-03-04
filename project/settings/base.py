@@ -141,9 +141,9 @@ TOKEN_EXPIRATION = {
 
 # Needed for react
 REACT_APP = abs_path('project/client/build/')
-STATICFILES_DIRS = (
-    REACT_APP,
-    abs_path(REACT_APP + 'static/'),
-)
+# STATICFILES_DIRS = (
+#     REACT_APP,
+#     abs_path(REACT_APP + 'static/'),
+# )
 
 REACT_APP_INDEX_HTML = abs_path(REACT_APP + 'index.html')
