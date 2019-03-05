@@ -17,7 +17,7 @@ export default class SearchBar extends Component {
           onChange={ this.changeHandler }
           text={ this.props.query }
         />
-        <Button>Go</Button>
+        <Button>Αναζήτηση</Button>
       </FormGroup>
     )
   }
