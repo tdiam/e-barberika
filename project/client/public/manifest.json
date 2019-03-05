@@ -3,13 +3,13 @@
   "name": "Βρες τα καλύτερα κομμωτήρια της περιοχής σου και κλείσε ραντεβού με λίγα κλικ",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "favicon.png",
+      "sizes": "128x128",
+      "type": "image/png"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#764248",
+  "background_color": "#222222"
 }
