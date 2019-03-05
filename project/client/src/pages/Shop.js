@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { inject, observer } from 'mobx-react'
+import { Provider, inject, observer } from 'mobx-react'
 import { Link } from 'react-router-dom'
 import MaterialTable from 'material-table'
 import { Container, Row, Col, Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
@@ -8,6 +8,7 @@ import StateHandler from '../components/StateHandler'
 import ShopAddProductPriceModal from '../components/ShopAddProductPriceModal'
 import Map from '../components/Map'
 import Marker from '../components/MapMarker'
+import PriceStore from '../stores/PriceStore'
 
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
@@ -19,6 +20,8 @@ class Shop extends Component {
     this.root = this.props.store
     this.store = this.props.store.shopStore
     this.priceStore = this.props.store.priceStore
+    // 2nd instance for independency from this.priceStore
+    this.modalPriceStore = new PriceStore(this.root)
 
     this.columns = [{
       'title': 'Προϊόν',
@@ -61,12 +64,14 @@ class Shop extends Component {
   }))
 
   handleSubmit = async (data) => {
-    this.toggleModal()
-    await this.priceStore.addPrice({
+    await this.modalPriceStore.addPrice({
       shopId: this.store.shop.id,
       ...data,
     })
-    await this.loadProductsForShop()
+    if (this.modalPriceStore.state === 'done') {
+      this.toggleModal()
+      await this.loadProductsForShop()
+    }
   }
 
   render () {
@@ -75,54 +80,64 @@ class Shop extends Component {
     const { prices } = this.priceStore
     const { modalOpen } = this.state
     return (
-      <StateHandler state={ state }>
-        {() => (
-          <div>
-            <Container className="shop-info">
-              <Row>
-                <Col md={ 5 } className="shop-details">
-                  <h2 className="shop-name">{ shop.name }</h2>
-                  <p>{ shop.address }</p>
-                  <p className="tags">Ετικέτες: { tagsToText(shop.tags) }</p>
-                </Col>
-                <Col md={ 7 } className="shop-map">
-                  <Map center={ coords }
-                    zoom={ 11 }
-                    height={ 400 }>
-                    <Marker anchor={ coords } text={ shop.name } />
-                  </Map>
-                </Col>
-              </Row>
-            </Container>
-            {
-              this.root.isLoggedIn && (
-                <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
-              )
-            }
-            <MaterialTable
-              { ...tableOptions }
-              data={ prices }
-              columns={ this.columns }
-              title='Διαθέσιμα Προϊόντα'
-              options={{
-                pageSize: 10,
-                pageSizeOptions: [10, 20, 50]
-              }}
-            />
-            <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
-              <ModalHeader toggle={ this.toggleModal }>
-                Καταχώρηση τιμής στο κατάστημα { shop.name }
-              </ModalHeader>
-              <ModalBody>
-                <ShopAddProductPriceModal
-                  onSubmit={ this.handleSubmit }
-                  onCancel={ this.toggleModal }
-                />
-              </ModalBody>
-            </Modal>
-          </div>
-        )}
-      </StateHandler>
+      <>
+        <StateHandler state={ state }>
+          {() => (
+            <div>
+              <Container fluid className="shop-info">
+                <Row>
+                  <Col md={ 5 } className="shop-details">
+                    <h2 className="shop-name">{ shop.name }</h2>
+                    <p>{ shop.address }</p>
+                    <p className="tags">Ετικέτες: { tagsToText(shop.tags) }</p>
+                  </Col>
+                  <Col md={ 7 } className="shop-map">
+                    <Map center={ coords }
+                      zoom={ 11 }
+                      height={ 400 }>
+                      <Marker anchor={ coords } text={ shop.name } />
+                    </Map>
+                  </Col>
+                </Row>
+              </Container>
+              <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
+                <ModalHeader toggle={ this.toggleModal }>
+                  Καταχώρηση τιμής στο κατάστημα { shop.name }
+                </ModalHeader>
+                <ModalBody>
+                  <Provider modalPriceStore={ this.modalPriceStore }>
+                    <ShopAddProductPriceModal
+                      onSubmit={ this.handleSubmit }
+                      onCancel={ this.toggleModal }
+                    />
+                  </Provider>
+                </ModalBody>
+              </Modal>
+            </div>
+          )}
+        </StateHandler>
+        <StateHandler state={ state }>
+          {() => (
+            <div>
+              {
+                this.root.isLoggedIn && (
+                  <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
+                )
+              }
+              <MaterialTable
+                { ...tableOptions }
+                data={ prices }
+                columns={ this.columns }
+                title='Διαθέσιμα Προϊόντα'
+                options={{
+                  pageSize: 10,
+                  pageSizeOptions: [10, 20, 50]
+                }}
+              />
+            </div>
+          )}
+        </StateHandler>
+      </>
     )
   }
 }

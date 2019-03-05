@@ -5,6 +5,7 @@ import { Form, FormGroup, Input, Button, Label } from 'reactstrap'
 import TagInput from './TagInput'
 import Map from './Map'
 import Draggable from './MapDraggable'
+import StateHandler from './StateHandler'
 
 
 /**
@@ -13,7 +14,9 @@ import Draggable from './MapDraggable'
 class ShopModal extends Component {
   constructor(props) {
     super(props)
-    this.store = this.props.store.shopStore
+    this.store = this.props.modalShopStore
+    // dreadful hack
+    this.store.setState('done')
 
     if (this.props.mode === 'edit') {
       const { id, name, address, lng, lat, tags, withdrawn } = this.store.shop
@@ -23,8 +26,8 @@ class ShopModal extends Component {
         id: null,
         name: '',
         address: '',
-        lng: '',
-        lat: '',
+        lng: 23.747025,
+        lat: 38.008928,
         tags: [],
         withdrawn: false,
       }
@@ -44,7 +47,7 @@ class ShopModal extends Component {
 
   handleTagsChange = (tags) => this.setState({ tags })
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     // Prevent actual submission of the form
     e.preventDefault()
 
@@ -64,38 +67,40 @@ class ShopModal extends Component {
     // Region level view when editing, country view when creating
     const zoomLevel = this.props.mode === 'edit' ? 11 : 4
     return (
-      <Form onSubmit={ this.handleSubmit }>
-        <FormGroup>
-          <Label htmlFor="name">Όνομα:</Label>
-          <Input name="name" id="name" type="text" required
-            value={ name } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <FormGroup>
-          <Label htmlFor="address">Διεύθυνση:</Label>
-          <Input name="address" id="address" type="text" required
-            value={ address } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <Map center={[38.008928, 23.747025]} zoom={ zoomLevel } width={ 600 } height={ 400 }>
-          <Draggable
-            anchor={[lat, lng]}
-            offset={[16, 32]}
-            onDragEnd={ ([lat, lng]) => this.setState({ lat, lng }) }
-          >
-            <img src="img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
-          </Draggable>
-        </Map>
-        <FormGroup>
-          <Label htmlFor="tags">Ετικέτες:</Label>
-          <TagInput tag={ Input } name="tags" id="tags"
-            value={ tags } onChange={ this.handleTagsChange }></TagInput>
-        </FormGroup>
-        <FormGroup>
-          <Button>Αποθήκευση</Button>
-          <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
-        </FormGroup>
-      </Form>
+      <StateHandler state={ this.store.state }>
+        <Form onSubmit={ this.handleSubmit }>
+          <FormGroup>
+            <Label htmlFor="name">Όνομα:</Label>
+            <Input name="name" id="name" type="text" required
+              value={ name } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="address">Διεύθυνση:</Label>
+            <Input name="address" id="address" type="text" required
+              value={ address } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <Map center={[38.008928, 23.747025]} zoom={ zoomLevel } width={ 600 } height={ 400 }>
+            <Draggable
+              anchor={[lat, lng]}
+              offset={[16, 32]}
+              onDragEnd={ ([lat, lng]) => this.setState({ lat, lng }) }
+            >
+              <img src="img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
+            </Draggable>
+          </Map>
+          <FormGroup>
+            <Label htmlFor="tags">Ετικέτες:</Label>
+            <TagInput tag={ Input } name="tags" id="tags"
+              value={ tags } onChange={ this.handleTagsChange }></TagInput>
+          </FormGroup>
+          <FormGroup>
+            <Button>Αποθήκευση</Button>
+            <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
+          </FormGroup>
+        </Form>
+      </StateHandler>
     )
   }
 }
 
-export default inject('store')(observer(ShopModal))
+export default inject('modalShopStore')(observer(ShopModal))

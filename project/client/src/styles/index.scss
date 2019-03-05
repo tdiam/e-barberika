@@ -7,6 +7,8 @@
 html, body {
   font-family: 'Alegreya Sans', sans-serif;
   font-size: 1.15rem;
+  height: 100%;
+  width: 100%;
   text-align: center;
 }
 
@@ -24,8 +26,6 @@ html, body {
 .App {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-width: 100vw;
 }
 
 main {
@@ -45,6 +45,7 @@ form {
 }
 
 .alert {
+  margin: 0 auto;
   max-width: 40rem;
 }
 
@@ -58,6 +59,7 @@ input, select, textarea {
 }
 
 input.form-control, textarea.form-control {
+  min-width: 0;
   &:focus {
     background-color: darken($body-bg, 5%);
   }
@@ -82,6 +84,20 @@ input.form-control, textarea.form-control {
   width: auto;
 }
 
+img.inactive {
+  opacity: 0.5;
+}
+
+.btn.btn-sm {
+  font-size: .9rem;
+  font-weight: normal;
+}
+
+.btn.btn-light {
+  background-color: $body-bg; 
+  box-shadow: 0 0 0 .2rem rgba($primary, .25);
+}
+
 /* Hero search */
 .hero-search {
   margin: 0 auto;
@@ -95,7 +111,6 @@ input.form-control, textarea.form-control {
     margin-top: 1rem;
     input {
       margin-right: 1rem;
-      min-width: 0;
     }
     .btn {
       background-color: rgba($secondary, .75);
@@ -119,14 +134,14 @@ input.form-control, textarea.form-control {
 }
 
 .shop-info, .product-info {
-  text-align: left;
   .shop-details, .product-details {
     display: flex;
     flex-direction: column;
   }
   .shop-name, .product-name {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 200;
+    word-wrap: break-word;
   }
   .tags {
     margin-top: auto;
@@ -139,10 +154,22 @@ input.form-control, textarea.form-control {
       font-size: 4rem;
     }
   }
+  // two columns in >=md
+  .shop-info, .product-info {
+    text-align: left;
+    .description {
+      text-align: justify;
+    }
+  }
 }
 
 @include media-breakpoint-up(lg) {
   .nav-item:not(:last-child) {
     margin-right: 2em;
+  }
+  .shop-info, .product-info {
+    .shop-name, .product-name {
+      font-size: 3rem;
+    }
   }
 }

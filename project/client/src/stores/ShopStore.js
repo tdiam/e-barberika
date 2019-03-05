@@ -14,6 +14,10 @@ class ShopStore {
   shop = {}
   state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
+  setState(state) {
+    this.state = state
+  }
+
   /**
    * Fetches list of shops from API and stores them in the `shops` observable.
    * Also sets the `pagination` observable.
@@ -123,6 +127,7 @@ decorate(ShopStore, {
   shops: observable,
   shop: observable,
   state: observable,
+  setState: action,
   getShops: action,
   getShop: action,
   addShop: action,

@@ -11,6 +11,10 @@ class AuthStore {
 
   state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
+  setState(state) {
+    this.state = state
+  }
+
   /**
    * Resets state to pending
    */
@@ -88,6 +92,8 @@ class AuthStore {
 }
 decorate(AuthStore, {
   state: observable,
+  setState: action,
+  resetState: action,
   authenticate: action,
   register: action,
   logout: action,

@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { inject, observer } from 'mobx-react'
+import { Provider, inject, observer } from 'mobx-react'
 import { Link } from 'react-router-dom'
 import MaterialTable from 'material-table'
 import { Container, Row, Col, Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
 import StateHandler from '../components/StateHandler'
 import ProductAddShopPriceModal from '../components/ProductAddShopPriceModal'
+import PriceStore from '../stores/PriceStore'
 
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
@@ -17,6 +18,8 @@ class Product extends Component {
     this.root = this.props.store
     this.store = this.props.store.productStore
     this.priceStore = this.props.store.priceStore
+    // 2nd instance for independency from this.priceStore
+    this.modalPriceStore = new PriceStore(this.root)
 
     this.columns = [{
       'title': 'Κατάστημα',
@@ -59,65 +62,77 @@ class Product extends Component {
   }))
 
   handleSubmit = async (data) => {
-    this.toggleModal()
-    await this.priceStore.addPrice({
+    await this.modalPriceStore.addPrice({
       productId: this.store.product.id,
       ...data,
     })
-    await this.loadShopsForProduct()
+    if (this.modalPriceStore.state === 'done') {
+      this.toggleModal()
+      await this.loadShopsForProduct()
+    }
   }
 
   render () {
-    const { product, state } = this.store
+    const { product } = this.store
     const { prices } = this.priceStore
     const { modalOpen } = this.state
     return (
-      <StateHandler state={ state }>
-        {() => (
-          <div>
-            <h2 className="mb-4">Προϊόν</h2>
-            <Container className="product-info">
-              <Row>
-                <Col md={ 7 } className="product-details">
-                  <h2 className="product-name">{ product.name }</h2>
-                  <p>Κατηγορία: { product.category }</p>
-                  <p className="tags">Ετικέτες: { tagsToText(product.tags) }</p>
-                </Col>
-                <Col md={ 5 }>
-                  <h4>Περιγραφή</h4>
-                  <p>{ product.description }</p>
-                </Col>
-              </Row>
-            </Container>
-            {
-              this.root.isLoggedIn && (
-                <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
-              )
-            }
-            <MaterialTable
-              { ...tableOptions }
-              data={ prices }
-              columns={ this.columns }
-              title='Διαθέσιμο στα Καταστήματα'
-              options={{
-                pageSize: 10,
-                pageSizeOptions: [10, 20, 50]
-              }}
-            />
-            <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
-              <ModalHeader toggle={ this.toggleModal }>
-                Καταχώρηση τιμής στο προϊόν { product.name }
-              </ModalHeader>
-              <ModalBody>
-                <ProductAddShopPriceModal
-                  onSubmit={ this.handleSubmit }
-                  onCancel={ this.toggleModal }
-                />
-              </ModalBody>
-            </Modal>
-          </div>
-        )}
-      </StateHandler>
+      <>
+        <StateHandler state={ this.store.state }>
+          {() => (
+            <div>
+              <h2 className="mb-4">Προϊόν</h2>
+              <Container fluid className="product-info">
+                <Row>
+                  <Col md={ 7 } className="product-details">
+                    <h2 className="product-name">{ product.name }</h2>
+                    <p>Κατηγορία: { product.category }</p>
+                    <p className="tags">Ετικέτες: { tagsToText(product.tags) }</p>
+                  </Col>
+                  <Col md={ 5 }>
+                    <h4>Περιγραφή</h4>
+                    <p className="description">{ product.description }</p>
+                  </Col>
+                </Row>
+              </Container>
+              {
+                this.root.isLoggedIn && (
+                  <Button className="my-5" onClick={ this.toggleModal }>Καταχώρηση τιμής</Button>
+                )
+              }
+              <Modal size="lg" isOpen={ modalOpen } toggle={ this.toggleModal }>
+                <ModalHeader toggle={ this.toggleModal }>
+                  Καταχώρηση τιμής στο προϊόν { product.name }
+                </ModalHeader>
+                <ModalBody>
+                  <Provider modalPriceStore={ this.modalPriceStore }>
+                    <ProductAddShopPriceModal
+                      onSubmit={ this.handleSubmit }
+                      onCancel={ this.toggleModal }
+                    />
+                  </Provider>
+                </ModalBody>
+              </Modal>
+            </div>
+          )}
+        </StateHandler>
+        <StateHandler state={ this.priceStore.state }>
+          {() => (
+            <div>
+              <MaterialTable
+                { ...tableOptions }
+                data={ prices }
+                columns={ this.columns }
+                title='Διαθέσιμο στα Καταστήματα'
+                options={{
+                  pageSize: 10,
+                  pageSizeOptions: [10, 20, 50]
+                }}
+              />
+            </div>
+          )}
+        </StateHandler>
+      </>
     )
   }
 }

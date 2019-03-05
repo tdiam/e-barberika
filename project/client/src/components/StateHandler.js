@@ -2,14 +2,19 @@ import React, { Component } from 'react'
 import { Alert } from 'reactstrap'
 
 const defaultPending = (
-  <>Φόρτωση...</>
+  <div>Φόρτωση...</div>
 )
 
 const defaultError = (
   <Alert color="danger">Κάτι πήγε στραβά!</Alert>
 )
 
-const defaultUnauthorized = defaultError
+const defaultUnauthorized = (
+  <Alert color="danger">
+    Δεν έχετε δικαιώματα να εκτελέσετε αυτήν την ενέργεια.
+    Παρακαλούμε ελέγξτε μήπως έληξε η συνεδρία σας.
+  </Alert>
+)
 
 const getComponent = (cf) => {
   // If is pure string, turn it into a component
@@ -54,6 +59,7 @@ class StateHandler extends Component {
     if (this.props.state === 'pending') return getComponent(this.props.ifPending)
     if (this.props.state === 'error') return getComponent(this.props.ifError)
     if (this.props.state === 'unauthorized') return getComponent(this.props.ifUnauthorized)
+    throw new Error(`Unexpected state value: ${this.props.state}`)
   }
 }
 StateHandler.defaultProps = {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { FormGroup, Label, Input } from 'reactstrap'
+import { FormGroup, Button, Label, Input } from 'reactstrap'
 
 import Map from '../Map'
 import Draggable from '../MapDraggable'
@@ -12,20 +12,29 @@ class GeoFilter extends Component {
   }
   state = {
     geoDist: '',
-    geoLat: '',
-    geoLng: '',
+    geoLat: 38.008928,
+    geoLng: 23.747025,
+    pinActive: false,
   }
   changeHandler = (e) => {
     this.setState({
       [e.target.name]: e.target.value,
     })
   }
+  togglePin = () => {
+    this.setState(prevState => ({
+      pinActive: !prevState.pinActive,
+    }))
+  }
   /**
    * Prepare data for parent.
    * If at least one but not all is unset, set all to undefined and send error.
    */
   prepareData () {
-    let { geoDist, geoLat, geoLng } = this.state
+    let { geoDist, geoLat, geoLng, pinActive } = this.state
+    if (!pinActive) {
+      geoLat = geoLng = ''
+    }
     // store them in array for easy access
     let check = [geoDist, geoLat, geoLng]
     // count how many of them are unset
@@ -42,12 +51,13 @@ class GeoFilter extends Component {
     if (this.state.geoDist !== prevState.geoDist
      || this.state.geoLat !== prevState.geoLat
      || this.state.geoLng !== prevState.geoLng
+     || this.state.pinActive !== prevState.pinActive
     ) {
       this.prepareData()
     }
   }
   render() {
-    const { geoLat, geoLng, geoDist } = this.state 
+    const { geoLat, geoLng, geoDist, pinActive } = this.state 
     return (
       <>
         <FormGroup>
@@ -57,9 +67,16 @@ class GeoFilter extends Component {
               offset={[16, 32]}
               onDragEnd={ ([lat, lng]) => this.setState({ geoLat: lat, geoLng: lng }) }
             >
-              <img src="/img/pin.svg" alt="Επιλογή τοποθεσίας" width="32" height="32" />
+              <img
+                className={ !pinActive && "inactive" }
+                src="/img/pin.svg"
+                alt="Επιλογή τοποθεσίας"
+                width="32" height="32" />
             </Draggable>
           </Map>
+          <Button size="sm" onClick={ this.togglePin } active={ pinActive }>
+            Τοποθεσία: { pinActive ? 'Ενεργή' : 'Ανενεργή' }
+          </Button>
         </FormGroup>
         <FormGroup>
           <Label htmlFor="geoDist">Απόσταση</Label>

@@ -14,6 +14,10 @@ class ProductStore {
   product = {}
   state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
+  setState(state) {
+    this.state = state
+  }
+
   /**
    * Fetches list of products from API and stores them in the `products` observable.
    * Also sets the `pagination` observable.
@@ -123,6 +127,7 @@ decorate(ProductStore, {
   products: observable,
   product: observable,
   state: observable,
+  setState: action,
   getProducts: action,
   getProduct: action,
   addProduct: action,

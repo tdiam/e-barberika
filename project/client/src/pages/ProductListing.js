@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { inject, observer } from 'mobx-react'
+import { Provider, inject, observer } from 'mobx-react'
 import MaterialTable from 'material-table'
 import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
@@ -8,6 +8,7 @@ import ProductModal from '../components/ProductModal'
 import StateHandler from '../components/StateHandler'
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
+import ProductStore from '../stores/ProductStore'
 
 
 class ProductListing extends Component {
@@ -15,6 +16,8 @@ class ProductListing extends Component {
     super(props)
     this.root = this.props.store
     this.store = this.props.store.productStore
+    // 2nd instance for independency from this.store
+    this.modalProductStore = new ProductStore(this.root)
 
     this.state = {
       modalMode: null
@@ -42,7 +45,7 @@ class ProductListing extends Component {
     if (this.root.isLoggedIn) {
       this.actions = [{
         onClick: async (e, { id }) => {
-          this.store.getProduct(id)
+          await this.modalProductStore.getProduct(id)
           this.openModal('edit')
         },
         icon: 'edit',
@@ -90,16 +93,20 @@ class ProductListing extends Component {
    */
   makeSubmitHandler (mode) {
     if (mode === 'create') {
-      return (_id, data) => {
-        this.store.addProduct(data)
-        this.closeModal()
-        this.loadProducts()
+      return async (_id, data) => {
+        await this.modalProductStore.addProduct(data)
+        if (this.modalProductStore.state === 'done') {
+          this.closeModal()
+          this.loadProducts()
+        }
       }
     } else if (mode === 'edit') {
-      return (id, data) => {
-        this.store.editProduct(id, data)
-        this.closeModal()
-        this.loadProducts()
+      return async (id, data) => {
+        await this.modalProductStore.editProduct(id, data)
+        if (this.modalProductStore.state === 'done') {
+          this.closeModal()
+          this.loadProducts()
+        }
       }
     }
   }
@@ -132,11 +139,13 @@ class ProductListing extends Component {
             { modalMode === 'edit' ? 'Επεξεργασία στοιχείων' : 'Δημιουργία' } προϊόντος
           </ModalHeader>
           <ModalBody>
-            <ProductModal
-              mode={ modalMode }
-              onSubmit={ this.makeSubmitHandler(modalMode) }
-              onCancel={ this.closeModal }
-            />
+            <Provider modalProductStore={ this.modalProductStore }>
+              <ProductModal
+                mode={ modalMode }
+                onSubmit={ this.makeSubmitHandler(modalMode) }
+                onCancel={ this.closeModal }
+              />
+            </Provider>
           </ModalBody>
         </Modal>
       </StateHandler>

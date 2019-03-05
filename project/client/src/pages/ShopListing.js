@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { inject, observer } from 'mobx-react'
+import { Provider, inject, observer } from 'mobx-react'
 import MaterialTable from 'material-table'
 import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
 
@@ -8,6 +8,7 @@ import ShopModal from '../components/ShopModal'
 import StateHandler from '../components/StateHandler'
 import { tagsToText } from '../utils/tags'
 import tableOptions from '../utils/tableOptions'
+import ShopStore from '../stores/ShopStore'
 
 
 class ShopListing extends Component {
@@ -15,6 +16,8 @@ class ShopListing extends Component {
     super(props)
     this.root = this.props.store
     this.store = this.props.store.shopStore
+    // 2nd instance for independency from this.store
+    this.modalShopStore = new ShopStore(this.root)
 
     this.state = {
       modalMode: null
@@ -42,7 +45,7 @@ class ShopListing extends Component {
     if (this.root.isLoggedIn) {
       this.actions = [{
         onClick: async (e, { id }) => {
-          this.store.getShop(id)
+          await this.modalShopStore.getShop(id)
           this.openModal('edit')
         },
         icon: 'edit',
@@ -90,16 +93,20 @@ class ShopListing extends Component {
    */
   makeSubmitHandler (mode) {
     if (mode === 'create') {
-      return (_id, data) => {
-        this.store.addShop(data)
-        this.closeModal()
-        this.loadShops()
+      return async (_id, data) => {
+        await this.modalShopStore.addShop(data)
+        if (this.modalShopStore.state === 'done') {
+          this.closeModal()
+          this.loadShops()
+        }
       }
     } else if (mode === 'edit') {
-      return (id, data) => {
-        this.store.editShop(id, data)
-        this.closeModal()
-        this.loadShops()
+      return async (id, data) => {
+        await this.modalShopStore.editShop(id, data)
+        if (this.modalShopStore.state === 'done') {
+          this.closeModal()
+          this.loadShops()
+        }
       }
     }
   }
@@ -132,11 +139,13 @@ class ShopListing extends Component {
             { modalMode === 'edit' ? 'Επεξεργασία στοιχείων' : 'Δημιουργία' } καταστήματος
           </ModalHeader>
           <ModalBody>
-            <ShopModal
-              mode={ modalMode }
-              onSubmit={ this.makeSubmitHandler(modalMode) }
-              onCancel={ this.closeModal }
-            />
+            <Provider modalShopStore={ this.modalShopStore }>
+              <ShopModal
+                mode={ modalMode }
+                onSubmit={ this.makeSubmitHandler(modalMode) }
+                onCancel={ this.closeModal }
+              />
+            </Provider>
           </ModalBody>
         </Modal>
       </StateHandler>

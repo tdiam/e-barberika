@@ -3,6 +3,7 @@ import { inject, observer } from 'mobx-react'
 import { Form, FormGroup, Input, Button, Label } from 'reactstrap'
 
 import TagInput from './TagInput'
+import StateHandler from './StateHandler'
 
 
 /**
@@ -11,7 +12,9 @@ import TagInput from './TagInput'
 class ProductModal extends Component {
   constructor(props) {
     super(props)
-    this.store = this.props.store.productStore
+    this.store = this.props.modalProductStore
+    // dreadful hack
+    this.store.setState('done')
 
     if (this.props.mode === 'edit') {
       const { id, name, description, category, tags, withdrawn } = this.store.product
@@ -59,34 +62,36 @@ class ProductModal extends Component {
   render() {
     const { name, description, category, tags } = this.state
     return (
-      <Form onSubmit={ this.handleSubmit }>
-        <FormGroup>
-          <Label htmlFor="name">Όνομα:</Label>
-          <Input name="name" id="name" type="text" required
-            value={ name } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <FormGroup>
-          <Label htmlFor="category">Κατηγορία:</Label>
-          <Input name="category" id="category" type="text" required
-            value={ category } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <FormGroup>
-          <Label htmlFor="description">Περιγραφή:</Label>
-          <Input name="description" id="description" type="textarea" required
-            value={ description } onChange={ this.handleChange }></Input>
-        </FormGroup>
-        <FormGroup>
-          <Label htmlFor="tags">Ετικέτες:</Label>
-          <TagInput tag={ Input } name="tags" id="tags"
-            value={ tags } onChange={ this.handleTagsChange }></TagInput>
-        </FormGroup>
-        <FormGroup>
-          <Button>Αποθήκευση</Button>
-          <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
-        </FormGroup>
-      </Form>
+      <StateHandler state={ this.store.state }>
+        <Form onSubmit={ this.handleSubmit }>
+          <FormGroup>
+            <Label htmlFor="name">Όνομα:</Label>
+            <Input name="name" id="name" type="text" required
+              value={ name } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="category">Κατηγορία:</Label>
+            <Input name="category" id="category" type="text" required
+              value={ category } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="description">Περιγραφή:</Label>
+            <Input name="description" id="description" type="textarea" required
+              value={ description } onChange={ this.handleChange }></Input>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="tags">Ετικέτες:</Label>
+            <TagInput tag={ Input } name="tags" id="tags"
+              value={ tags } onChange={ this.handleTagsChange }></TagInput>
+          </FormGroup>
+          <FormGroup>
+            <Button>Αποθήκευση</Button>
+            <Button color="dark" onClick={ this.handleCancel }>Ακύρωση</Button>
+          </FormGroup>
+        </Form>
+      </StateHandler>
     )
   }
 }
 
-export default inject('store')(observer(ProductModal))
+export default inject('modalProductStore')(observer(ProductModal))

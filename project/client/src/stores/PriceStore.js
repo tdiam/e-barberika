@@ -13,6 +13,10 @@ class PriceStore {
   pagination = { start: 0, count: 0, total: 0 }
   state = 'pending' // One of 'pending' | 'done' | 'unauthorized' | 'error'
 
+  setState(state) {
+    this.state = state
+  }
+
   /**
    * Fetches list of prices from API and stores them in the `prices` observable.
    * Also sets the `pagination` observable.
@@ -65,6 +69,7 @@ class PriceStore {
 }
 decorate(PriceStore, {
   prices: observable,
+  setState: action,
   getPrices: action,
   addPrice: action,
 })
