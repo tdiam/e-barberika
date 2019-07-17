@@ -12,7 +12,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     scripts=['manage.py'],
-    url='https://bitbucket.com/asoures/asoures',
+    url='https://github.com/tdiam/asoures',
     author='Asoures Team',
     install_requires=[
         'dj-database-url',
