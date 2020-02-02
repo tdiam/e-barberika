@@ -1,4 +1,4 @@
-# Asoures
+# e-barberika
 
 Project σε Django για το μάθημα της [Τεχνολογίας Λογισμικού](https://courses.softlab.ntua.gr/softeng/2018b/) της Σχολής ΗΜΜΥ ΕΜΠ.
 
